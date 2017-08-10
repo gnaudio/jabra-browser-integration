@@ -33,11 +33,21 @@ The JavaScript library must be initialized using this function:
 ```javascript
 jabra.init(onSuccess, onFailure, onNotify) 
 ```
-
-Function used for initialization. This function has three arguments: onSuccess – a callback reporting that the library has been successfully initialized and the library is ready for use, onFailure – a callback reporting errors during initialization, onNotify – a callback used for reporting events.
-
 Example use of the library:
 
 https://gnaudio.github.io/jabra-browser-integration/development/
 
+Basic functions: 
+
+| Function          | Description        | 
+| ----------------- |:------------------:| 
+| ` jabra.ring() `    | Activate ringer (if supported) on the Jabra Device  | 
+| ` jabra.offHook() `    | Change state to in-a-call   | 
+| ` jabra.onHook() `    | Change state to idle (not-in-a-call)  | 
+| ` jabra.mute() `    | Mutes the microphone (if supported)   | 
+| ` jabra.unmute() `    | Unmutes the microphone (if supported)   | 
+| ` jabra.hold() `    | Change state to held (if supported)   | 
+| ` jabra.resume() `    | Change state from held to OffHook (if supported)   |
+
+Callback values from the library (registered during library initialization):
 
