@@ -40,7 +40,7 @@ https://gnaudio.github.io/jabra-browser-integration/development/
 Basic functions: 
 
 | Function          | Description        | 
-| ----------------- |:------------------:| 
+| ----------------- |------------------| 
 | ` jabra.ring() `    | Activate ringer (if supported) on the Jabra Device  | 
 | ` jabra.offHook() `    | Change state to in-a-call   | 
 | ` jabra.onHook() `    | Change state to idle (not-in-a-call)  | 
