@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="Jabra Chrome Host" Language="1033" Version="0.5.0.0" Manufacturer="GN Audio A/S" UpgradeCode="8d1e7d47-245d-4c1e-97e1-0c7459d571e5">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" CompressionLevel="high" />
+
+	  <WixVariable Id="WixUILicenseRtf" Value="eula.rtf" />
+	  <UIRef Id="WixUI_Minimal" />
+    
+		<Feature Id="ProductFeature" Title="SetupProject32bit" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+  
+    <!-- CA -->
+    <InstallExecuteSequence>
+      <Custom Action='jabrachromehost.TaskKill' Before='InstallValidate'/>
+    </InstallExecuteSequence>
+    <Property Id="QtExecCmdLine" Value='"[WindowsFolder]\System32\taskkill.exe" /F /IM jabrachromehost.exe'/>
+    <CustomAction Id="jabrachromehost.TaskKill" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="immediate" Return="ignore"/>
+  
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="JabraChromeHost" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			 <Component Id="ProductComponent1"> 
+          <File Id="jabrachromehost.exe" Source="..\..\ChromeHost\bin\release\jabrachromehost.exe" Vital="yes" DiskId="1" />
+			 </Component> 
+			 <Component Id="ProductComponent2"> 
+          <File Id="libjabra.dll" Source="..\..\ChromeHost\SDKWindows\libjabra.dll" Vital="yes" DiskId="1" />
+			 </Component> 
+			 <Component Id="ProductComponent3"> 
+          <File Id="com.jabra.nm.json" Source="..\com.jabra.nm.json" Vital="yes" DiskId="1" />
+			 </Component> 
+       <!--Registry 32 bit-->
+       <Component Id="ProductComponent4">
+         <RegistryValue Root="HKLM"
+                         Action="write"
+                         Key="Software\Google\Chrome\NativeMessagingHosts\com.jabra.nm"
+                         Value="[INSTALLFOLDER]com.jabra.nm.json"
+                         Type="string" />
+       </Component>
+    
+		</ComponentGroup>
+	</Fragment>
+</Wix>
