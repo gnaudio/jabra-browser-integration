@@ -25,6 +25,7 @@ The library internally checks for dependencies – and will report this to the a
 
 ### Web site
 A web site with documentation, developer tools and a softphone demo: 
+
 https://gnaudio.github.io/jabra-browser-integration/
 
 ### The API
@@ -36,6 +37,7 @@ jabra.init(onSuccess, onFailure, onNotify)
 Function used for initialization. This function has three arguments: onSuccess – a callback reporting that the library has been successfully initialized and the library is ready for use, onFailure – a callback reporting errors during initialization, onNotify – a callback used for reporting events.
 
 Example use of the library:
+
 https://gnaudio.github.io/jabra-browser-integration/development/
 
 
