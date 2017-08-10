@@ -10,7 +10,7 @@ All professional Jabra headsets and Jabra speakerphones are supported. I.e. the 
 ### Operating system support
 The following desktop operating systems are supported:
 
-| Operating system  |                    | 
+| Operating system  | Version            | 
 | ----------------- |:------------------:| 
 | Windows 64 bit    | Windows 7 or newer | 
 | Windows 32 bit    | Windows 7 or newer | 
