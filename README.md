@@ -29,3 +29,13 @@ https://gnaudio.github.io/jabra-browser-integration/
 
 ### The API
 The JavaScript library must be initialized using this function: 
+```javascript
+jabra.init(onSuccess, onFailure, onNotify) 
+```
+
+Function used for initialization. This function has three arguments: onSuccess – a callback reporting that the library has been successfully initialized and the library is ready for use, onFailure – a callback reporting errors during initialization, onNotify – a callback used for reporting events.
+
+Example use of the library:
+https://gnaudio.github.io/jabra-browser-integration/development/
+
+
