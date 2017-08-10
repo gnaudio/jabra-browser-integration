@@ -11,7 +11,7 @@ All professional Jabra headsets and Jabra speakerphones are supported. I.e. the 
 The following desktop operating systems are supported:
 
 | Operating system  | Version            | 
-| ----------------- |:------------------:| 
+| ----------------- | ------------------ | 
 | Windows 64 bit    | Windows 7 or newer | 
 | Windows 32 bit    | Windows 7 or newer | 
 | macOS             | Sierra             | 
@@ -39,7 +39,7 @@ https://gnaudio.github.io/jabra-browser-integration/development/
 
 Basic functions: 
 
-| Function          | Description        | 
+|           | Description        | 
 | ----------------- |------------------| 
 | ` jabra.ring() `    | Activate ringer (if supported) on the Jabra Device  | 
 | ` jabra.offHook() `    | Change state to in-a-call   | 
@@ -50,4 +50,18 @@ Basic functions:
 | ` jabra.resume() `    | Change state from held to OffHook (if supported)   |
 
 Callback values from the library (registered during library initialization):
+
+|           | Description        | 
+| ----------------- |------------------| 
+| ` jabra.requestEnum.mute `    | Request that the device state should be changed to muted. This must be acknowledged by a Mute command to mute the call.  | 
+| ` jabra.requestEnum.unmute `    | Request that the device state should be changed to unmuted. This must be acknowledged by an Unmute command to unmute the call.    | 
+| ` jabra.requestEnum.endCall `    | End an active call request. This must be acknowledged by an OnHook command   | 
+| ` jabra.requestEnum.acceptCall `    | Accept an incoming call request. This must be acknowledged by an OnHook command.    | 
+| ` jabra.requestEnum.rejectCall `    | Reject an incoming call request. This must be acknowledged by an OnHook command to reject the call.   | 
+| ` jabra.requestEnum.flash `    | Flash request. This must be acknowledged by a hold or resume command.    |
+
+Device management functions:
+
+Device management callbacks: 
+
 
