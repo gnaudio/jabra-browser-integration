@@ -62,6 +62,16 @@ Callback values from the library (registered during library initialization):
 
 Device management functions:
 
+|           | Description        | 
+| ----------------- |------------------| 
+| ` jabra.getActiveDevice() `    | Get the current active Jabra Device   | 
+| ` jabra.getDevices() `    | List all attached Jabra Devices   | 
+| ` jabra.setActiveDevice(id) `    | Select a new active device  | 
+
 Device management callbacks: 
 
+|           | Description        | 
+| ----------------- |------------------| 
+| ` jabra.requestEnum.deviceAttached `    | A device has been added   | 
+| ` jabra.requestEnum.deviceDetached `    | A device has been removed    | 
 
