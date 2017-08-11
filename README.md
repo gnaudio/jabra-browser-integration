@@ -75,3 +75,7 @@ Device management callbacks:
 | ` jabra.requestEnum.deviceAttached `    | A device has been added   | 
 | ` jabra.requestEnum.deviceDetached `    | A device has been removed    | 
 
+### Sequence diagrams
+These sequence diagrams shows typical use.
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/outgoing-call-then-end-call.png)
