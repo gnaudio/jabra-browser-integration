@@ -1,11 +1,11 @@
 # Overview
-This software package from Jabra helps developers to make solutions, where basic headset call control can be used from within a browser app using JavaScript. Since it is not possible to access USB devices directly from JavaScript, this library provides a solution of getting a route from the JavaScript to the Jabra USB device. The API is a JavaScript library with a facade that hides implementation details. Basic call control is defined by off-hook/on-hook, ringer, mute/unmute and hold/resume. With these features, it is possible to implement a softphone app on a website. Combined with the WebRTC technology it is possible to create a softphone that only requires one small software component installed locally on the computer, while the business logic is implemented in JavaScript.
+This software package from Jabra helps developers to make solutions, where basic headset call control can be used from within a browser app using JavaScript. Since it is not possible to access USB devices directly from JavaScript, this library provides a solution of getting a route from the JavaScript to the Jabra USB device. The API is a JavaScript library with a facade that hides implementation details. Basic call control is defined by off-hook/on-hook, ringer, mute/unmute and hold/resume. With these features, it is possible to implement a softphone app on a website. Combined with the [WebRTC](https://en.wikipedia.org/wiki/WebRTC) technology it is possible to create a softphone that only requires one small software component installed locally on the computer, while the business logic is implemented in JavaScript.
 
 ## System requirements
 With current internal implementation of this software package, the following systems are supported. 
 
 ### Jabra devices
-All professional Jabra headsets and Jabra speakerphones are supported. I.e. the Jabra Evolve series, the Jabra Pro series, the Jabra Biz series, and the Jabra Speak series.
+All professional Jabra headsets and Jabra speakerphones are supported. I.e. the [Jabra Evolve series](https://www.jabra.com/business/office-headsets/jabra-evolve), the Jabra Pro series, the Jabra Biz series, and the [Jabra Speak series](https://www.jabra.com/business/speakerphones/jabra-speak-series).
 
 ### Operating system support
 The following desktop operating systems are supported:
@@ -20,7 +20,7 @@ The following desktop operating systems are supported:
 Google Chrome web browser - stable channel - 32 bit and 64 bit, if supported by the operating system. 
 
 ## Using the library 
-Developers must use the JavaScript library file: jabra.browser.integration-0.2.js 
+Developers must use the JavaScript library file: `jabra.browser.integration-0.2.js` 
 The library internally checks for dependencies – and will report this to the app using the library. An example: The Jabra library is initialized and an error callback function is called with this text and a link: “You need to use this Extension and then reload this page”. Note that a future version could change the internal implementation and that removes/adds new requirements. 
 
 ### Web site
@@ -74,4 +74,17 @@ Device management callbacks:
 | ----------------- |------------------| 
 | ` jabra.requestEnum.deviceAttached `    | A device has been added   | 
 | ` jabra.requestEnum.deviceDetached `    | A device has been removed    | 
+
+### Sequence diagrams
+These sequence diagrams shows typical use.
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/outgoing-call-then-end-call.png)
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/incoming-call-then-accept-on-device-then-end-call.png)
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/incoming-call-then-user-rejects.png)
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/mute-unmute-from-device.png)
+
+![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/hold-resume-from-device.png)
 
