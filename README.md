@@ -100,7 +100,7 @@ It is possible to mass deploy the required client side software, in order to rem
 
 Registry key details:
 
-```javascript
+```
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Policies\Google\Chrome\ExtensionInstallForcelist]
