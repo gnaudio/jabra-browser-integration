@@ -20,7 +20,7 @@ The following desktop operating systems are supported:
 Google Chrome web browser - stable channel - 32 bit and 64 bit, if supported by the operating system. 
 
 ## Using the library 
-Developers must use the JavaScript library file: jabra.browser.integration-0.2.js 
+Developers must use the JavaScript library file: `jabra.browser.integration-0.2.js` 
 The library internally checks for dependencies – and will report this to the app using the library. An example: The Jabra library is initialized and an error callback function is called with this text and a link: “You need to use this Extension and then reload this page”. Note that a future version could change the internal implementation and that removes/adds new requirements. 
 
 ### Web site
