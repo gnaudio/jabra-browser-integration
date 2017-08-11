@@ -88,3 +88,21 @@ These sequence diagrams shows typical use.
 
 ![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/hold-resume-from-device.png)
 
+## Deployment
+
+### How to mass deploy the Jabra Chrome Host in a Windows environment
+
+It is possible to mass deploy the required client side software, in order to remove any client side.
+
+1. Push the Windows installer file `JabraChromeHost0.5.msi` to the clients using your compagny IT deployment tools, i.e. Microsoft System Center Configuration Manager, IBM Tivoli and Symantec Altiris 
+
+2. Push a Registry key to the clients. This could be done by using
+
+Registry key details:
+
+```javascript
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Policies\Google\Chrome\ExtensionInstallForcelist]
+"1"="okpeabepajdgiepelmhkfhkjlhhmofma;https://clients2.google.com/service/update2/crx"
+```
