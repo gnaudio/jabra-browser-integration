@@ -104,5 +104,5 @@ Registry key details:
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Policies\Google\Chrome\ExtensionInstallForcelist]
-"1"="okpeabepajdgiepelmhkfhkjlhhmofma;https://clients2.google.com/service/update2/crx"
+"2048"="okpeabepajdgiepelmhkfhkjlhhmofma;https://clients2.google.com/service/update2/crx"
 ```
