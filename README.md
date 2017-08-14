@@ -99,7 +99,7 @@ It is possible to mass deploy the required client side software, in order to rem
 
 1. Push the Windows installer file `JabraChromeHost0.5.msi` to the clients using your compagny IT deployment tools, i.e. Microsoft System Center Configuration Manager, IBM Tivoli or Symantec Altiris 
 
-2. Push a Registry key to the clients. This could be done by using [Group Policy](https://msdn.microsoft.com/en-us/library/bb742376.aspx) or SCCM.
+2. Push a Registry key to the clients. This could be done by using Group Policy or Microsoft System Center Configuration Manager.
 
 Registry key details:
 
