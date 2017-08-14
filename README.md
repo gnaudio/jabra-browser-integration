@@ -17,7 +17,7 @@ The following desktop operating systems are supported:
 | ----------------- | ------------------ | 
 | Windows 64 bit    | Windows 7 or newer | 
 | Windows 32 bit    | Windows 7 or newer | 
-| macOS             | Sierra             | 
+| macOS             | El Capitan/Sierra             | 
 
 ### Browser support
 Google Chrome web browser - stable channel - 32 bit and 64 bit, if supported by the operating system. 
