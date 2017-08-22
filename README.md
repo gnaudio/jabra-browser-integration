@@ -111,3 +111,6 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Policies\Google\Chrome\ExtensionInstallForcelist]
 "2048"="okpeabepajdgiepelmhkfhkjlhhmofma;https://clients2.google.com/service/update2/crx"
 ```
+
+### More information
+https://www.chromium.org/administrators/policy-list-3#ExtensionInstallForcelist
