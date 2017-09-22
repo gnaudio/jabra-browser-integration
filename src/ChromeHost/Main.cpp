@@ -26,7 +26,7 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
-#include "app.h"
+#include "App.h"
 
 int main()
 {
