@@ -53,40 +53,40 @@ var jabra = {
     // Setup message listener and do a "ping" to the Host
     window.addEventListener("message",
       function (event) {
-        if (event.source == window &&
+        if (event.source === window &&
           event.data.direction &&
-          event.data.direction == "jabra-headset-extension-from-content-script") {
-          if (duringInit == true) {
+          event.data.direction === "jabra-headset-extension-from-content-script") {
+          if (duringInit === true) {
             duringInit = false;
-            if (event.data.error != null) {
+            if (event.data.error !== null) {
               onFailure(event.data.error);
             } else {
               onSuccess();
             }
           } else {
             // Device request
-            if (event.data.message == "Event: mute") {
+            if (event.data.message === "Event: mute") {
               onNotify(jabra.requestEnum.mute);
             }
-            if (event.data.message == "Event: unmute") {
+            if (event.data.message === "Event: unmute") {
               onNotify(jabra.requestEnum.unmute);
             }
-            if (event.data.message == "Event: device attached") {
+            if (event.data.message === "Event: device attached") {
               onNotify(jabra.requestEnum.deviceAttached);
             }
-            if (event.data.message == "Event: device detached") {
+            if (event.data.message === "Event: device detached") {
               onNotify(jabra.requestEnum.deviceDetached);
             }
-            if (event.data.message == "Event: acceptcall") {
+            if (event.data.message === "Event: acceptcall") {
               onNotify(jabra.requestEnum.acceptCall);
             }
-            if (event.data.message == "Event: endcall") {
+            if (event.data.message === "Event: endcall") {
               onNotify(jabra.requestEnum.endCall);
             }
-            if (event.data.message == "Event: reject") {
+            if (event.data.message === "Event: reject") {
               onNotify(jabra.requestEnum.rejectCall);
             }
-            if (event.data.message == "Event: flash") {
+            if (event.data.message === "Event: flash") {
               onNotify(jabra.requestEnum.flash);
             }
             // Result from a request
@@ -109,7 +109,7 @@ var jabra = {
     // Check if the web-extension is installed
     setTimeout(
       function () {
-        if (duringInit == true) {
+        if (duringInit === true) {
           duringInit = false;
           onFailure("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
         }
