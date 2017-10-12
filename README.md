@@ -31,7 +31,7 @@ The library internally checks for dependencies – and will report this to the a
 ### Web site
 A web site with documentation, developer tools and a softphone demo: 
 
-https://gnaudio.github.io/jabra-browser-integration/
+https://gnaudio.github.io/jabra-browser-integration
 
 ### The API
 
