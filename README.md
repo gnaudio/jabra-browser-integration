@@ -37,7 +37,7 @@ https://gnaudio.github.io/jabra-browser-integration
 
 ### The API
 
-[Application Programming Interface documentation](API.md)
+[Application Programming Interface documentation](docs/API.md)
 
 ### Downloads
 ![Banner](/docs/ChromeWebStoreBadge.png)
@@ -47,8 +47,8 @@ https://gnaudio.github.io/jabra-browser-integration
 
 ### Example use
 
-* [Amazon Connect](AmazonConnect.md)
+* [Amazon Connect](docs/AmazonConnect.md)
 
 ## Deployment
 
-Documentation about [deployment](Deployment.md)
+Documentation about [deployment](docs/Deployment.md)
