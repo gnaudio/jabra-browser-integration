@@ -10,3 +10,13 @@ and
 
 https://github.com/gnaudio/jabra-browser-integration
 
+### Initialization
+Both the Amazon Connect Streams and the Jabra Browser integration libraries must be initialized:
+
+```javascript
+jabra.init()
+```
+
+```javascript
+connect.core.initCCP()
+```
