@@ -7,7 +7,7 @@ Prerequisites:
 * https://github.com/gnaudio/jabra-browser-integration
 
 ### System overview
-TODO
+![Banner](/docs/AmazonLayers.png)
 
 ### Initialization
 Both the Amazon Connect Streams and the Jabra Browser integration libraries must be initialized:
