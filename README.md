@@ -1,12 +1,12 @@
 ![Banner](/docs/banner.png)
 
 # Overview
-This software package from Jabra helps developers to make solutions, where basic headset call control can be used from within a browser app using JavaScript. Since it is not possible to access USB devices directly from JavaScript, this library provides a solution of getting a route from the JavaScript to the Jabra USB device. The API is a JavaScript library with a facade that hides implementation details. Basic call control is defined by off-hook/on-hook, ringer, mute/unmute and hold/resume. With these features, it is possible to implement a softphone app on a website. Combined with the [WebRTC](https://en.wikipedia.org/wiki/WebRTC) technology it is possible to create a softphone that only requires one small software component installed locally on the computer, while the business logic is implemented in JavaScript.
+This software project from Jabra helps developers to make solutions, where basic headset call control can be used from within a browser app using JavaScript. Since it is not possible to access USB devices directly from JavaScript, this library provides a solution of getting a route from the JavaScript to the Jabra USB device. The API is a JavaScript library with a facade that hides implementation details. Basic call control is defined by off-hook/on-hook, ringer, mute/unmute and hold/resume. With these features, it is possible to implement a browser based softphone app. Combined with the [WebRTC](https://en.wikipedia.org/wiki/WebRTC) technology it is possible to create a softphone that only requires small software components installed locally on the computer, while the business logic is implemented in JavaScript.
 
 ## Project goals
-* must be able to control a headset from JS
-* must be a lightweight solution
-* must support the platforms: Windows and macOS
+* be able to control a headset from JS
+* be a lightweight solution
+* support the platforms: Windows and macOS
 
 ## System requirements
 With current internal implementation of this software package, the following systems are supported. 
@@ -24,7 +24,7 @@ The following desktop operating systems are supported:
 | macOS             | El Capitan/Sierra             | 
 
 ### Browser support
-Google Chrome web browser - stable channel - 32 bit and 64 bit, if supported by the operating system. 
+Google Chrome web browser - stable channel - 32 bit and 64 bit.
 
 ## Using the library 
 Developers must use the JavaScript library file: `jabra.browser.integration-0.2.js` 
