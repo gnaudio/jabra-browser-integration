@@ -29,7 +29,7 @@ Developers must use the JavaScript library file: `jabra.browser.integration-0.2.
 The library internally checks for dependencies – and will report this to the app using the library. An example: The Jabra library is initialized and an error callback function is called with this text and a link: “You need to use this Extension and then reload this page”. Note that a future version could change the internal implementation and that removes/adds new requirements. 
 
 ### Web site
-A web site with documentation, developer tools and a softphone demo: 
+The web site with developer tools and a softphone demo: 
 
 https://gnaudio.github.io/jabra-browser-integration
 
