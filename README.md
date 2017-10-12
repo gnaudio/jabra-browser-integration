@@ -47,7 +47,10 @@ https://gnaudio.github.io/jabra-browser-integration
 
 ### Example use
 
-* [Amazon Connect](docs/AmazonConnect.md) Amazon Connect is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
+#### Amazon Connect
+![Amazon Connect](https://aws.amazon.com/connect) is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
+
+[Amazon Connect](docs/JabraAmazonConnect.md)
 
 ## Deployment
 
