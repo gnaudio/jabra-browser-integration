@@ -45,6 +45,10 @@ https://gnaudio.github.io/jabra-browser-integration
 * [Jabra WebExtension](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
 * [Chrome Host](https://gnaudio.github.io/jabra-browser-integration/download)
 
+### Example use
+
+* [Amazon Connect](Amazon Connect.md)
+
 ## Deployment
 
 Documentation about [deployment](Deployment.md)
