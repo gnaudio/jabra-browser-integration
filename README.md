@@ -40,8 +40,9 @@ https://gnaudio.github.io/jabra-browser-integration
 [Application Programming Interface documentation](docs/API.md)
 
 ### Downloads
+#### WebExtension
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
-
+#### Jabra Chrome Host
 [Chrome Host](https://gnaudio.github.io/jabra-browser-integration/download)
 
 ### Example use
