@@ -35,7 +35,7 @@ https://gnaudio.github.io/jabra-browser-integration/
 
 ### The API
 
-![Application Programming Interface](API.md)
+![Application Programming Interface documentation](API.md)
 
 ## Deployment
 
