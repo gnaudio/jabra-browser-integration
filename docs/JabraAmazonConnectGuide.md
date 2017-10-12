@@ -6,7 +6,7 @@ Prerequisites:
 * https://github.com/aws/amazon-connect-streams
 * https://github.com/gnaudio/jabra-browser-integration
 
-### System overview
+### Layered architecture
 ![Banner](/docs/AmazonLayers.png)
 
 ### Initialization
@@ -23,7 +23,7 @@ connect.core.initCCP();
 ### Connecting the two APIs
 Callbacks from the Amazon Connect Streams library can trigger an action in the Jabra Browser integration library and callbacks from the Jabra Browser integration library can trigger an action the the Amazon Connect Streams library.
 
-### An example of a solution (simplified)
+### Example of a complete solution (simplified)
 
 ```html
 <!doctype html>
