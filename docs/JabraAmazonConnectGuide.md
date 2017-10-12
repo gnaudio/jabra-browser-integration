@@ -5,7 +5,7 @@ Guide to add headset functionality to [Amazon Connect](https://aws.amazon.com/co
 Prerequisites:
 * https://github.com/aws/amazon-connect-streams
 * https://github.com/gnaudio/jabra-browser-integration
-* an Amazon Connect instance (create this in the AWS console)
+* an Amazon Connect instance (created in the AWS console)
 
 ### Layered architecture
 ![Banner](/docs/AmazonLayers.png)
