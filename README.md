@@ -42,13 +42,13 @@ https://gnaudio.github.io/jabra-browser-integration
 ### Downloads
 ![Banner](/docs/ChromeWebStoreBadge.png)
 
-* [Jabra WebExtension](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
-* [Chrome Host](https://gnaudio.github.io/jabra-browser-integration/download)
+* ![Jabra WebExtension](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
+* ![Chrome Host](https://gnaudio.github.io/jabra-browser-integration/download)
 
 ### Example use
 
 #### Amazon Connect
-[Amazon Connect](https://aws.amazon.com/connect) is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
+![Amazon Connect](https://aws.amazon.com/connect) is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
 
 How to add headset integration to Amazon Connect: [Amazon Connect Guide](docs/JabraAmazonConnectGuide.md)
 
