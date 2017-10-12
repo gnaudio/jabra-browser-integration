@@ -38,6 +38,11 @@ https://gnaudio.github.io/jabra-browser-integration
 
 [Application Programming Interface documentation](API.md)
 
+### Downloads
+
+[Chrome WebExtension](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
+[Chrome Host](https://gnaudio.github.io/jabra-browser-integration/download)
+
 ## Deployment
 
 ### How to mass deploy the Jabra Chrome Host in a Windows environment
