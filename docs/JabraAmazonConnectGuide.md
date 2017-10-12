@@ -21,7 +21,7 @@ connect.core.initCCP();
 ```
 
 ### Connecting the two APIs
-Callbacks from the Amazon Connect Streams library can cause a 
+Callbacks from the Amazon Connect Streams library can trigger an action in the Jabra Browser integration library and callbacks from the Jabra Browser integration library can trigger an action the the Amazon Connect Streams library.
 
 ### An example of a solution (simplified)
 
