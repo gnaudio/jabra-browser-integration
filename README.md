@@ -47,7 +47,7 @@ https://gnaudio.github.io/jabra-browser-integration
 
 ### Example use
 
-* [Amazon Connect](Amazon Connect.md)
+* [Amazon Connect](AmazonConnect.md)
 
 ## Deployment
 
