@@ -46,4 +46,4 @@ https://gnaudio.github.io/jabra-browser-integration
 
 ## Deployment
 
-Documentation about [(mass)-deployment](Deployment.md)
+Documentation about [deployment](Deployment.md)
