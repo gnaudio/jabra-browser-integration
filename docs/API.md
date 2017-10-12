@@ -48,12 +48,12 @@ Device management callbacks:
 ### Sequence diagrams
 These sequence diagrams shows typical use.
 
-![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/outgoing-call-then-end-call.png)
+![Sequence diagram](/docs/outgoing-call-then-end-call.png)
 
-![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/incoming-call-then-accept-on-device-then-end-call.png)
+![Sequence diagram](/docs/incoming-call-then-accept-on-device-then-end-call.png)
 
-![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/incoming-call-then-user-rejects.png)
+![Sequence diagram](/docs/incoming-call-then-user-rejects.png)
 
-![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/mute-unmute-from-device.png)
+![Sequence diagram](/docs/mute-unmute-from-device.png)
 
-![Sequence diagram](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/docs/hold-resume-from-device.png)
+![Sequence diagram](/docs/hold-resume-from-device.png)
