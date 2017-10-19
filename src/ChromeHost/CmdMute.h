@@ -33,11 +33,11 @@ SOFTWARE.
 class CmdMute : public CmdInterface
 {
 public:
-  CmdMute(HeadsetIntegrationService* headsetIntegrationService);
+  explicit CmdMute(HeadsetIntegrationService* headsetIntegrationService);
   ~CmdMute();
 
-  virtual bool CanExecute(std::string cmd);
-  virtual void Execute(std::string cmd);
+  bool CanExecute(std::string cmd) override;
+  void Execute(std::string cmd) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

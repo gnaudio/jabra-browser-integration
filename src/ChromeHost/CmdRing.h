@@ -33,11 +33,11 @@ SOFTWARE.
 class CmdRing : public CmdInterface
 {
 public:
-  CmdRing(HeadsetIntegrationService* headsetIntegrationService);
+  explicit CmdRing(HeadsetIntegrationService* headsetIntegrationService);
   ~CmdRing();
 
-  virtual bool CanExecute(std::string cmd);
-  virtual void Execute(std::string cmd);
+  bool CanExecute(std::string cmd) override;
+  void Execute(std::string cmd) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

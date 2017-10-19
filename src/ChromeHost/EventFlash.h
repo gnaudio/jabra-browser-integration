@@ -33,10 +33,10 @@ SOFTWARE.
 class EventFlash : public EventInterface
 {
 public:
-  EventFlash(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventFlash(HeadsetIntegrationService* headsetIntegrationService);
   ~EventFlash();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

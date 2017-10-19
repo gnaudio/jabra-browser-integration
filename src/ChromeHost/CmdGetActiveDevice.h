@@ -33,11 +33,11 @@ SOFTWARE.
 class CmdGetActiveDevice : public CmdInterface
 {
 public:
-  CmdGetActiveDevice(HeadsetIntegrationService* headsetIntegrationService);
+  explicit CmdGetActiveDevice(HeadsetIntegrationService* headsetIntegrationService);
   ~CmdGetActiveDevice();
 
-  virtual bool CanExecute(std::string cmd);
-  virtual void Execute(std::string cmd);
+  bool CanExecute(std::string cmd) override;
+  void Execute(std::string cmd) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

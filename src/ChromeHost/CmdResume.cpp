@@ -45,7 +45,7 @@ bool CmdResume::CanExecute(std::string cmd)
 
 void CmdResume::Execute(std::string cmd)
 {
-  unsigned deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+  unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
     m_headsetIntegrationService->Error("No device");

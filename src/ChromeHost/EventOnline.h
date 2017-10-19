@@ -33,10 +33,10 @@ SOFTWARE.
 class EventOnline : public EventInterface
 {
 public:
-  EventOnline(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventOnline(HeadsetIntegrationService* headsetIntegrationService);
   ~EventOnline();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

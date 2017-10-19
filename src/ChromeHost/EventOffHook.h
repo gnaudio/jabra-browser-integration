@@ -33,10 +33,10 @@ SOFTWARE.
 class EventOffHook : public EventInterface
 {
 public:
-  EventOffHook(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventOffHook(HeadsetIntegrationService* headsetIntegrationService);
   ~EventOffHook();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;
