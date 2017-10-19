@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <climits>
 #include "stdafx.h"
 #include "HeadsetIntegrationService.h"
 #include "CmdOffHook.h"
@@ -109,7 +110,7 @@ void HeadsetIntegrationService::AddHandler(std::function<void(std::string)> call
 
 bool HeadsetIntegrationService::Start()
 {
-  Jabra_SetAppID("HKiKNeRIdH/8s+aIRdIVuRoi0vs5TkCXaOmwIqr0rMM=");
+  Jabra_SetAppID(const_cast<char*>("HKiKNeRIdH/8s+aIRdIVuRoi0vs5TkCXaOmwIqr0rMM="));
 
   Jabra_Initialize(
     NULL,
