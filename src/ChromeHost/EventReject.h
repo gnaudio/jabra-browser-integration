@@ -33,10 +33,10 @@ SOFTWARE.
 class EventReject : public EventInterface
 {
 public:
-  EventReject(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventReject(HeadsetIntegrationService* headsetIntegrationService);
   ~EventReject();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

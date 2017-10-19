@@ -78,7 +78,7 @@ void NativeMessagingTransport::Start()
     }
 
     // read the json-message
-    std::string msg = "";
+    std::string msg;
     for (size_t i = 0; i < length; i++)
     {
       msg += getchar();

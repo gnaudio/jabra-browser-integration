@@ -33,10 +33,10 @@ SOFTWARE.
 class EventLineBusy : public EventInterface
 {
 public:
-  EventLineBusy(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventLineBusy(HeadsetIntegrationService* headsetIntegrationService);
   ~EventLineBusy();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

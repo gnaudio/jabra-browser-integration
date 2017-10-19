@@ -33,10 +33,10 @@ SOFTWARE.
 class EventMicMute : public EventInterface
 {
 public:
-  EventMicMute(HeadsetIntegrationService* headsetIntegrationService);
+  explicit EventMicMute(HeadsetIntegrationService* headsetIntegrationService);
   ~EventMicMute();
 
-  void Execute(bool buttonInData);
+  void Execute(bool buttonInData) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;
