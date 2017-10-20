@@ -8,8 +8,8 @@ include_directories(SDK)
 add_compile_options(-std=c++11)
 
 if(WIN32)
-  set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
-  set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi")
+  set(CMAKE_CXX_FLAGS_RELEASE "/MT /Zi")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
