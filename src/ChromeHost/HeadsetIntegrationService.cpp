@@ -221,8 +221,10 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
   }
 
   // If the removed device was the active device, assign a new active device (if any)
-  if (m_currentDeviceId == deviceID) {
-    if (m_devices.size() >= 0) {
+  if (m_currentDeviceId == deviceID) 
+  {
+    if (m_devices.size() > 0) 
+    {
       SetCurrentDeviceId(m_devices[0].deviceID);
     }
   }
