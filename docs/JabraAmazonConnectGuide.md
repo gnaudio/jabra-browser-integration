@@ -35,7 +35,7 @@ Callbacks from the Amazon Connect Streams library can trigger an action in the J
 </head>
 <body>
   <script src="amazon-connect-v1.2.0.js"></script>
-  <script src="jabra.browser.integration-0.2.js"></script>
+  <script src="jabra.browser.integration-1.0.js"></script>
   <h1>Jabra Amazon Connect Demo</h1>
   <p id="name">Please login</p>
   <br />

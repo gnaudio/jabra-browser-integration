@@ -30,8 +30,8 @@ var jabra = {
   callBack: null,
 
   requestEnum: {
-    mute : 0,
-    unmute : 1,
+    mute: 0,
+    unmute: 1,
     endCall: 2,
     acceptCall: 3,
     rejectCall: 4,
@@ -58,7 +58,7 @@ var jabra = {
           event.data.direction === "jabra-headset-extension-from-content-script") {
           if (duringInit === true) {
             duringInit = false;
-            if (event.data.error !== null) {
+            if (event.data.error != null && event.data.error != undefined) {
               onFailure(event.data.error);
             } else {
               onSuccess();
@@ -104,7 +104,12 @@ var jabra = {
     );
 
     // Initial getversion
-    this.sendCmd("getversion");
+    setTimeout(
+      () => {
+        this.sendCmd("getversion");
+      },
+      1000
+    );
 
     // Check if the web-extension is installed
     setTimeout(
@@ -162,9 +167,9 @@ var jabra = {
 
   sendCmd: function (cmd) {
     window.postMessage({
-        direction: "jabra-headset-extension-from-page-script",
-        message: cmd
-      },
+      direction: "jabra-headset-extension-from-page-script",
+      message: cmd
+    },
       "*");
   }
 
