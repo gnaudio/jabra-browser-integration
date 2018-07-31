@@ -26,6 +26,24 @@ SOFTWARE.
 */
 
 (function () {
+  const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
+
+  // Make logLevel variable in sync with storage (updated by options page).
+  var logLevel = 1;
+
+  chrome.storage.local.get('logLevel', function(items) {
+    logLevel = parseInt(items.logLevel || "1");  
+    console.log('background-script: level initialized to ' + logLevel);
+    chrome.storage.onChanged.addListener(function(changes, areaName) {
+      for (key in changes) {
+        var storageChange = changes[key];
+        if (key='logLevel' && areaName === 'local' ) {
+          logLevel = storageChange.newValue;
+          console.log('background-script: log level changed to ' + logLevel);
+        }
+      }
+    });
+  });
 
   // Native messages port
   var port = null;
@@ -49,7 +67,15 @@ SOFTWARE.
 
   // Native app was disconnected
   function onDisconnected() {
-    sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page");
+    var err = chrome.runtime.lastError ? chrome.runtime.lastError.message : null;
+
+    if (err === "Specified native messaging host not found.") {
+      sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page");
+    } else if (err === "Access to the specified native messaging host is forbidden." && chrome.runtime.id !== prodExtensionId) {
+      sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your host installation OR manually add this extension id '" + chrome.runtime.id + "' to allowed_origins (in com.jabra.nm.json)");
+    } else {
+      sendErrorToContentScript(err);
+    }
     port = null;
   }
 
@@ -58,15 +84,21 @@ SOFTWARE.
     // Try to connect to the native app, if not already connected
     if (port == null) {
       var hostName = "com.jabra.nm";
-      port = window.chrome.runtime.connectNative(hostName);
-      port.onMessage.addListener(onNativeMessageReceived);
-      port.onDisconnect.addListener(onDisconnected);
+      try {
+        port = window.chrome.runtime.connectNative(hostName);
+        port.onDisconnect.addListener(onDisconnected);
+        port.onMessage.addListener(onNativeMessageReceived);
+      }
+      catch(err) {
+        sendErrorToContentScript(err);
+      }
     }
+
     sendMessageToNativeApp(request.message);
   });
 
-  // Send a message to content-script
   function sendMessageToContentScript(message) {
+    // Messages are always forwarded as they need to be handled (and not just logged).
     window.chrome.tabs.query({
     }, function (tabs) {
       tabs.forEach(function (tab) {
@@ -75,8 +107,8 @@ SOFTWARE.
     });
   }
 
-  // Send a error-message to content-script
   function sendErrorToContentScript(err) {
+    // Errors always forwarded because api user may needs to handle - so no filtering here.
     window.chrome.tabs.query({
     }, function (tabs) {
       tabs.forEach(function (tab) {
@@ -84,5 +116,40 @@ SOFTWARE.
       });
     });
   }
+  
+  function sendWarningToContentScript(msg) {
+    if (logLevel>=2) {
+      window.chrome.tabs.query({
+        currentWindow: true, active: true
+      }, function (tabs) {
+        tabs.forEach(function (tab) {
+          window.chrome.tabs.sendMessage(tab.id, { warn: msg });
+        });
+      });
+    }
+  }
+ 
+  function sendInfoToContentScript(msg) {
+    if (logLevel>=3) {
+      window.chrome.tabs.query({
+        currentWindow: true, active: true
+      }, function (tabs) {
+        tabs.forEach(function (tab) {
+          window.chrome.tabs.sendMessage(tab.id, { info: msg });
+        });
+      });
+    }
+  }
 
+  function sendTraceToContentScript(msg) {
+    if (logLevel>=4) {
+      window.chrome.tabs.query({
+        currentWindow: true, active: true
+      }, function (tabs) {
+        tabs.forEach(function (tab) {
+          window.chrome.tabs.sendMessage(tab.id, { trace: msg });
+        });
+      });
+    }
+  }
 })();
