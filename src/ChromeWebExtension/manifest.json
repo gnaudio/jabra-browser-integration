@@ -8,6 +8,10 @@
   },
   "version": "0.5.0",
   "description": "Jabra Integration Extension",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
       "js": [ "content-script.js" ],
@@ -19,6 +23,6 @@
     "scripts": [ "background.js" ]
   },
   "permissions": [
-    "nativeMessaging"
+    "nativeMessaging", "storage"
   ]
 }
