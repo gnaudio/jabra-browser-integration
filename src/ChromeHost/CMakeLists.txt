@@ -3,7 +3,8 @@ project (jabrachromehost)
 
 file(GLOB sources *.cpp)
 
-include_directories(SDK)
+include_directories(SDK
+                    include)
 
 add_compile_options(-std=c++11)
 

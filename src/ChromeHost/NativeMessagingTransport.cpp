@@ -49,6 +49,10 @@ void NativeMessagingTransport::SendText(std::string msg)
   j["message"] = msg;
   std::string text = j.dump();
 
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Sending message to extension: " << j;
+  }
+
   unsigned int len = text.length();
   std::cout << char(len >> 0)
     << char(len >> 8)
@@ -74,6 +78,7 @@ void NativeMessagingTransport::Start()
     // Should the host be closed?
     if (length == 0xffffffff)
     {
+      LOG(plog::debug) << "Received close message from extension.";
       break;
     }
 
@@ -85,6 +90,10 @@ void NativeMessagingTransport::Start()
     }
 
     nlohmann::json j = nlohmann::json::parse(msg.c_str());
+
+    IF_LOG(plog::debug) {
+      LOG(plog::debug) << "Received message from extension: " << j;
+    }
 
     std::string m = j["message"];
     m_callback(m);
