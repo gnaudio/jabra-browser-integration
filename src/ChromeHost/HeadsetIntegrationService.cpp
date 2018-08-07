@@ -163,11 +163,17 @@ std::string HeadsetIntegrationService::GetDevicesAsString()
 
 void HeadsetIntegrationService::Error(std::string msg)
 {
+  IF_LOG(plog::error) {
+      LOG(plog::error) << "Error: " << msg;
+  }
   m_callback("Error: " + msg);
 }
 
 void HeadsetIntegrationService::Event(std::string msg)
 {
+  IF_LOG(plog::info) {
+      LOG(plog::info) << "Event: " << msg;
+  }
   m_callback("Event: " + msg);
 }
 
