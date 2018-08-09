@@ -28,11 +28,11 @@ SOFTWARE.
 #pragma once
 
 #include <string>
+#include "Request.h"
 
 class CmdInterface
 {
 public:
-  virtual bool CanExecute(std::string cmd) = 0;
-  virtual void Execute(std::string cmd) = 0;
-
+  virtual bool CanExecute(const Request& request) = 0;
+  virtual void Execute(const Request& request) = 0;
 };

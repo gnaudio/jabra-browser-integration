@@ -38,17 +38,17 @@ CmdUnmute::~CmdUnmute()
 {
 }
 
-bool CmdUnmute::CanExecute(std::string cmd)
+bool CmdUnmute::CanExecute(const Request& request)
 {
-  return (cmd == "unmute");
+  return (request.message == "unmute");
 }
 
-void CmdUnmute::Execute(std::string cmd)
+void CmdUnmute::Execute(const Request& request)
 {
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error("No device");
+    m_headsetIntegrationService->Error(request, "No device");
     return;
   }
 
@@ -57,6 +57,6 @@ void CmdUnmute::Execute(std::string cmd)
   Jabra_ReturnCode ret = Jabra_SetMute(deviceId, false);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error("Unable to mute");
+    m_headsetIntegrationService->Error(request, "Unable to mute");
   }
 }

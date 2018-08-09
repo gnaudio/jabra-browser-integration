@@ -38,17 +38,17 @@ CmdRing::~CmdRing()
 {
 }
 
-bool CmdRing::CanExecute(std::string cmd)
+bool CmdRing::CanExecute(const Request& request)
 {
-  return (cmd == "ring");
+  return (request.message == "ring");
 }
 
-void CmdRing::Execute(std::string cmd)
+void CmdRing::Execute(const Request& request)
 {
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error("No device");
+    m_headsetIntegrationService->Error(request, "No device");
     return;
   }
 
@@ -57,7 +57,7 @@ void CmdRing::Execute(std::string cmd)
   Jabra_ReturnCode ret = Jabra_SetRinger(deviceId, true);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error("Unable to set ringer");
+    m_headsetIntegrationService->Error(request, "Unable to set ringer");
     return;
   }
 

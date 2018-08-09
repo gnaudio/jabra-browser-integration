@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include <climits>
 #include "stdafx.h"
+#include "Context.h"
 #include "HeadsetIntegrationService.h"
 #include "CmdOffHook.h"
 #include "CmdOnHook.h"
@@ -86,23 +87,23 @@ HeadsetIntegrationService::~HeadsetIntegrationService()
   Jabra_Uninitialize();
 }
 
-void HeadsetIntegrationService::SendCmd(std::string msg)
+void HeadsetIntegrationService::SendCmd(const Request& request)
 {
   std::lock_guard<std::mutex> lock(m_mtx);
 
   using Iter = std::vector<CmdInterface*>::const_iterator;
   for (Iter it = m_commands.begin(); it != m_commands.end(); ++it) {
-    if ((*it)->CanExecute(msg))
+    if ((*it)->CanExecute(request))
     {
-      (*it)->Execute(msg);
+      (*it)->Execute(request);
       return;
     }
   }
 
-  Error("Unknown cmd");
+  Error(request, "Unknown cmd " + request.message);
 }
 
-void HeadsetIntegrationService::AddHandler(std::function<void(std::string)> callback)
+void HeadsetIntegrationService::AddHandler(std::function<void(const Response&)> callback)
 {
   m_callback = callback;
 }
@@ -111,14 +112,16 @@ bool HeadsetIntegrationService::Start()
 {
   Jabra_SetAppID(const_cast<char*>("HKiKNeRIdH/8s+aIRdIVuRoi0vs5TkCXaOmwIqr0rMM="));
 
-  Jabra_Initialize(
+  if (!Jabra_Initialize(
     NULL,
     StaticJabraDeviceAttachedFunc,
     StaticJabraDeviceRemovedFunc,
     NULL,
     StaticButtonInDataTranslatedFunc,
     0
-  );
+  )) {
+    return false;
+  }
 
   Jabra_ConnectToJabraApplication(
     "D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
@@ -161,20 +164,22 @@ std::string HeadsetIntegrationService::GetDevicesAsString()
   return "devices " + devicesAsString;
 }
 
-void HeadsetIntegrationService::Error(std::string msg)
-{
+void HeadsetIntegrationService::Error(const Context& context, std::string msg)
+{ 
   IF_LOG(plog::error) {
       LOG(plog::error) << "Error: " << msg;
   }
-  m_callback("Error: " + msg);
+
+  m_callback(Response("Error: " + msg, context));
 }
 
-void HeadsetIntegrationService::Event(std::string msg)
+void HeadsetIntegrationService::Event(const Context& context, std::string msg)
 {
   IF_LOG(plog::info) {
       LOG(plog::info) << "Event: " << msg;
   }
-  m_callback("Event: " + msg);
+
+  m_callback(Response("Event: " + msg, context));
 }
 
 void HeadsetIntegrationService::SetHookStatus(unsigned short id, bool mute)
@@ -201,16 +206,30 @@ void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceI
 {
   std::lock_guard<std::mutex> lock(m_mtx);
 
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Received device " << deviceInfo.deviceID << " attached notification";
+  }
+
   m_devices.push_back(deviceInfo);
   std::string deviceName(deviceInfo.deviceName);
-  Event("device attached");
+
+  IF_LOG(plog::info) {
+    LOG(plog::info) << "Attaching device " << deviceInfo.deviceName << " with id " << deviceInfo.deviceID;
+  }
+
+  Event(Context::device(), "device attached");
 }
 
 void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
 {
   std::lock_guard<std::mutex> lock(m_mtx);
 
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Received device " << deviceID << " removal notification";
+  }
+
   int index = -1;
+  bool found = false;
 
   using Iter = std::vector<Jabra_DeviceInfo>::const_iterator;
   for (Iter it = m_devices.begin(); it != m_devices.end(); ++it) {
@@ -218,16 +237,28 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
     if ((*it).deviceID == deviceID)
     {
       std::string deviceName((*it).deviceName);
-      Event("device detached");
+
+      Event(Context::device(), "device detached");
 
       m_devices.erase(m_devices.begin() + index);
+      
+      IF_LOG(plog::info) {
+        LOG(plog::info) << "Sucessfully deattached device " << (*it).deviceName << " with id " << (*it).deviceID;
+      }
 
+      found = true;
       break;
     }
   }
 
+  if (!found) {
+     IF_LOG(plog::warning) {
+      LOG(plog::warning) << "Unknown device with " << deviceID << " removed";
+    }
+  }
+
   // If the removed device was the active device, assign a new active device (if any)
-  if (m_currentDeviceId == deviceID) 
+  if (m_currentDeviceId == deviceID)
   {
     if (m_devices.size() == 0) 
     {
@@ -247,6 +278,10 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
   // Only handle input data from current device
   if (deviceID != GetCurrentDeviceId())
     return;
+       
+  IF_LOG(plog::info) {
+     LOG(plog::info) << "Received button translated notification with data " << translatedInData << " for device " << deviceID;
+  }
 
   EventInterface *event = m_events[translatedInData];
   if (event != NULL)
@@ -257,7 +292,7 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
   {
     std::string inDatastring = std::to_string(translatedInData);
 
-    Error("No handler impelmented for " + inDatastring);
+    Error(Context::device(), "No handler impelmented for " + inDatastring);
   }
 }
 

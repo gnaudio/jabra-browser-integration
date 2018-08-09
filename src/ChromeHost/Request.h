@@ -27,19 +27,19 @@ SOFTWARE.
 
 #pragma once
 
-#include "CmdInterface.h"
-#include "HeadsetIntegrationService.h"
+#include <string>
+#include "Context.h"
 
-class CmdOnHook : public CmdInterface
-{
-public:
-  explicit CmdOnHook(HeadsetIntegrationService* headsetIntegrationService);
-  ~CmdOnHook();
+/**
+ * Contains an incomming request from the chrome extension.
+ */
+class Request : public Context {
+  public:
+  const std::string message;
 
-  bool CanExecute(const Request& request) override;
-  void Execute(const Request& request) override;
+  explicit Request(const std::string& message, const std::string& requestId, const std::string& apiClientId)
+         : Context(requestId, apiClientId), message(message) {}
 
-protected:
-  HeadsetIntegrationService* m_headsetIntegrationService;
+  Request(const Request&) = delete;
+  Request& operator=(const Request&) = delete;
 };
-

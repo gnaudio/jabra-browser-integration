@@ -25,39 +25,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-var jabra = {
+let jabra = {
   logLevel: 1,
    
   /**
   * Internal logger to console that use logLevel for control.
   */
   logger: {
-    trace: function(msg) {
+    trace(msg) {
       if (jabra.logLevel>=4) {
         console.log(msg);
       }
     },
   
-    info: function(msg) {
+    info(msg) {
       if (jabra.logLevel>=3) {
         console.log(msg);
       }
     },
   
-    warn: function(msg) {
+    warn(msg) {
       if (jabra.logLevel>=2) {
         console.warn(msg);
       }
     },
   
-    error: function(msg) {
+    error(msg) {
       if (jabra.logLevel>=1) {
         console.error(msg);
       }
     } 
   },
-
-  callBack: null,
 
   requestEnum: {
     mute: 0,
@@ -71,68 +69,96 @@ var jabra = {
   },
 
   /**
+   * Keeps information of where to put fortcomming results for each requestId.
+   */
+  sendRequestResultMap: new Map(),
+
+  /**
+   * Unique session id for our client api used to distinguish between different 
+   * instances of this api on different pages. 
+   */
+  apiClientId: Math.random().toString(36).substr(2, 9),
+
+  requestNumber: 1,
+
+  /**
   * Internal cached value for getjabraDeviceInfo function. Do not use.
   */
   jabraDeviceInfo: null,
 
-  init: function (onSuccess, onFailure, onNotify) {
+  init(onSuccess, onFailure, onNotify) {
 
-    var duringInit = true;
-    var self = this;
+    let duringInit = true;
 
     // Only Chrome is currently supported
-    var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
     if (!isChrome) {
       onFailure("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
       return;
     }
+
+    jabra.sendRequestResultMap.clear();
+
     // Setup message listener and do a "ping" to the Host
-    window.addEventListener("message",
-      function (event) {
+    window.addEventListener("message", (event) => {
         if (event.source === window &&
           event.data.direction &&
           event.data.direction === "jabra-headset-extension-from-content-script") {
-         
-          if (event.data.message.startsWith("Event: logLevel")) {
-              self.logLevel = parseInt(event.data.message.substring(16));
-              jabra.logger.trace("Logger set to level " + self.logLevel);
-          } else if (duringInit === true) {
-            // Hmm... this assume first event will be passed on to native host,
-            // so it won't work with logLevel. Thus we check log level first.
-            duringInit = false;
-            if (event.data.error != null && event.data.error != undefined) {
-              onFailure(event.data.error);
-            } else {
-              onSuccess();
+
+          let apiClientId = event.data.apiClientId || "";
+          let requestId = event.data.requestId || "";
+
+          // Only accept responses from our own requests or from device.
+          if (apiClientId === apiClientId || apiClientId === "") {
+            // Lookup any previosu stored callback for the request.
+            let callback = requestId ? jabra.sendRequestResultMap.get(requestId) : undefined;
+            if (callback) {
+              // Remember to cleanup to avoid memory leak!
+              jabra.sendRequestResultMap.delete(requestId);
             }
-          } else if (event.data.message) {
-            // Device request
-            if (event.data.message === "Event: mute") {
-              onNotify(jabra.requestEnum.mute);
-            } else if (event.data.message === "Event: unmute") {
-              onNotify(jabra.requestEnum.unmute);
-            } else if (event.data.message === "Event: device attached") {
-              onNotify(jabra.requestEnum.deviceAttached);
-            } else if (event.data.message === "Event: device detached") {
-              onNotify(jabra.requestEnum.deviceDetached);
-            } else if (event.data.message === "Event: acceptcall") {
-              onNotify(jabra.requestEnum.acceptCall);
-            } else if (event.data.message === "Event: endcall") {
-              onNotify(jabra.requestEnum.endCall);
-            } else if (event.data.message === "Event: reject") {
-              onNotify(jabra.requestEnum.rejectCall);
-            } else if (event.data.message === "Event: flash") {
-              onNotify(jabra.requestEnum.flash);
-            }
-            // Result from a request
-            if (jabra.callBack) {
-              if (event.data.message.startsWith("Event: devices")) {
-                jabra.callBack(event.data.message.substring(15));
+
+            if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
+                jabra.logLevel = parseInt(event.data.message.substring(16));
+                jabra.logger.trace("Logger set to level " + jabra.logLevel);
+            } else if (duringInit === true) {
+              // Hmm... this assume first event will be passed on to native host,
+              // so it won't work with logLevel. Thus we check log level first.
+              duringInit = false;
+              if (event.data.error != null && event.data.error != undefined) {
+                onFailure(event.data.error);
+              } else {
+                onSuccess();
               }
-              if (event.data.message.startsWith("Event: activedevice")) {
-                jabra.callBack(event.data.message.substring(20));
+            } else if (event.data.message) {
+              // Device request
+              if (event.data.message === "Event: mute") {
+                onNotify(jabra.requestEnum.mute);
+              } else if (event.data.message === "Event: unmute") {
+                onNotify(jabra.requestEnum.unmute);
+              } else if (event.data.message === "Event: device attached") {
+                onNotify(jabra.requestEnum.deviceAttached);
+              } else if (event.data.message === "Event: device detached") {
+                onNotify(jabra.requestEnum.deviceDetached);
+              } else if (event.data.message === "Event: acceptcall") {
+                onNotify(jabra.requestEnum.acceptCall);
+              } else if (event.data.message === "Event: endcall") {
+                onNotify(jabra.requestEnum.endCall);
+              } else if (event.data.message === "Event: reject") {
+                onNotify(jabra.requestEnum.rejectCall);
+              } else if (event.data.message === "Event: flash") {
+                onNotify(jabra.requestEnum.flash);
+              } else if (event.data.message.startsWith("Event: devices")) {
+                if (callback) {
+                  callback(event.data.message.substring(15));
+                } else callBackMissingError(event.data.message);
+              } else if (event.data.message.startsWith("Event: activedevice")) {
+                if (callback) {
+                  callback(event.data.message.substring(20));
+                } else callBackMissingError(event.data.message);
+              } else {
+                jabra.logger.warn("Unknown message: " + event.data.message);
               }
-            }
+            }           
           }
         }
       }
@@ -158,63 +184,72 @@ var jabra = {
       },
       5000
     );
+
+    
+    function callBackMissingError(msg) {
+      jabra.logger.error("Callback information missing for message " + msg + ". Please upgrade extension and/or chromehost");
+    }
   },
  
-  ring: function () {
+  ring() {
     this.sendCmd("ring");
   },
 
-  offHook: function () {
+  offHook() {
     this.sendCmd("offhook");
   },
 
-  onHook: function () {
+  onHook() {
     this.sendCmd("onhook");
   },
 
-  mute: function () {
+  mute() {
     this.sendCmd("mute");
   },
 
-  unmute: function () {
+  unmute() {
     this.sendCmd("unmute");
   },
 
-  hold: function () {
+  hold() {
     this.sendCmd("hold");
   },
 
-  resume: function () {
+  resume() {
     this.sendCmd("resume");
   },
 
-  getActiveDevice: function (callBack) {
-    jabra.callBack = callBack;
-    this.sendCmd("getactivedevice");
+  getActiveDevice(callBack) {
+    this.sendCmd("getactivedevice", callBack);
   },
 
-  getDevices: function (callBack) {
-    jabra.callBack = callBack;
-    this.sendCmd("getdevices");
+  getDevices(callBack) {
+    this.sendCmd("getdevices", callBack);
   },
 
-  setActiveDevice: function (id) {
+  setActiveDevice(id) {
     this.sendCmd("setactivedevice " + id);
   },
 
-  sendCmd: function (cmd) {
+  sendCmd(cmd, callback = null) {
+    let requestId = (this.requestNumber++).toString();
+    if (callback) {
+      jabra.sendRequestResultMap.set(requestId, callback);
+    }
     window.postMessage({
       direction: "jabra-headset-extension-from-page-script",
-      message: cmd
-    },
-      "*");
+      message: cmd,
+      requestId: requestId,
+      apiClientId: this.apiClientId
+    }, "*");
+    return requestId;
   },
 
   /**
   * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
   * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
   */
-  trySetDeviceOutput: function(audioElement, deviceInfo) {
+  trySetDeviceOutput(audioElement, deviceInfo) {
       var self = this;
 
       if (!audioElement || !deviceInfo) {
@@ -235,7 +270,7 @@ var jabra = {
    * Checks if a Jabra Input device is in fact selected in a media stream.
    * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
    */
-  isDeviceSelectedForInput: function(mediaStream, deviceInfo) {
+  isDeviceSelectedForInput(mediaStream, deviceInfo) {
       if (!mediaStream || !deviceInfo) {
         return Promise.reject(new Error('Call to isDeviceSelectedForInput has argument(s) missing'));
       }
@@ -263,7 +298,7 @@ var jabra = {
   * this is an better alternative since the device information is needed for additional steps.
   * 
   */
-  getUserDeviceMedia: function(additionalConstraints) {
+  getUserDeviceMedia(additionalConstraints) {
       return getUserDeviceMediaExt(additionalConstraints).then(function(obj) {
         return obj.stream;
       });
@@ -279,7 +314,7 @@ var jabra = {
   * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check 
   * if the browser did in fact choose a Jabra device for the microphone.
   */
-  getUserDeviceMediaExt: function(additionalConstraints) {
+  getUserDeviceMediaExt(additionalConstraints) {
     let self = this;
 
     // Good error if using old browser:
@@ -359,7 +394,7 @@ var jabra = {
    * General non-chrome browser note:  
    * 1) Returning output devices requires support for new Audio Output Devices API.
    */
-  getDeviceInfo: function() {
+  getDeviceInfo() {
       let self = this;
 
       // Use cached value if already have found the devices.

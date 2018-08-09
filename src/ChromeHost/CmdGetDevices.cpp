@@ -37,13 +37,13 @@ CmdGetDevices::~CmdGetDevices()
 {
 }
 
-bool CmdGetDevices::CanExecute(std::string cmd)
+bool CmdGetDevices::CanExecute(const Request& request)
 {
-  return (cmd == "getdevices");
+  return (request.message == "getdevices");
 }
 
-void CmdGetDevices::Execute(std::string cmd)
+void CmdGetDevices::Execute(const Request& request)
 {
   std::string devicesAsString = m_headsetIntegrationService->GetDevicesAsString();
-  m_headsetIntegrationService->Event(devicesAsString);
+  m_headsetIntegrationService->Event(request, devicesAsString);
 }

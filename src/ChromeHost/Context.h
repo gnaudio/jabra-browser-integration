@@ -27,19 +27,24 @@ SOFTWARE.
 
 #pragma once
 
-#include "CmdInterface.h"
-#include "HeadsetIntegrationService.h"
+#include <string>
 
-class CmdOnHook : public CmdInterface
-{
-public:
-  explicit CmdOnHook(HeadsetIntegrationService* headsetIntegrationService);
-  ~CmdOnHook();
+/**
+ * The context of a request, response (or device callback). Information is used to match requests with responses.
+ */
+class Context {
+  public:
+  const std::string requestId;
+  const std::string apiClientId;
 
-  bool CanExecute(const Request& request) override;
-  void Execute(const Request& request) override;
+  explicit Context(const std::string& requestId, const std::string& apiClientId)
+         : requestId(requestId), apiClientId(apiClientId) {}
 
-protected:
-  HeadsetIntegrationService* m_headsetIntegrationService;
+  explicit Context(const char * const requestId, const char * const apiClientId)
+         : requestId(requestId), apiClientId(apiClientId) {}
+
+  static Context& device() { static Context inst("", ""); return inst; }
+
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
 };
-

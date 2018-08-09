@@ -37,15 +37,15 @@ CmdSetActiveDevice::~CmdSetActiveDevice()
 {
 }
 
-bool CmdSetActiveDevice::CanExecute(std::string cmd)
+bool CmdSetActiveDevice::CanExecute(const Request& request)
 {
-  size_t index = cmd.find("setactivedevice ");
+  size_t index = request.message.find("setactivedevice ");
   return (index == 0);
 }
 
-void CmdSetActiveDevice::Execute(std::string cmd)
+void CmdSetActiveDevice::Execute(const Request& request)
 {
-  std::string subString = cmd.substr(std::string("setactivedevice ").length());
+  std::string subString = request.message.substr(std::string("setactivedevice ").length());
 
   unsigned short id = 0;
 
@@ -56,6 +56,6 @@ void CmdSetActiveDevice::Execute(std::string cmd)
   }
   catch (const std::invalid_argument&)
   {
-    m_headsetIntegrationService->Error("unable to set active device");
+    m_headsetIntegrationService->Error(request, "unable to set active device");
   }
 }
