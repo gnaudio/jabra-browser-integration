@@ -38,15 +38,17 @@ NativeMessagingTransport::~NativeMessagingTransport()
 {
 }
 
-void NativeMessagingTransport::AddHandler(std::function<void(std::string)> callback)
+void NativeMessagingTransport::AddHandler(std::function<void(const Request&)> callback)
 {
   m_callback = callback;
 }
 
-void NativeMessagingTransport::SendText(std::string msg)
+void NativeMessagingTransport::SendResponse(const Response& response)
 {
   nlohmann::json j;
-  j["message"] = msg;
+  j["message"] = response.message;
+  j["requestId"] = response.requestId;
+  j["apiClientId"] = response.apiClientId;
   std::string text = j.dump();
 
   IF_LOG(plog::debug) {
@@ -95,7 +97,16 @@ void NativeMessagingTransport::Start()
       LOG(plog::debug) << "Received message from extension: " << j;
     }
 
-    std::string m = j["message"];
-    m_callback(m);
+    nlohmann::json message = j.at("message"); // Required - Throws if missing.
+    nlohmann::json requestId = j["requestId"]; // Null if missing.
+    nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
+
+    {
+      Request req(message.get<std::string>(),
+                  requestId.is_string() ? requestId.get<std::string>() : "",
+                  apiClientId.is_string() ? apiClientId.get<std::string>() : "");
+
+      m_callback(req);
+    }
   }
 }

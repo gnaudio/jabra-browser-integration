@@ -33,13 +33,11 @@ SOFTWARE.
 
   chrome.storage.local.get('logLevel', function(items) {
     logLevel = parseInt(items.logLevel || "1");  
-    console.log('background-script: level initialized to ' + logLevel);
     chrome.storage.onChanged.addListener(function(changes, areaName) {
       for (key in changes) {
         var storageChange = changes[key];
         if (key='logLevel' && areaName === 'local' ) {
           logLevel = storageChange.newValue;
-          console.log('background-script: log level changed to ' + logLevel);
         }
       }
     });
@@ -50,6 +48,9 @@ SOFTWARE.
 
   // Message from native app
   function onNativeMessageReceived(message) {
+    if (logLevel>=4) { // Log if Loglevel >= Trace
+      console.log("Recived message from native chromehost process: " + JSON.stringify(message) );
+    }
     if (message.message.startsWith("Event: Version ")) {
       // Supported versions: 0.5
       if (!(message.message === "Event: Version 0.5")) {
@@ -57,36 +58,57 @@ SOFTWARE.
         return;
       }
     }
-    sendMessageToContentScript(message.message);
+
+    let msg = {
+      message: message.message,
+      requestId: message.requestId,
+      apiClientId: message.apiClientId
+    }
+
+    sendMessageToContentScript(msg);
+  }
+
+  function ensureString(obj) {
+    if (obj) {
+      return (typeof obj === 'string' || obj instanceof String) ? obj : obj.toString();
+    } else {
+      return "";
+    }
   }
 
   // Send message to native app
-  function sendMessageToNativeApp(message) {
-    port.postMessage({ message: message });
-  }
-
-  // Native app was disconnected
-  function onDisconnected() {
-    var err = chrome.runtime.lastError ? chrome.runtime.lastError.message : null;
-
-    if (err === "Specified native messaging host not found.") {
-      sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page");
-    } else if (err === "Access to the specified native messaging host is forbidden." && chrome.runtime.id !== prodExtensionId) {
-      sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your host installation OR manually add this extension id '" + chrome.runtime.id + "' to allowed_origins (in com.jabra.nm.json)");
-    } else {
-      sendErrorToContentScript(err);
+  function sendMessageToNativeApp(request) {
+    // Make sure all entries are strings as expected by native app.
+    let msg = {
+      message: ensureString(request.message),
+      requestId: ensureString(request.requestId),
+      apiClientId: ensureString(request.apiClientId)
     }
-    port = null;
+
+    if (logLevel>=4) { // Log if Loglevel >= Trace
+      console.log("Sending request to native chromehost process: " + JSON.stringify(msg));
+    }
+    port.postMessage(msg);
   }
 
   // Messages from the content-script
-  window.chrome.runtime.onMessage.addListener(function (request) {
+  window.chrome.runtime.onMessage.addListener((request) => {
     // Try to connect to the native app, if not already connected
     if (port == null) {
       var hostName = "com.jabra.nm";
       try {
         port = window.chrome.runtime.connectNative(hostName);
-        port.onDisconnect.addListener(onDisconnected);
+        port.onDisconnect.addListener(() => {
+          var err = chrome.runtime.lastError ? chrome.runtime.lastError.message : null;
+          if (err === "Specified native messaging host not found.") {
+            sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page", request);
+          } else if (err === "Access to the specified native messaging host is forbidden." && chrome.runtime.id !== prodExtensionId) {
+            sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your host installation OR manually add this extension id '" + chrome.runtime.id + "' to allowed_origins (in com.jabra.nm.json)", request);
+          } else {
+            sendErrorToContentScript(err, request);
+          }
+          port = null;
+        });
         port.onMessage.addListener(onNativeMessageReceived);
       }
       catch(err) {
@@ -94,62 +116,50 @@ SOFTWARE.
       }
     }
 
-    sendMessageToNativeApp(request.message);
+    if (logLevel>=4) { // Log if Loglevel >= Trace
+      console.log("Received request from content script: " + JSON.stringify(request));
+    }
+
+    sendMessageToNativeApp(request);
   });
 
-  function sendMessageToContentScript(message) {
+  function sendMessageToContentScript(request) {
     // Messages are always forwarded as they need to be handled (and not just logged).
+    let msg = {
+      message: request.message,
+      requestId: request.requestId,
+      apiClientId: request.apiClientId,
+    };
+
+    if (logLevel>=4) { // Log if Loglevel >= Trace
+      console.log("Sending message to content script: " + JSON.stringify(msg) );
+    }
+
     window.chrome.tabs.query({
     }, function (tabs) {
       tabs.forEach(function (tab) {
-        window.chrome.tabs.sendMessage(tab.id, { message: message });
+        window.chrome.tabs.sendMessage(tab.id, msg);
       });
     });
   }
 
-  function sendErrorToContentScript(err) {
+  function sendErrorToContentScript(err, request = null) {
     // Errors always forwarded because api user may needs to handle - so no filtering here.
+    let msg = {
+      error: err,
+      requestId: request ? request.requestId : null,
+      apiClientId: request ? request.apiClientId : null,
+    };
+
+    if (logLevel>=1) { // Log if Loglevel >= Error
+      console.log("Sending error to content script: " + JSON.stringify(msg) );
+    }
+
     window.chrome.tabs.query({
     }, function (tabs) {
       tabs.forEach(function (tab) {
-        window.chrome.tabs.sendMessage(tab.id, { error: err });
+        window.chrome.tabs.sendMessage(tab.id, msg);
       });
     });
-  }
-  
-  function sendWarningToContentScript(msg) {
-    if (logLevel>=2) {
-      window.chrome.tabs.query({
-        currentWindow: true, active: true
-      }, function (tabs) {
-        tabs.forEach(function (tab) {
-          window.chrome.tabs.sendMessage(tab.id, { warn: msg });
-        });
-      });
-    }
-  }
- 
-  function sendInfoToContentScript(msg) {
-    if (logLevel>=3) {
-      window.chrome.tabs.query({
-        currentWindow: true, active: true
-      }, function (tabs) {
-        tabs.forEach(function (tab) {
-          window.chrome.tabs.sendMessage(tab.id, { info: msg });
-        });
-      });
-    }
-  }
-
-  function sendTraceToContentScript(msg) {
-    if (logLevel>=4) {
-      window.chrome.tabs.query({
-        currentWindow: true, active: true
-      }, function (tabs) {
-        tabs.forEach(function (tab) {
-          window.chrome.tabs.sendMessage(tab.id, { trace: msg });
-        });
-      });
-    }
   }
 })();

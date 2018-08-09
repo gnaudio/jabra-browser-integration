@@ -38,17 +38,17 @@ CmdResume::~CmdResume()
 {
 }
 
-bool CmdResume::CanExecute(std::string cmd)
+bool CmdResume::CanExecute(const Request& request)
 {
-  return (cmd == "resume");
+  return (request.message == "resume");
 }
 
-void CmdResume::Execute(std::string cmd)
+void CmdResume::Execute(const Request& request)
 {
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error("No device");
+    m_headsetIntegrationService->Error(request, "No device");
     return;
   }
 
@@ -57,6 +57,6 @@ void CmdResume::Execute(std::string cmd)
   Jabra_ReturnCode ret = Jabra_SetHold(deviceId, false);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error("Unable to resume");
+    m_headsetIntegrationService->Error(request, "Unable to resume");
   }
 }

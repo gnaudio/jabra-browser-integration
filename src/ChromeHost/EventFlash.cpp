@@ -38,5 +38,5 @@ EventFlash::~EventFlash()
 
 void EventFlash::Execute(bool buttonInData)
 {
-  m_headsetIntegrationService->Event(buttonInData ? "flash" : "flash");
+  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "flash" : "flash");
 }

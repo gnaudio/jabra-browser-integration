@@ -37,12 +37,12 @@ CmdGetVersion::~CmdGetVersion()
 {
 }
 
-bool CmdGetVersion::CanExecute(std::string cmd)
+bool CmdGetVersion::CanExecute(const Request& request)
 {
-  return (cmd == "getversion");
+  return (request.message == "getversion");
 }
 
-void CmdGetVersion::Execute(std::string cmd)
+void CmdGetVersion::Execute(const Request& request)
 {
-  m_headsetIntegrationService->Event("Version 0.5");
+  m_headsetIntegrationService->Event(request, "Version 0.5");
 }

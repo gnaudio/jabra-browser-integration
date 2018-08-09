@@ -29,20 +29,22 @@ SOFTWARE.
 
 #include "NativeMessagingTransport.h"
 #include "HeadsetIntegrationService.h"
+#include "Request.h"
+#include "Response.h"
 
 class App
 {
-public:
+  public:
   App();
   ~App();
 
   void Start();
 
-protected:
+  protected:
   static NativeMessagingTransport transport;
   static HeadsetIntegrationService headsetService;
-  static void OnTransportIcoming(std::string txt);
-  static void OnHeadsetIncoming(std::string txt);
 
+  static void OnTransportIcoming(const Request& request);
+  static void OnHeadsetIncoming(const Response& response);
 };
 

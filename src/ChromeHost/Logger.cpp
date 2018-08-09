@@ -90,4 +90,9 @@ void configureLogging() {
 
   // Setup plog:
 	plog::init(severity, logPath.c_str(), 10000, 10).addAppender(new ErrorAppender());
+
+  // Log configuration:
+  IF_LOG(plog::info) {
+    LOG(plog::info) << "Configured logging severity to: " << plog::severityToString(severity);
+  }
 }

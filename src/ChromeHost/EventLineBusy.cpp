@@ -39,5 +39,5 @@ EventLineBusy::~EventLineBusy()
 
 void EventLineBusy::Execute(bool buttonInData)
 {
-  m_headsetIntegrationService->Event(buttonInData ? "online" : "offline");
+  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "online" : "offline");
 }
