@@ -70,11 +70,12 @@ let jabra = {
 
   /**
    * Keeps information of where to put fortcomming results for each requestId.
+   * For internal use only.
    */
   sendRequestResultMap: new Map(),
 
   /**
-   * Unique session id for our client api used to distinguish between different 
+   * Internal, unique session id for our client api used to distinguish between different 
    * instances of this api on different pages. 
    */
   apiClientId: Math.random().toString(36).substr(2, 9),
@@ -86,6 +87,11 @@ let jabra = {
   */
   jabraDeviceInfo: null,
 
+  /* 
+  * Internal state for init/close.
+  */
+  initState: {},
+
   init(onSuccess, onFailure, onNotify) {
 
     let duringInit = true;
@@ -94,13 +100,18 @@ let jabra = {
     let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
     if (!isChrome) {
       onFailure("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
-      return;
+      return false;
+    }
+
+    if (jabra.initState.initialized) {
+      onFailure("Jabra Browser Integration already initialized");
+      return false;
     }
 
     jabra.sendRequestResultMap.clear();
 
     // Setup message listener and do a "ping" to the Host
-    window.addEventListener("message", (event) => {
+    jabra.initState.eventCallback = (event) => {
         if (event.source === window &&
           event.data.direction &&
           event.data.direction === "jabra-headset-extension-from-content-script") {
@@ -110,9 +121,11 @@ let jabra = {
 
           // Only accept responses from our own requests or from device.
           if (apiClientId === apiClientId || apiClientId === "") {
-            // Lookup any previosu stored callback for the request.
-            let callback = requestId ? jabra.sendRequestResultMap.get(requestId) : undefined;
-            if (callback) {
+            jabra.logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
+
+            // Lookup any previous stored result target informaton for the request.
+            let resultTarget = requestId ? jabra.sendRequestResultMap.get(requestId) : undefined;
+            if (resultTarget) {
               // Remember to cleanup to avoid memory leak!
               jabra.sendRequestResultMap.delete(requestId);
             }
@@ -131,6 +144,8 @@ let jabra = {
               }
             } else if (event.data.message) {
               // Device request
+              // TODO: Rewrite to lookup in dict to resolve events.
+              
               if (event.data.message === "Event: mute") {
                 onNotify(jabra.requestEnum.mute);
               } else if (event.data.message === "Event: unmute") {
@@ -147,29 +162,45 @@ let jabra = {
                 onNotify(jabra.requestEnum.rejectCall);
               } else if (event.data.message === "Event: flash") {
                 onNotify(jabra.requestEnum.flash);
-              } else if (event.data.message.startsWith("Event: devices")) {
-                if (callback) {
-                  callback(event.data.message.substring(15));
-                } else callBackMissingError(event.data.message);
+              } 
+
+              // Command results:
+              if (!resultTarget) {
+                resultTargetMissingError(event.data.message);
+                return;
+              }
+
+              // TODO: Rewrite to lookup in dict to resolve events.
+              
+              if (event.data.message.startsWith("Event: devices")) {
+                resultTarget.resolve(event.data.message.substring(15));
               } else if (event.data.message.startsWith("Event: activedevice")) {
-                if (callback) {
-                  callback(event.data.message.substring(20));
-                } else callBackMissingError(event.data.message);
+                resultTarget.resolve(event.data.message.substring(20));
+              }
+
+              /*
               } else {
                 jabra.logger.warn("Unknown message: " + event.data.message);
+              }*/
+            } else if (event.data.error) {
+              if (resultTarget) {
+                resultTarget.reject(event.data.error);
+              } else {
+                onFailure(event.data.error);
               }
-            }           
+            }
           }
         }
-      }
-    );
+    };
+    
+    window.addEventListener("message", jabra.initState.eventCallback);
 
-    this.sendCmd("logLevel");
+    this._sendCmd("logLevel");
 
     // Initial getversion and loglevel.
     setTimeout(
       () => {
-        this.sendCmd("getversion");
+        this._sendCmd("getversion");
       },
       1000
     );
@@ -186,63 +217,108 @@ let jabra = {
     );
 
     
-    function callBackMissingError(msg) {
-      jabra.logger.error("Callback information missing for message " + msg + ". Please upgrade extension and/or chromehost");
+    function resultTargetMissingError(msg) {
+      jabra.logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
     }
+
+    jabra.initState.initialized = true;
+    return true;
+  },
+
+  /**
+   * De-initialize the api after use. Not normally used as api will normally
+   * stay in use thoughout an application - mostly of interest for testing.
+   */
+  shutdown() {
+    if (jabra.initState.initialized) {
+      window.removeEventListener("message", jabra.initState.eventCallback);
+      jabra.initState.eventCallback = null;
+      jabra.sendRequestResultMap.clear();
+      jabra.requestNumber = 1;
+      jabra.jabraDeviceInfo = null;
+      jabra.initState.initialized = false;
+      return true;
+    }
+
+    return false;
   },
  
   ring() {
-    this.sendCmd("ring");
+    this._sendCmd("ring");
   },
 
   offHook() {
-    this.sendCmd("offhook");
+    this._sendCmd("offhook");
   },
 
   onHook() {
-    this.sendCmd("onhook");
+    this._sendCmd("onhook");
   },
 
   mute() {
-    this.sendCmd("mute");
+    this._sendCmd("mute");
   },
 
   unmute() {
-    this.sendCmd("unmute");
+    this._sendCmd("unmute");
   },
 
   hold() {
-    this.sendCmd("hold");
+    this._sendCmd("hold");
   },
 
   resume() {
-    this.sendCmd("resume");
+    this._sendCmd("resume");
   },
 
-  getActiveDevice(callBack) {
-    this.sendCmd("getactivedevice", callBack);
+  getActiveDevice() {
+    return this._sendCmdWithResult("getactivedevice");
   },
 
-  getDevices(callBack) {
-    this.sendCmd("getdevices", callBack);
+  getDevices() {
+    return this._sendCmdWithResult("getdevices");
   },
 
   setActiveDevice(id) {
-    this.sendCmd("setactivedevice " + id);
+    this._sendCmd("setactivedevice " + id);
   },
 
-  sendCmd(cmd, callback = null) {
+  getInstallInfo() {
+    return this._sendCmdWithResult("getinstallinfo");
+  },
+
+  _sendCmd(cmd) {
     let requestId = (this.requestNumber++).toString();
-    if (callback) {
-      jabra.sendRequestResultMap.set(requestId, callback);
-    }
-    window.postMessage({
+
+    let msg = {
       direction: "jabra-headset-extension-from-page-script",
       message: cmd,
       requestId: requestId,
       apiClientId: this.apiClientId
-    }, "*");
-    return requestId;
+    };
+
+    jabra.logger.trace("Sending command to content script: " + JSON.stringify(msg));
+
+    window.postMessage(msg, "*");
+  },
+
+  _sendCmdWithResult(cmd) {
+    let requestId = (this.requestNumber++).toString();
+
+    return new Promise((resolve, reject) => {
+      jabra.sendRequestResultMap.set(requestId, { resolve, reject });
+  
+      let msg = {
+        direction: "jabra-headset-extension-from-page-script",
+        message: cmd,
+        requestId: requestId,
+        apiClientId: this.apiClientId
+      };
+  
+      jabra.logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
+  
+      window.postMessage(msg, "*");
+    });
   },
 
   /**
