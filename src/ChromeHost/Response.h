@@ -36,9 +36,10 @@ SOFTWARE.
 class Response : public Context {
   public:
   const std::string message;
+  const std::string error;
 
-  explicit Response(const std::string& message, const Context& context)
-         : Context(context.requestId, context.apiClientId), message(message) {}
+  explicit Response(const std::string& message, const std::string& error, const Context& context)
+         : Context(context.requestId, context.apiClientId), message(message), error(error) {}
 
   Response(const Response&) = delete;
   Response& operator=(const Response&) = delete;

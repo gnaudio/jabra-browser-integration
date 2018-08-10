@@ -46,13 +46,26 @@ void NativeMessagingTransport::AddHandler(std::function<void(const Request&)> ca
 void NativeMessagingTransport::SendResponse(const Response& response)
 {
   nlohmann::json j;
-  j["message"] = response.message;
+  if (!response.error.empty()) {
+	  j["error"] = response.error;
+  }
+
+  if (!response.message.empty()) {
+	  j["message"] = response.message;
+  }
+
+  // For compatibility with old versions of the extension message
+  // may not be empty so return a dummy value here if there is none.
+  if (!j["message"].is_string()) {
+	  j["message"] = "na";
+  }
+
   j["requestId"] = response.requestId;
   j["apiClientId"] = response.apiClientId;
   std::string text = j.dump();
 
   IF_LOG(plog::debug) {
-    LOG(plog::debug) << "Sending message to extension: " << j;
+    LOG(plog::debug) << "Sending response to extension: " << j;
   }
 
   unsigned int len = text.length();

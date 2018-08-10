@@ -47,25 +47,18 @@ SOFTWARE.
   var port = null;
 
   // Message from native app
-  function onNativeMessageReceived(message) {
+  function onNativeMessageReceived(response) {
     if (logLevel>=4) { // Log if Loglevel >= Trace
-      console.log("Recived message from native chromehost process: " + JSON.stringify(message) );
-    }
-    if (message.message.startsWith("Event: Version ")) {
-      // Supported versions: 0.5
-      if (!(message.message === "Event: Version 0.5")) {
-        sendErrorToContentScript("You need to upgrade the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page");
-        return;
-      }
+      console.log("Recived message from native chromehost process: " + JSON.stringify(response));
     }
 
-    let msg = {
-      message: message.message,
-      requestId: message.requestId,
-      apiClientId: message.apiClientId
-    }
+    // !! Delete key code from earlier versions here that we don't want going forward 
+    //    but that future versions need to know about for compatability:
+    //    The old code would:
+    // 1) Break if response did not return a message (like an error).
+    // 2) Require that an Event: Version would returned 0.5.
 
-    sendMessageToContentScript(msg);
+    sendMessageToContentScript(response);
   }
 
   function ensureString(obj) {
@@ -123,16 +116,31 @@ SOFTWARE.
     sendMessageToNativeApp(request);
   });
 
-  function sendMessageToContentScript(request) {
+  // Send response with message or error to concent script.
+  function sendMessageToContentScript(response) {
     // Messages are always forwarded as they need to be handled (and not just logged).
     let msg = {
-      message: request.message,
-      requestId: request.requestId,
-      apiClientId: request.apiClientId,
+      requestId: response.requestId,
+      apiClientId: response.apiClientId,
     };
 
-    if (logLevel>=4) { // Log if Loglevel >= Trace
-      console.log("Sending message to content script: " + JSON.stringify(msg) );
+    // Add error field if there is one:
+    if (response.error) {
+      msg.error = response.error;
+
+      if (logLevel>=1) { // Log if Loglevel >= Error
+        console.log("Sending error to content script: " + JSON.stringify(msg) );
+      }
+    }
+
+    // Add mesage field if there is a real one (to avoid breaking old extensions 
+    // an empty message may be send as "na"):
+    if (response.message && response.message != "na") {
+      msg.message = response.message;    
+
+      if (logLevel>=4) { // Log if Loglevel >= Trace
+        console.log("Sending message to content script: " + JSON.stringify(msg) );
+      }
     }
 
     window.chrome.tabs.query({
