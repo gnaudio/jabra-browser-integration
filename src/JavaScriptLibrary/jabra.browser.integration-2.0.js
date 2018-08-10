@@ -162,7 +162,9 @@ let jabra = {
                 onNotify(jabra.requestEnum.rejectCall);
               } else if (event.data.message === "Event: flash") {
                 onNotify(jabra.requestEnum.flash);
-              } 
+              } else if (event.data.message.startsWith("Event: Version")) {
+                // Ignore for now.
+              }
 
               // Command results:
               if (!resultTarget) {

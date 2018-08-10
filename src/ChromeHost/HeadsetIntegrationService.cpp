@@ -170,7 +170,7 @@ void HeadsetIntegrationService::Error(const Context& context, std::string msg)
       LOG(plog::error) << "Error: " << msg;
   }
 
-  m_callback(Response("Error: " + msg, context));
+  m_callback(Response("", "Error: " + msg, context));
 }
 
 void HeadsetIntegrationService::Event(const Context& context, std::string msg)
@@ -179,7 +179,7 @@ void HeadsetIntegrationService::Event(const Context& context, std::string msg)
       LOG(plog::info) << "Event: " << msg;
   }
 
-  m_callback(Response("Event: " + msg, context));
+  m_callback(Response("Event: " + msg, "", context));
 }
 
 void HeadsetIntegrationService::SetHookStatus(unsigned short id, bool mute)
