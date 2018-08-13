@@ -57,6 +57,9 @@ let jabra = {
     } 
   },
 
+  /**
+   * Constants defining values for onNotify events.
+   */
   requestEnum: {
     mute: 0,
     unmute: 1,
@@ -92,26 +95,23 @@ let jabra = {
   */
   initState: {},
 
-  init(onSuccess, onFailure, onNotify) {
+  init(eventCallback) {
+    return new Promise((resolve, reject) => {
+      // Only Chrome is currently supported
+      let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+      if (!isChrome) {
+        return reject("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
+      }
 
-    let duringInit = true;
+      if (jabra.initState.initialized || jabra.initState.initializing) {
+        return reject("Jabra Browser Integration already initialized");
+      }
 
-    // Only Chrome is currently supported
-    let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-    if (!isChrome) {
-      onFailure("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
-      return false;
-    }
+      jabra.initState.initializing = true;
+      jabra.sendRequestResultMap.clear();
+      let duringInit = true;
 
-    if (jabra.initState.initialized) {
-      onFailure("Jabra Browser Integration already initialized");
-      return false;
-    }
-
-    jabra.sendRequestResultMap.clear();
-
-    // Setup message listener and do a "ping" to the Host
-    jabra.initState.eventCallback = (event) => {
+      jabra.initState.eventCallback = (event) => {
         if (event.source === window &&
           event.data.direction &&
           event.data.direction === "jabra-headset-extension-from-content-script") {
@@ -138,93 +138,92 @@ let jabra = {
               // so it won't work with logLevel. Thus we check log level first.
               duringInit = false;
               if (event.data.error != null && event.data.error != undefined) {
-                onFailure(event.data.error);
+                return reject(event.data.error);
               } else {
-                onSuccess();
+                return resolve();
               }
             } else if (event.data.message) {
               // Device request
               // TODO: Rewrite to lookup in dict to resolve events.
-              
-              if (event.data.message === "Event: mute") {
-                onNotify(jabra.requestEnum.mute);
-              } else if (event.data.message === "Event: unmute") {
-                onNotify(jabra.requestEnum.unmute);
-              } else if (event.data.message === "Event: device attached") {
-                onNotify(jabra.requestEnum.deviceAttached);
-              } else if (event.data.message === "Event: device detached") {
-                onNotify(jabra.requestEnum.deviceDetached);
-              } else if (event.data.message === "Event: acceptcall") {
-                onNotify(jabra.requestEnum.acceptCall);
-              } else if (event.data.message === "Event: endcall") {
-                onNotify(jabra.requestEnum.endCall);
-              } else if (event.data.message === "Event: reject") {
-                onNotify(jabra.requestEnum.rejectCall);
-              } else if (event.data.message === "Event: flash") {
-                onNotify(jabra.requestEnum.flash);
-              } else if (event.data.message.startsWith("Event: Version")) {
-                // Ignore for now.
-              }
 
-              // Command results:
-              if (!resultTarget) {
-                resultTargetMissingError(event.data.message);
-                return;
-              }
+              const deviceEventsMap = {
+                "Event: mute": jabra.requestEnum.mute,
+                "Event: unmute": jabra.requestEnum.unmute,
+                "Event: device attached": jabra.requestEnum.deviceAttached,
+                "Event: device detached": jabra.requestEnum.deviceDetached,
+                "Event: acceptcal": jabra.requestEnum.acceptCall,
+                "Event: endcall": jabra.requestEnum.endCall,
+                "Event: reject": jabra.requestEnum.rejectCall,
+                "Event: flash": jabra.requestEnum.flash
+              };
 
-              // TODO: Rewrite to lookup in dict to resolve events.
-              
-              if (event.data.message.startsWith("Event: devices")) {
-                resultTarget.resolve(event.data.message.substring(15));
-              } else if (event.data.message.startsWith("Event: activedevice")) {
-                resultTarget.resolve(event.data.message.substring(20));
-              }
+              const commandEventsList = [
+                "Event: devices",
+                "Event: activedevice",
+                "Event: Version"
+              ];
 
-              /*
+              let commandIndex = commandEventsList.findIndex((e) => event.data.message.startsWith(e));
+              if (commandIndex >= 0) {
+                if (!resultTarget) {
+                  resultTargetMissingError(event.data.message);
+                  return;
+                }
+                let dataPosition = commandEventsList[commandIndex].length + 1;
+                let dataStr = event.data.message.substring(dataPosition);
+                resultTarget.resolve(dataStr);
+              } else if (deviceEventsMap[event.data.message]) {
+                let event = deviceEventsMap[event.data.message];
+                eventCallback(event);
               } else {
                 jabra.logger.warn("Unknown message: " + event.data.message);
-              }*/
+              }
             } else if (event.data.error) {
               if (resultTarget) {
                 resultTarget.reject(event.data.error);
               } else {
-                onFailure(event.data.error);
+                // TODO: Should this be an error instead ?
+                eventCallback(event.data.error);
               }
             }
           }
         }
-    };
+      };
     
-    window.addEventListener("message", jabra.initState.eventCallback);
-
-    this._sendCmd("logLevel");
-
-    // Initial getversion and loglevel.
-    setTimeout(
-      () => {
-        this._sendCmd("getversion");
-      },
-      1000
-    );
-
-    // Check if the web-extension is installed
-    setTimeout(
-      function () {
-        if (duringInit === true) {
-          duringInit = false;
-          onFailure("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
-        }
-      },
-      5000
-    );
-
+      window.addEventListener("message", jabra.initState.eventCallback);
     
-    function resultTargetMissingError(msg) {
-      jabra.logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
-    }
+      this._sendCmd("logLevel");
 
-    jabra.initState.initialized = true;
-    return true;
+      // Initial getversion and loglevel.
+      setTimeout(
+        () => {
+          this._sendCmd("getversion");
+        },
+        1000
+      );
+
+      // Check if the web-extension is installed
+      setTimeout(
+        function () {
+          if (duringInit === true) {
+            duringInit = false;
+            onFailure("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
+          }
+        },
+        5000
+      );
+    
+      function resultTargetMissingError(msg) {
+        jabra.logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
+      }
+
+      function onNotify (event) {
+        
+      }
+
+      jabra.initState.initialized = true;
+      jabra.initState.initializing = false;
+    });
   },
 
   /**
@@ -283,6 +282,10 @@ let jabra = {
 
   setActiveDevice(id) {
     this._sendCmd("setactivedevice " + id);
+  },
+
+  getVersion() {
+    return this._sendCmdWithResult("getversion");
   },
 
   getInstallInfo() {
