@@ -243,7 +243,7 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
       m_devices.erase(m_devices.begin() + index);
       
       IF_LOG(plog::info) {
-        LOG(plog::info) << "Sucessfully deattached device " << (*it).deviceName << " with id " << (*it).deviceID;
+        LOG(plog::info) << "Sucessfully deattached device " << deviceName << " with id " << deviceID;
       }
 
       found = true;
