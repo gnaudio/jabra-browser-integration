@@ -1,0 +1,25 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "ES2015",
+        "allowSyntheticDefaultImports": true,
+        "outDir": ".",
+        "allowJs": false,
+        "declaration": true,
+        "noEmitOnError": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "strict": true,
+        "target": "ES2015"
+    },
+    "lib": [
+        "dom",
+        "ES2015"
+    ],
+    "exclude": [
+        "node_modules",
+    ],
+    "include": [
+        "./*.ts"
+    ]
+}
