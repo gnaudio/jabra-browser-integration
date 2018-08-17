@@ -67,6 +67,13 @@ namespace jabra {
         deviceDetached = 7
     };
 
+    export interface DeviceInfo {
+        groupId: string | null,
+        audioInputId: string | null,
+        audioOutputId: string | null,
+        label: string | null
+    };
+
     /**
      * Internal helper that stores information about the promise to resolve/reject
      * for a command being processed.
@@ -77,6 +84,52 @@ namespace jabra {
     }
 
     /**
+     * Event type for call backs.
+     */
+    export interface Event {
+        name: string;
+        code: DeviceEventCodes;
+        arg?: string;
+    };
+    
+    /**
+     * Type for event callback functions..
+     */
+    export declare type EventCallback = (event: Event) => void;
+
+    /**
+     * Internal mapping from all known events to array of registered callbacks. All possible events are setup
+     * initially. Callbacks values are configured at runtime.
+     */
+    const eventListeners: Map<string, Array<EventCallback>> = new Map<string, Array<EventCallback>>();
+    eventListeners.set("mute", []);
+    eventListeners.set("unmute", []); 
+    eventListeners.set("device attached", []); 
+    eventListeners.set("device detached", []); 
+    eventListeners.set("acceptcall", []); 
+    eventListeners.set("endcall", []); 
+    eventListeners.set("reject", []); 
+    eventListeners.set("flash", []);
+    eventListeners.set("error", []);
+
+    const deviceEventsMap: { [key: string]: DeviceEventCodes } = {
+        "mute": DeviceEventCodes.mute,
+        "unmute": DeviceEventCodes.unmute,
+        "device attached": DeviceEventCodes.deviceAttached,
+        "device detached": DeviceEventCodes.deviceDetached,
+        "acceptcal": DeviceEventCodes.acceptCall,
+        "endcall": DeviceEventCodes.endCall,
+        "reject": DeviceEventCodes.rejectCall,
+        "flash": DeviceEventCodes.flash
+    };
+
+    const commandEventsList = [
+        "devices",
+        "activedevice",
+        "Version"
+    ];
+
+    /**
      * The log level curently used.
      */
     let logLevel: number = 1;
@@ -84,7 +137,7 @@ namespace jabra {
     /**
      * An internal logger helper.
      */
-    let logger = new class {
+    const logger = new class {
         trace(msg: string) {
             if (logLevel >= 4) {
                 console.log(msg);
@@ -120,7 +173,7 @@ namespace jabra {
      * A mapping from unique request ids for commands and the promise information needed 
      * to resolve/reject them by an incomming event.
      */
-    let sendRequestResultMap: Map<string, PromiseCallbacks> = new Map<string, PromiseCallbacks>();
+    const sendRequestResultMap: Map<string, PromiseCallbacks> = new Map<string, PromiseCallbacks>();
 
     /**
     * A counter used to generate unique request ID's used to match commands and returning events.
@@ -160,7 +213,7 @@ namespace jabra {
     /**
      * The JavaScript library must be initialized using this function.
      */
-    export function init(clientEventCallback: (event: string | DeviceEventCodes) => void) {
+    export function init() {
         return new Promise((resolve, reject) => {
             // Only Chrome is currently supported
             let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
@@ -208,49 +261,34 @@ namespace jabra {
                                 return resolve();
                             }
                         } else if (event.data.message) {
-                            // Device request
-                            // TODO: Rewrite to lookup in dict to resolve events.
-
-                            const deviceEventsMap: {
-                                [key: string]: DeviceEventCodes
-                            } = {
-                                "Event: mute": DeviceEventCodes.mute,
-                                "Event: unmute": DeviceEventCodes.unmute,
-                                "Event: device attached": DeviceEventCodes.deviceAttached,
-                                "Event: device detached": DeviceEventCodes.deviceDetached,
-                                "Event: acceptcal": DeviceEventCodes.acceptCall,
-                                "Event: endcall": DeviceEventCodes.endCall,
-                                "Event: reject": DeviceEventCodes.rejectCall,
-                                "Event: flash": DeviceEventCodes.flash
-                            };
-
-                            const commandEventsList = [
-                                "Event: devices",
-                                "Event: activedevice",
-                                "Event: Version"
-                            ];
-
-                            let commandIndex = commandEventsList.findIndex((e) => event.data.message.startsWith(e));
+                            logger.trace("Got message: " + event.data.message);
+                            const normalizedEvent: string = event.data.message.substring(7); // Strip "Event" prefix;
+                            const commandIndex = commandEventsList.findIndex((e) => normalizedEvent.startsWith(e));
                             if (commandIndex >= 0) {
                                 if (!resultTarget) {
                                     resultTargetMissingError(event.data.message);
                                     return;
                                 }
                                 let dataPosition = commandEventsList[commandIndex].length + 1;
-                                let dataStr = event.data.message.substring(dataPosition);
+                                let dataStr = normalizedEvent.substring(dataPosition);
                                 resultTarget.resolve(dataStr);
-                            } else if (deviceEventsMap[event.data.message] !== undefined) {
-                                let eventMsg = deviceEventsMap[event.data.message];
-                                clientEventCallback(eventMsg);
+                            } else if (eventListeners.has(normalizedEvent)) {
+                                let callbacks = eventListeners.get(normalizedEvent);
+                                callbacks!.forEach((callback) => {
+                                    fireEvent(callback, normalizedEvent);
+                                });
                             } else {
                                 logger.warn("Unknown message: " + event.data.message);
                             }
                         } else if (event.data.error) {
+                            logger.error("Got error: " + event.data.error);
                             if (resultTarget) {
                                 resultTarget.reject(event.data.error);
                             } else {
-                                // TODO: Should this be an error instead ?
-                                clientEventCallback(event.data.error);
+                                let callbacks = eventListeners.get("error");
+                                callbacks!.forEach((callback) => {
+                                    fireEvent(callback, "error", event.data.error);
+                                });
                             }
                         }
                     }
@@ -280,6 +318,15 @@ namespace jabra {
                 5000
             );
 
+            function fireEvent(callback: EventCallback, normalizedEvent: string, data?: any): void {
+                let eventCode = deviceEventsMap[normalizedEvent];
+                callback({
+                    name: normalizedEvent,
+                    code: eventCode,
+                    arg: data
+                });
+            }
+
             function resultTargetMissingError(msg: string) {
                 logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
             }
@@ -301,10 +348,59 @@ namespace jabra {
             requestNumber = 1;
             jabraDeviceInfo = null;
             initState.initialized = false;
+
+            // Unsubscribe all.
+            eventListeners.forEach((value, key) => {
+                value = [];
+            });
             return true;
         }
 
         return false;
+    };
+
+    /**
+     * Internal helper that returns an array of valid event keys that correspond to the event specificator 
+     * and are know to exist in our event listener map.
+     */
+    function getEvents(nameSpec: string | RegExp): ReadonlyArray<string> {
+        if (nameSpec instanceof RegExp) {
+            return Array.from<string>(eventListeners.keys()).filter(key => nameSpec.test(key))
+        } else { // String
+            if (eventListeners.has(nameSpec)) {
+             return [ nameSpec ];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
+     * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
+     * expression all the lister subscribes to all matching events.
+     */
+    export function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
+        getEvents(nameSpec).map(name => {
+            let callbacks = eventListeners.get(name);
+            if (!callbacks!.find((c) => c === callback)) {
+              callbacks!.push(callback);
+            }
+        });
+    };
+
+    /**
+     * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
+     * to a previous addEventListener. 
+     */
+    export function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
+        getEvents(nameSpec).map(name => {
+            let callbacks = eventListeners.get(name);
+            let findIndex = callbacks!.findIndex((c) => c === callback);
+            if (findIndex >= 0) {
+              callbacks!.splice(findIndex, 1);
+            }
+        });
     };
 
     /**
