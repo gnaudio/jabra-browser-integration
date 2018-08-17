@@ -53,6 +53,37 @@ var jabra;
         DeviceEventCodes[DeviceEventCodes["deviceDetached"] = 7] = "deviceDetached";
     })(DeviceEventCodes = jabra.DeviceEventCodes || (jabra.DeviceEventCodes = {}));
     ;
+    ;
+    ;
+    /**
+     * Internal mapping from all known events to array of registered callbacks. All possible events are setup
+     * initially. Callbacks values are configured at runtime.
+     */
+    const eventListeners = new Map();
+    eventListeners.set("mute", []);
+    eventListeners.set("unmute", []);
+    eventListeners.set("device attached", []);
+    eventListeners.set("device detached", []);
+    eventListeners.set("acceptcall", []);
+    eventListeners.set("endcall", []);
+    eventListeners.set("rejectCall", []);
+    eventListeners.set("flash", []);
+    eventListeners.set("error", []);
+    const deviceEventsMap = {
+        "mute": DeviceEventCodes.mute,
+        "unmute": DeviceEventCodes.unmute,
+        "device attached": DeviceEventCodes.deviceAttached,
+        "device detached": DeviceEventCodes.deviceDetached,
+        "acceptcal": DeviceEventCodes.acceptCall,
+        "endcall": DeviceEventCodes.endCall,
+        "reject": DeviceEventCodes.rejectCall,
+        "flash": DeviceEventCodes.flash
+    };
+    const commandEventsList = [
+        "devices",
+        "activedevice",
+        "Version"
+    ];
     /**
      * The log level curently used.
      */
@@ -60,7 +91,7 @@ var jabra;
     /**
      * An internal logger helper.
      */
-    let logger = new class {
+    const logger = new class {
         trace(msg) {
             if (logLevel >= 4) {
                 console.log(msg);
@@ -95,7 +126,7 @@ var jabra;
      * A mapping from unique request ids for commands and the promise information needed
      * to resolve/reject them by an incomming event.
      */
-    let sendRequestResultMap = new Map();
+    const sendRequestResultMap = new Map();
     /**
     * A counter used to generate unique request ID's used to match commands and returning events.
     */
@@ -125,7 +156,7 @@ var jabra;
     /**
      * The JavaScript library must be initialized using this function.
      */
-    function init(clientEventCallback) {
+    function init() {
         return new Promise((resolve, reject) => {
             // Only Chrome is currently supported
             let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
@@ -169,48 +200,38 @@ var jabra;
                             }
                         }
                         else if (event.data.message) {
-                            // Device request
-                            // TODO: Rewrite to lookup in dict to resolve events.
-                            const deviceEventsMap = {
-                                "Event: mute": DeviceEventCodes.mute,
-                                "Event: unmute": DeviceEventCodes.unmute,
-                                "Event: device attached": DeviceEventCodes.deviceAttached,
-                                "Event: device detached": DeviceEventCodes.deviceDetached,
-                                "Event: acceptcal": DeviceEventCodes.acceptCall,
-                                "Event: endcall": DeviceEventCodes.endCall,
-                                "Event: reject": DeviceEventCodes.rejectCall,
-                                "Event: flash": DeviceEventCodes.flash
-                            };
-                            const commandEventsList = [
-                                "Event: devices",
-                                "Event: activedevice",
-                                "Event: Version"
-                            ];
-                            let commandIndex = commandEventsList.findIndex((e) => event.data.message.startsWith(e));
+                            logger.trace("Got message: " + event.data.message);
+                            const normalizedEvent = event.data.message.substring(7); // Strip "Event" prefix;
+                            const commandIndex = commandEventsList.findIndex((e) => normalizedEvent.startsWith(e));
                             if (commandIndex >= 0) {
                                 if (!resultTarget) {
                                     resultTargetMissingError(event.data.message);
                                     return;
                                 }
                                 let dataPosition = commandEventsList[commandIndex].length + 1;
-                                let dataStr = event.data.message.substring(dataPosition);
+                                let dataStr = normalizedEvent.substring(dataPosition);
                                 resultTarget.resolve(dataStr);
                             }
-                            else if (deviceEventsMap[event.data.message] !== undefined) {
-                                let eventMsg = deviceEventsMap[event.data.message];
-                                clientEventCallback(eventMsg);
+                            else if (eventListeners.has(normalizedEvent)) {
+                                let callbacks = eventListeners.get(normalizedEvent);
+                                callbacks.forEach((callback) => {
+                                    fireEvent(callback, normalizedEvent);
+                                });
                             }
                             else {
                                 logger.warn("Unknown message: " + event.data.message);
                             }
                         }
                         else if (event.data.error) {
+                            logger.error("Got error: " + event.data.error);
                             if (resultTarget) {
                                 resultTarget.reject(event.data.error);
                             }
                             else {
-                                // TODO: Should this be an error instead ?
-                                clientEventCallback(event.data.error);
+                                let callbacks = eventListeners.get("error");
+                                callbacks.forEach((callback) => {
+                                    fireEvent(callback, "error", event.data.error);
+                                });
                             }
                         }
                     }
@@ -229,6 +250,14 @@ var jabra;
                     reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
                 }
             }, 5000);
+            function fireEvent(callback, normalizedEvent, data) {
+                let eventCode = deviceEventsMap[normalizedEvent];
+                callback({
+                    name: normalizedEvent,
+                    code: eventCode,
+                    arg: data
+                });
+            }
             function resultTargetMissingError(msg) {
                 logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
             }
@@ -250,11 +279,60 @@ var jabra;
             requestNumber = 1;
             jabraDeviceInfo = null;
             initState.initialized = false;
+            // Unsubscribe all.
+            eventListeners.forEach((value, key) => {
+                value = [];
+            });
             return true;
         }
         return false;
     }
     jabra.shutdown = shutdown;
+    ;
+    /**
+     * Internal helper that returns an array of valid event keys that correspond to the event specificator
+     * and are know to exist in our event listener map.
+     */
+    function getEvents(nameSpec) {
+        if (nameSpec instanceof RegExp) {
+            return Array.from(eventListeners.keys()).filter(key => nameSpec.test(key));
+        }
+        else { // String
+            if (eventListeners.has(nameSpec)) {
+                return [nameSpec];
+            }
+        }
+        return [];
+    }
+    /**
+     * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
+     * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
+     * expression all the lister subscribes to all matching events.
+     */
+    function addEventListener(nameSpec, callback) {
+        getEvents(nameSpec).map(name => {
+            let callbacks = eventListeners.get(name);
+            if (!callbacks.find((c) => c === callback)) {
+                callbacks.push(callback);
+            }
+        });
+    }
+    jabra.addEventListener = addEventListener;
+    ;
+    /**
+     * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
+     * to a previous addEventListener.
+     */
+    function removeEventListener(nameSpec, callback) {
+        getEvents(nameSpec).map(name => {
+            let callbacks = eventListeners.get(name);
+            let findIndex = callbacks.findIndex((c) => c === callback);
+            if (findIndex >= 0) {
+                callbacks.splice(findIndex, 1);
+            }
+        });
+    }
+    jabra.removeEventListener = removeEventListener;
     ;
     /**
     * Activate ringer (if supported) on the Jabra Device

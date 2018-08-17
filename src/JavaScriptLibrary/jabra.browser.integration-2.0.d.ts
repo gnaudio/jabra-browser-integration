@@ -37,6 +37,24 @@ declare namespace jabra {
          */
         deviceDetached = 7
     }
+    interface DeviceInfo {
+        groupId: string | null;
+        audioInputId: string | null;
+        audioOutputId: string | null;
+        label: string | null;
+    }
+    /**
+     * Event type for call backs.
+     */
+    interface Event {
+        name: string;
+        code: DeviceEventCodes;
+        arg?: string;
+    }
+    /**
+     * Type for event callback functions..
+     */
+    type EventCallback = (event: Event) => void;
     /**
      *  @deprecated Since 2.0. Use DeviceEventCodes enumeration instead for new code.
      *  Warning: Likely to be removed in a future version of this API.
@@ -54,12 +72,23 @@ declare namespace jabra {
     /**
      * The JavaScript library must be initialized using this function.
      */
-    function init(clientEventCallback: (event: string | DeviceEventCodes) => void): Promise<{}>;
+    function init(): Promise<{}>;
     /**
     * De-initialize the api after use. Not normally used as api will normally
     * stay in use thoughout an application - mostly of interest for testing.
     */
     function shutdown(): boolean;
+    /**
+     * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
+     * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
+     * expression all the lister subscribes to all matching events.
+     */
+    function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
+    /**
+     * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
+     * to a previous addEventListener.
+     */
+    function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
     /**
     * Activate ringer (if supported) on the Jabra Device
     */
