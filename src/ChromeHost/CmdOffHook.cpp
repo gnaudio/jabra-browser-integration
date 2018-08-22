@@ -48,7 +48,7 @@ void CmdOffHook::Execute(const Request& request)
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error(request, "No device");
+	  m_headsetIntegrationService->Error(request, "No device", {});
     return;
   }
 
@@ -64,7 +64,7 @@ void CmdOffHook::Execute(const Request& request)
   Jabra_ReturnCode ret = Jabra_SetOffHook(deviceId, true);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error(request, "Unable to offhook");
+    m_headsetIntegrationService->Error(request, "Unable to offhook", { std::make_pair("errorcode", std::to_string(ret)) });
     return;
   }
 

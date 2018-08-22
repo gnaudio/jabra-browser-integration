@@ -44,5 +44,6 @@ bool CmdGetVersion::CanExecute(const Request& request)
 
 void CmdGetVersion::Execute(const Request& request)
 {
-  m_headsetIntegrationService->Event(request, "Version 0.5");
+  // Nb. Changing this number will break <= versions of chrome browser extension !
+  m_headsetIntegrationService->Event(request, "Version 0.5", { std::make_pair("version", "0.5") });
 }

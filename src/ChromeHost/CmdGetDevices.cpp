@@ -45,5 +45,5 @@ bool CmdGetDevices::CanExecute(const Request& request)
 void CmdGetDevices::Execute(const Request& request)
 {
   std::string devicesAsString = m_headsetIntegrationService->GetDevicesAsString();
-  m_headsetIntegrationService->Event(request, devicesAsString);
+  m_headsetIntegrationService->Event(request, devicesAsString, { std::make_pair("devices", devicesAsString) });
 }

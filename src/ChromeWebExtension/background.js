@@ -119,25 +119,21 @@ SOFTWARE.
   // Send response with message or error to concent script.
   function sendMessageToContentScript(response) {
     // Messages are always forwarded as they need to be handled (and not just logged).
-    let msg = {
-      requestId: response.requestId,
-      apiClientId: response.apiClientId,
-    };
+    let msg = response;
+
+    // Remove dummy empty message that may exist for backward compatible.
+    if (msg.message === "na") {
+      delete msg.message;
+    }
 
     // Add error field if there is one:
-    if (response.error) {
-      msg.error = response.error;
-
+    if (msg.error) {
       if (logLevel>=1) { // Log if Loglevel >= Error
         console.log("Sending error to content script: " + JSON.stringify(msg) );
       }
-    }
-
-    // Add mesage field if there is a real one (to avoid breaking old extensions 
-    // an empty message may be send as "na"):
-    if (response.message && response.message != "na") {
-      msg.message = response.message;    
-
+    }  
+    
+    if (msg.message) {
       if (logLevel>=4) { // Log if Loglevel >= Trace
         console.log("Sending message to content script: " + JSON.stringify(msg) );
       }

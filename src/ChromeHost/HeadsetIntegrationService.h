@@ -31,6 +31,7 @@ SOFTWARE.
 #include <functional>
 #include <vector>
 #include <map>
+#include <utility>
 #include <mutex>
 #include "CmdInterface.h"
 #include "EventInterface.h"
@@ -53,8 +54,8 @@ class HeadsetIntegrationService
   void SetCurrentDeviceId(unsigned short id);
   std::string GetDevicesAsString();
 
-  void Error(const Context& context, std::string msg);
-  void Event(const Context& context, std::string msg);
+  void Error(const Context& context, std::string msg, std::initializer_list<std::pair<const std::string, const std::string>> data);
+  void Event(const Context& context, std::string msg, std::initializer_list<std::pair<const std::string, const std::string>> data);
 
   void SetHookStatus(unsigned short id, bool mute);
   bool GetHookStatus(unsigned short id);

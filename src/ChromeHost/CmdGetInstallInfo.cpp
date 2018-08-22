@@ -26,18 +26,27 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
-#include "EventMicMute.h"
+#include "CmdGetInstallInfo.h"
+#include "meta.h"
 
-EventMicMute::EventMicMute(HeadsetIntegrationService* headsetIntegrationService)
+CmdGetInstallInfo::CmdGetInstallInfo(HeadsetIntegrationService* headsetIntegrationService)
 {
   m_headsetIntegrationService = headsetIntegrationService;
 }
 
-EventMicMute::~EventMicMute()
+CmdGetInstallInfo::~CmdGetInstallInfo()
 {
 }
 
-void EventMicMute::Execute(bool buttonInData)
+bool CmdGetInstallInfo::CanExecute(const Request& request)
 {
-   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
+  return (request.message == "getinstallinfo");
+}
+
+void CmdGetInstallInfo::Execute(const Request& request)
+{
+  m_headsetIntegrationService->Event(request, "getinstallinfo", {
+    std::make_pair("version_chromehost", VERSION),
+    std::make_pair("version_nativesdk", getNativeSDKVersion())
+  });
 }

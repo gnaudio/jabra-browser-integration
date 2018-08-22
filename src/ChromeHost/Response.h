@@ -28,19 +28,44 @@ SOFTWARE.
 #pragma once
 
 #include <string>
+#include <map>
+#include <iostream>
 #include "Context.h"
 
 /**
  * Contains a response to the chrome extension.
  */
 class Response : public Context {
+  private:
+  std::map<const std::string, const std::string> data;
+
   public:
   const std::string message;
   const std::string error;
 
-  explicit Response(const std::string& message, const std::string& error, const Context& context)
-         : Context(context.requestId, context.apiClientId), message(message), error(error) {}
+  explicit Response(const Context& context, const std::string& message, const std::string& error, const std::initializer_list<std::pair<const std::string, const std::string>> dataList)
+         : Context(context.requestId, context.apiClientId), message(message), error(error), data(dataList) {}
+
+  const std::map<const std::string, const std::string>& getData() const {
+    return data;
+  }
 
   Response(const Response&) = delete;
   Response& operator=(const Response&) = delete;
+
+  friend std::ostream& operator<<(std::ostream& os, const Response& r);  
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Response& r)
+{  
+	os << "Response { ";
+	os << "message: " << r.message;
+	os << ", error: " << r.message;
+	os << ", requestId: " << r.requestId;
+	os << ", apiClientId: " << r.apiClientId;
+	for (auto entry : r.getData()) {
+		os << ", " << entry.first << ": " << entry.second;
+	}
+	os << "}";
+    return os;  
+} 

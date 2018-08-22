@@ -25,19 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#pragma once
 #include "stdafx.h"
-#include "EventMicMute.h"
 
-EventMicMute::EventMicMute(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
-}
+const std::string VERSION = "0.6";
 
-EventMicMute::~EventMicMute()
-{
-}
+inline const std::string getNativeSDKVersion() {
+    char verChars[64];
 
-void EventMicMute::Execute(bool buttonInData)
-{
-   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
+    if (Jabra_GetVersion(verChars, sizeof(verChars)) != Jabra_ReturnCode::Return_Ok) {
+        verChars[0] = 0;
+    }
+
+    return std::string(verChars);
 }

@@ -66,6 +66,7 @@ SOFTWARE.
         console.log("Retrived event from page api script: " + JSON.stringify(event.data));
       }
 
+      // Respond directly to logLevel requests
       if ( event.data.message === "logLevel") {
         let msg = {
           direction: "jabra-headset-extension-from-content-script",
@@ -79,12 +80,8 @@ SOFTWARE.
         }
 
         window.postMessage(msg, "*");
-      } else {
-        let msg = { 
-          message: event.data.message,
-          requestId: event.data.requestId,
-          apiClientId: event.data.apiClientId
-        };
+      } else { // Other requests needs to be passed on to background script.
+        let msg = event.data;
 
         if (logLevel>=4) { // Log if Loglevel >= Trace
           console.log("Sending message  to background script: " + JSON.stringify(msg));
@@ -101,44 +98,37 @@ SOFTWARE.
       if (logLevel>=4) { // Log message if Loglevel >= Trace
         console.log("Received response from background script", JSON.stringify(response));
       }
-      if (response.message) {
-        let msg = {
-          direction: "jabra-headset-extension-from-content-script",
-          message: response.message,
-          requestId: response.requestId,
-          apiClientId: response.apiClientId
-        };
+
+      let msg = response;
+      msg.direction = "jabra-headset-extension-from-content-script";
+
+      if (msg.message) {
         if (logLevel>=4) { // Log if Loglevel >= Trace
           console.log("Sending message to page api script : " + JSON.stringify(msg));
         }
-        window.postMessage(msg, "*");
       }
-      else if (response.error) {
-        let msg = {
-          direction: "jabra-headset-extension-from-content-script",
-          error: response.error,
-          requestId: response.requestId,
-          apiClientId: response.apiClientId
-        };
+      else if (msg.error) {
         if (logLevel>=1) { // Log error if Loglevel >= Error.
           console.log("Sending error message to page api script : " + JSON.stringify(msg));
         }
-        // Forward error to api to be handled there if needed.
-        window.postMessage(msg, "*");
       }
-      else if (response.info) {
+
+      if (msg.message || msg.error) {
+          // Forward error to api to be handled there if needed.
+          window.postMessage(msg, "*");
+      } else if (msg.info) {
         if (logLevel>=3) { // Log message if Loglevel >= Info
-          console.log(response.log);
+          console.log(msg.log);
         }
       } 
-      else if (response.trace) {
+      else if (msg.trace) {
         if (logLevel>=4) { // Log message if Loglevel >= Trace
-          console.log(response.trace);
+          console.log(msg.trace);
         }
       }
-      else if (response.warn) {
+      else if (msg.warn) {
         if (logLevel>=2) { // Log message if Loglevel >= Info
-          console.log(response.warn);
+          console.log(msg.warn);
         }
       }
   });

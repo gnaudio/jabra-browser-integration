@@ -56,6 +56,6 @@ void CmdSetActiveDevice::Execute(const Request& request)
   }
   catch (const std::invalid_argument&)
   {
-    m_headsetIntegrationService->Error(request, "unable to set active device");
+	  m_headsetIntegrationService->Error(request, "unable to set active device / argument error", {});
   }
 }

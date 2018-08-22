@@ -35,7 +35,10 @@ App::App()
 {
   transport.AddHandler(OnTransportIcoming);
   headsetService.AddHandler(OnHeadsetIncoming);
-  headsetService.Start();
+  if (!headsetService.Start()) {
+    // TODO: Should this be an error instead ?
+    LOG_WARNING << "Headsets ervice initialization failed";
+  }
 }
 
 App::~App()
