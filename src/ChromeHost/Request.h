@@ -28,6 +28,7 @@ SOFTWARE.
 #pragma once
 
 #include <string>
+#include <iostream>
 #include "Context.h"
 
 /**
@@ -42,4 +43,17 @@ class Request : public Context {
 
   Request(const Request&) = delete;
   Request& operator=(const Request&) = delete;
+
+  friend std::ostream& operator<<(std::ostream& os, const Request& r);
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Request& r)
+{
+	os << "Response { ";
+	os << "message: " << r.message;
+	os << ", error: " << r.message;
+	os << ", requestId: " << r.requestId;
+	os << ", apiClientId: " << r.apiClientId;
+	os << "}";
+	return os;
+}

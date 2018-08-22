@@ -39,5 +39,5 @@ EventOnline::~EventOnline()
 
 void EventOnline::Execute(bool buttonInData)
 {
-  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "online" : "offline");
+  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "online" : "offline", {});
 }

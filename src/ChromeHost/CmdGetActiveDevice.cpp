@@ -48,10 +48,10 @@ void CmdGetActiveDevice::Execute(const Request& request)
   unsigned short id = m_headsetIntegrationService->GetCurrentDeviceId();
   if (id == USHRT_MAX)
   {
-    m_headsetIntegrationService->Event(request, "activedevice -1");
+	  m_headsetIntegrationService->Event(request, "activedevice -1", { std::make_pair("id", "-1") } );
     return;
   }
 
   std::string activeDevice = "activedevice " + std::to_string(id);
-  m_headsetIntegrationService->Event(request, activeDevice);
+  m_headsetIntegrationService->Event(request, activeDevice, { std::make_pair("id", std::to_string(id)) });
 }

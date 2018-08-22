@@ -39,5 +39,5 @@ EventReject::~EventReject()
 
 void EventReject::Execute(bool buttonInData)
 {
-  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "reject" : "reject");
+  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "reject" : "reject", {});
 }

@@ -66,7 +66,7 @@ var jabra;
     eventListeners.set("device detached", []);
     eventListeners.set("acceptcall", []);
     eventListeners.set("endcall", []);
-    eventListeners.set("rejectCall", []);
+    eventListeners.set("reject", []);
     eventListeners.set("flash", []);
     eventListeners.set("error", []);
     const deviceEventsMap = {
@@ -74,7 +74,7 @@ var jabra;
         "unmute": DeviceEventCodes.unmute,
         "device attached": DeviceEventCodes.deviceAttached,
         "device detached": DeviceEventCodes.deviceDetached,
-        "acceptcal": DeviceEventCodes.acceptCall,
+        "acceptcall": DeviceEventCodes.acceptCall,
         "endcall": DeviceEventCodes.endCall,
         "reject": DeviceEventCodes.rejectCall,
         "flash": DeviceEventCodes.flash
@@ -82,6 +82,7 @@ var jabra;
     const commandEventsList = [
         "devices",
         "activedevice",
+        "getinstallinfo",
         "Version"
     ];
     /**
@@ -200,22 +201,39 @@ var jabra;
                             }
                         }
                         else if (event.data.message) {
-                            logger.trace("Got message: " + event.data.message);
-                            const normalizedEvent = event.data.message.substring(7); // Strip "Event" prefix;
-                            const commandIndex = commandEventsList.findIndex((e) => normalizedEvent.startsWith(e));
+                            logger.trace("Got message: " + JSON.stringify(event.data));
+                            const normalizedMsg = event.data.message.substring(7); // Strip "Event" prefix;
+                            const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
                                 if (!resultTarget) {
                                     resultTargetMissingError(event.data.message);
                                     return;
                                 }
-                                let dataPosition = commandEventsList[commandIndex].length + 1;
-                                let dataStr = normalizedEvent.substring(dataPosition);
-                                resultTarget.resolve(dataStr);
+                                let result;
+                                if (event.data.data) {
+                                    result = event.data.data;
+                                }
+                                else {
+                                    let dataPosition = commandEventsList[commandIndex].length + 1;
+                                    let dataStr = normalizedMsg.substring(dataPosition);
+                                    result = {};
+                                    if (dataStr) {
+                                        result.data_from_legazy_chromehost_please_upgrade = dataStr;
+                                    }
+                                    ;
+                                }
+                                resultTarget.resolve(result);
                             }
-                            else if (eventListeners.has(normalizedEvent)) {
-                                let callbacks = eventListeners.get(normalizedEvent);
+                            else if (eventListeners.has(normalizedMsg)) {
+                                let callbacks = eventListeners.get(normalizedMsg);
+                                let clientEvent = JSON.parse(JSON.stringify(event.data));
+                                delete clientEvent.direction;
+                                delete clientEvent.apiClientId;
+                                delete clientEvent.requestId;
+                                clientEvent.message = normalizedMsg;
+                                clientEvent.code = deviceEventsMap[normalizedMsg];
                                 callbacks.forEach((callback) => {
-                                    fireEvent(callback, normalizedEvent);
+                                    callback(clientEvent);
                                 });
                             }
                             else {
@@ -224,13 +242,19 @@ var jabra;
                         }
                         else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
+                            const normalizedError = event.data.message.substring(7); // Strip "Error" prefix;
+                            let clientError = JSON.parse(JSON.stringify(event.data));
+                            delete clientError.direction;
+                            delete clientError.apiClientId;
+                            delete clientError.requestId;
+                            clientError.error = normalizedError;
                             if (resultTarget) {
-                                resultTarget.reject(event.data.error);
+                                resultTarget.reject(clientError);
                             }
                             else {
                                 let callbacks = eventListeners.get("error");
                                 callbacks.forEach((callback) => {
-                                    fireEvent(callback, "error", event.data.error);
+                                    callback(clientError);
                                 });
                             }
                         }
@@ -250,14 +274,6 @@ var jabra;
                     reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
                 }
             }, 5000);
-            function fireEvent(callback, normalizedEvent, data) {
-                let eventCode = deviceEventsMap[normalizedEvent];
-                callback({
-                    name: normalizedEvent,
-                    code: eventCode,
-                    arg: data
-                });
-            }
             function resultTargetMissingError(msg) {
                 logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
             }

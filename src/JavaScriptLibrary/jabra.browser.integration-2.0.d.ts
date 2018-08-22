@@ -51,6 +51,12 @@ declare namespace jabra {
         code: DeviceEventCodes;
         arg?: string;
     }
+    type ClientError = any | {
+        error: string;
+    };
+    type ClientMessage = any | {
+        message: string;
+    };
     /**
      * Type for event callback functions..
      */

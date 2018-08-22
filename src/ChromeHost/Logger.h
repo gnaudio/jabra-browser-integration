@@ -27,9 +27,16 @@ SOFTWARE.
 
 #pragma once
 
+#include <plog/Log.h>
+
 /**
  * Helper method for configuring logging with plog (https://github.com/SergiusTheBest/plog)
  * based on same environment settings as Jabra SDK (LIBJABRA_RESOURCE_PATH, LIBJABRA_TRACE_LEVEL etc).
  */
 void configureLogging();
+
+/**
+ * Helper method for logging and exception and any nested C++ 11 exceptions also.
+ */
+void log_exception(plog::Severity severity, const std::exception& e, const std::string& contextString, int level =  0);
 

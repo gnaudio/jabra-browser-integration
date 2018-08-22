@@ -46,6 +46,14 @@ void NativeMessagingTransport::AddHandler(std::function<void(const Request&)> ca
 void NativeMessagingTransport::SendResponse(const Response& response)
 {
   nlohmann::json j;
+
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Preparing response : " << response;
+  }
+
+  for (auto entry : response.getData())
+      j["data"][entry.first] = entry.second;
+
   if (!response.error.empty()) {
 	  j["error"] = response.error;
   }
@@ -54,7 +62,7 @@ void NativeMessagingTransport::SendResponse(const Response& response)
 	  j["message"] = response.message;
   }
 
-  // For compatibility with old versions of the extension message
+  // For compatibility with old <= 0.5 versions of the extension message
   // may not be empty so return a dummy value here if there is none.
   if (!j["message"].is_string()) {
 	  j["message"] = "na";
@@ -102,6 +110,10 @@ void NativeMessagingTransport::Start()
     for (size_t i = 0; i < length; i++)
     {
       msg += getchar();
+    }
+
+    IF_LOG(plog::debug) {
+      LOG(plog::debug) << "Parsing received message : " << msg;
     }
 
     nlohmann::json j = nlohmann::json::parse(msg.c_str());

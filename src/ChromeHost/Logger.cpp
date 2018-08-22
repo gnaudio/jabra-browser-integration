@@ -96,3 +96,14 @@ void configureLogging() {
     LOG(plog::info) << "Configured logging severity to: " << plog::severityToString(severity);
   }
 }
+
+void log_exception(plog::Severity severity, const std::exception& e, const std::string& contextString, int level) {
+    LOG(severity) << "Standard error " << contextString << " : " << e.what();
+    try {
+        std::rethrow_if_nested(e);
+    } catch(const std::exception& e) {
+        log_exception(severity, e, contextString, level+1);
+    } catch(...) {
+		    LOG(severity) << "Unknown error" << contextString;
+		}
+}

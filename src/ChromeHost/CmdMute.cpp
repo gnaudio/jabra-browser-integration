@@ -48,7 +48,7 @@ void CmdMute::Execute(const Request& request)
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error(request, "No device");
+	  m_headsetIntegrationService->Error(request, "No device", {});
     return;
   }
 
@@ -57,6 +57,6 @@ void CmdMute::Execute(const Request& request)
   Jabra_ReturnCode ret = Jabra_SetMute(deviceId, true);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error(request, "Unable to mute");
+    m_headsetIntegrationService->Error(request, "Unable to mute", { std::make_pair("errorcode", std::to_string(ret)) });
   }
 }

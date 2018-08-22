@@ -25,19 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "stdafx.h"
-#include "EventMicMute.h"
+#pragma once
 
-EventMicMute::EventMicMute(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
-}
+#include "CmdInterface.h"
+#include "HeadsetIntegrationService.h"
 
-EventMicMute::~EventMicMute()
+class CmdGetInstallInfo : public CmdInterface
 {
-}
+public:
+  explicit CmdGetInstallInfo(HeadsetIntegrationService* headsetIntegrationService);
+  ~CmdGetInstallInfo();
 
-void EventMicMute::Execute(bool buttonInData)
-{
-   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
-}
+  bool CanExecute(const Request& request) override;
+  void Execute(const Request& request) override;
+
+protected:
+  HeadsetIntegrationService* m_headsetIntegrationService;
+};
+
