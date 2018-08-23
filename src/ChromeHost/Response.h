@@ -32,6 +32,8 @@ SOFTWARE.
 #include <iostream>
 #include "Context.h"
 
+typedef std::map<const std::string, const std::string> customDataType;
+
 /**
  * Contains a response to the chrome extension.
  */
@@ -43,8 +45,9 @@ class Response : public Context {
   const std::string message;
   const std::string error;
 
-  explicit Response(const Context& context, const std::string& message, const std::string& error, const std::initializer_list<std::pair<const std::string, const std::string>> dataList)
-         : Context(context.requestId, context.apiClientId), message(message), error(error), data(dataList) {}
+  explicit Response(const Context& context, const std::string& message, const std::string& error, const customDataType customData)
+         : Context(context.requestId, context.apiClientId), message(message), error(error), data(customData) {
+  }
 
   const std::map<const std::string, const std::string>& getData() const {
     return data;
@@ -60,7 +63,7 @@ inline std::ostream& operator<<(std::ostream& os, const Response& r)
 {  
 	os << "Response { ";
 	os << "message: " << r.message;
-	os << ", error: " << r.message;
+	os << ", error: " << r.error;
 	os << ", requestId: " << r.requestId;
 	os << ", apiClientId: " << r.apiClientId;
 	for (auto entry : r.getData()) {

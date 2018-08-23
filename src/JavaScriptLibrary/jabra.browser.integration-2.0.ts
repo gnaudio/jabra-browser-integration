@@ -30,6 +30,21 @@ SOFTWARE.
 */
 namespace jabra {
     /**
+     * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
+     */
+    export const apiVersion = "2.0.beta1";
+
+    /**
+     * Contains information about installed components.
+     */
+    export interface InstallInfo {
+        version_chromehost: string,
+        version_nativesdk: string
+        version_browserextension: string
+        version_jsapi: string
+    };
+
+    /**
      * Contains information about a jabra device.
      */
     export interface DeviceInfo {
@@ -47,8 +62,11 @@ namespace jabra {
         deviceInfo: DeviceInfo
     };
 
+    export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
+                            | "endcall" | "reject" | "flash" | "error";
+
     /**
-     * An enimeration of codes for various device events.
+     * An enumeration of codes for various device events.
      */
     export enum DeviceEventCodes {
         mute = 0,
@@ -64,7 +82,9 @@ namespace jabra {
         /**
          * A device has been removed.
          */
-        deviceDetached = 7
+        deviceDetached = 7,
+
+        error = 255
     };
 
     export interface DeviceInfo {
@@ -92,22 +112,13 @@ namespace jabra {
         arg?: string;
     };
 
-    /*
-      export type ClientError = {
-        [key: string]: string
-    } | {
-        error: string;
-    };
-    */
-
     export type ClientError = any | {
         error: string;
     };
 
     export type ClientMessage = any | {
         message: string;
-    };
-    
+    };    
     
     /**
      * Type for event callback functions..
@@ -118,7 +129,7 @@ namespace jabra {
      * Internal mapping from all known events to array of registered callbacks. All possible events are setup
      * initially. Callbacks values are configured at runtime.
      */
-    const eventListeners: Map<string, Array<EventCallback>> = new Map<string, Array<EventCallback>>();
+    const eventListeners: Map<EventName, Array<EventCallback>> = new Map<EventName, Array<EventCallback>>();
     eventListeners.set("mute", []);
     eventListeners.set("unmute", []); 
     eventListeners.set("device attached", []); 
@@ -129,7 +140,7 @@ namespace jabra {
     eventListeners.set("flash", []);
     eventListeners.set("error", []);
 
-    const deviceEventsMap: { [key: string]: DeviceEventCodes } = {
+    const deviceEventsMap: { [K in EventName]: DeviceEventCodes } = {
         "mute": DeviceEventCodes.mute,
         "unmute": DeviceEventCodes.unmute,
         "device attached": DeviceEventCodes.deviceAttached,
@@ -137,7 +148,8 @@ namespace jabra {
         "acceptcall": DeviceEventCodes.acceptCall,
         "endcall": DeviceEventCodes.endCall,
         "reject": DeviceEventCodes.rejectCall,
-        "flash": DeviceEventCodes.flash
+        "flash": DeviceEventCodes.flash,
+        "error": DeviceEventCodes.error
     };
 
     const commandEventsList = [
@@ -212,26 +224,11 @@ namespace jabra {
         eventCallback?: (event: any) => void;
     } = {};
 
-
-    /** 
-     *  @deprecated Since 2.0. Use DeviceEventCodes enumeration instead for new code. 
-     *  Warning: Likely to be removed in a future version of this API.
-     **/
-    export let requestEnum = {
-        mute: DeviceEventCodes.mute,
-        unmute: DeviceEventCodes.unmute,
-        endCall: DeviceEventCodes.endCall,
-        acceptCall: DeviceEventCodes.acceptCall,
-        rejectCall: DeviceEventCodes.rejectCall,
-        flash: DeviceEventCodes.flash,
-        deviceAttached: DeviceEventCodes.deviceAttached,
-        deviceDetached: DeviceEventCodes.deviceDetached
-    };
-
     /**
-     * The JavaScript library must be initialized using this function.
-     */
-    export function init() {
+     * The JavaScript library must be initialized using this function. It returns a promise that
+     * resolves when initialization is complete.
+    */
+    export function init(): Promise<void> {
         return new Promise((resolve, reject) => {
             // Only Chrome is currently supported
             let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
@@ -259,13 +256,6 @@ namespace jabra {
                     if (apiClientId === apiClientId || apiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
 
-                        // Lookup any previous stored result target informaton for the request.
-                        let resultTarget = requestId ? sendRequestResultMap.get(requestId) : undefined;
-                        if (resultTarget) {
-                            // Remember to cleanup to avoid memory leak!
-                            sendRequestResultMap.delete(requestId);
-                        }
-
                         if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
                             logLevel = parseInt(event.data.message.substring(16));
                             logger.trace("Logger set to level " + logLevel);
@@ -283,10 +273,18 @@ namespace jabra {
                             const normalizedMsg: string = event.data.message.substring(7); // Strip "Event" prefix;
                             const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
+                                // For install info command, we need to add api version number.
+                                if (normalizedMsg === "getinstallinfo") {
+                                    event.data.data.version_jsapi = apiVersion;
+                                };
+                             
+                                // Lookup and check that we have identified a (real) command target to pair result with.
+                                let resultTarget = resolveResultTarget(requestId);
                                 if (!resultTarget) {
                                     resultTargetMissingError(event.data.message);
                                     return;
                                 }
+                                
                                 let result: any;
                                 if (event.data.data) {
                                     result = event.data.data;
@@ -295,19 +293,20 @@ namespace jabra {
                                     let dataStr = normalizedMsg.substring(dataPosition);
                                     result = {};
                                     if (dataStr) {
-                                      result.data_from_legazy_chromehost_please_upgrade =  dataStr;
+                                      result.legacy_result =  dataStr;
                                     };
                                 }
                                 resultTarget.resolve(result);
-                            } else if (eventListeners.has(normalizedMsg)) {
-                                let callbacks = eventListeners.get(normalizedMsg);
+                                
+                            } else if (eventListeners.has(normalizedMsg as EventName)) {
+                                let callbacks = eventListeners.get(normalizedMsg as EventName);
 
                                 let clientEvent: ClientMessage = JSON.parse(JSON.stringify(event.data));
                                 delete clientEvent.direction;
                                 delete clientEvent.apiClientId;
                                 delete clientEvent.requestId;
                                 clientEvent.message = normalizedMsg;
-                                clientEvent.code =  deviceEventsMap[normalizedMsg];
+                                clientEvent.code =  deviceEventsMap[normalizedMsg as EventName];
 
                                 callbacks!.forEach((callback) => {
                                     callback(clientEvent);
@@ -317,13 +316,15 @@ namespace jabra {
                             }
                         } else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
-                            const normalizedError: string = event.data.message.substring(7); // Strip "Error" prefix;
+                            const normalizedError: string = event.data.error.substring(7); // Strip "Error" prefix;
                             let clientError: ClientError = JSON.parse(JSON.stringify(event.data));
                             delete clientError.direction;
                             delete clientError.apiClientId;
                             delete clientError.requestId;
                             clientError.error = normalizedError;
 
+                            // Reject promise if we can find a target - otherwise send a general error.
+                            let resultTarget = resolveResultTarget(requestId);
                             if (resultTarget) {
                                 resultTarget.reject(clientError);
                             } else {
@@ -364,6 +365,34 @@ namespace jabra {
                 logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
             }
 
+            /** Lookup any previous stored result target informaton for the request.
+            *   Does cleanup if target found (so can not be called twice for a request).
+            *   Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
+            */
+            function resolveResultTarget(requestId?: string) : PromiseCallbacks | undefined {
+                // Lookup any previous stored result target informaton for the request.
+                // Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
+                let resultTarget: PromiseCallbacks | undefined;
+                if (requestId) {
+                    resultTarget = sendRequestResultMap.get(requestId);
+                    // Remember to cleanup to avoid memory leak!
+                    sendRequestResultMap.delete(requestId);
+                } else if (sendRequestResultMap.size === 1) {
+                    // We don't have a requestId but since only one is being executed we
+                    // can assume this is the one.
+                    let value = sendRequestResultMap.entries().next().value;
+                    resultTarget = value[1];
+                    // Remember to cleanup to avoid memory leak!
+                    sendRequestResultMap.delete(value[0]);
+                } else {
+                    // No idea what target matches what request - give up.
+                    resultTarget = undefined;
+                }
+
+                return resultTarget;
+
+            }
+
             initState.initialized = true;
             initState.initializing = false;
         });
@@ -400,7 +429,7 @@ namespace jabra {
         if (nameSpec instanceof RegExp) {
             return Array.from<string>(eventListeners.keys()).filter(key => nameSpec.test(key))
         } else { // String
-            if (eventListeners.has(nameSpec)) {
+            if (eventListeners.has(nameSpec as EventName)) {
              return [ nameSpec ];
             }
         }
@@ -415,7 +444,7 @@ namespace jabra {
      */
     export function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
         getEvents(nameSpec).map(name => {
-            let callbacks = eventListeners.get(name);
+            let callbacks = eventListeners.get(name as EventName);
             if (!callbacks!.find((c) => c === callback)) {
               callbacks!.push(callback);
             }
@@ -428,7 +457,7 @@ namespace jabra {
      */
     export function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
         getEvents(nameSpec).map(name => {
-            let callbacks = eventListeners.get(name);
+            let callbacks = eventListeners.get(name as EventName);
             let findIndex = callbacks!.findIndex((c) => c === callback);
             if (findIndex >= 0) {
               callbacks!.splice(findIndex, 1);
@@ -493,9 +522,12 @@ namespace jabra {
     };
 
     /**
-    * List all attached Jabra Devices.
+    * List all attached Jabra Devices as key-value map with
+    * ID as string and name of device as value.
+    * 
+    * NB: This method signature has changed from 1.x where it was a string.
     */
-    export function getDevices(): Promise<string> {
+    export function getDevices(): Promise<object> {
         return sendCmdWithResult("getdevices");
     };
 
@@ -507,18 +539,9 @@ namespace jabra {
     };
 
     /**
-    * Get protocol version.
-    * @deprecated Since 2.0. Use getInstallInfo instead.
-    * Warning: Likely to be removed in a future version of this API.
+    * Get version number information for all components.
     */
-    export function getVersion(): Promise<string> {
-        return sendCmdWithResult("getversion");
-    };
-
-    /**
-    * TODO:
-    */
-    export function getInstallInfo(): Promise<string> {
+    export function getInstallInfo(): Promise<InstallInfo> {
         return sendCmdWithResult("getinstallinfo");
     };
 
@@ -533,7 +556,8 @@ namespace jabra {
             direction: "jabra-headset-extension-from-page-script",
             message: cmd,
             requestId: requestId,
-            apiClientId: apiClientId
+            apiClientId: apiClientId,
+            version_jsapi: apiVersion
         };
 
         logger.trace("Sending command to content script: " + JSON.stringify(msg));
@@ -545,7 +569,7 @@ namespace jabra {
     * Internal helper that forwards a command to the browser extension
     * expecting a response (a promise).
     */
-    function sendCmdWithResult(cmd: string): Promise<string> {
+    function sendCmdWithResult(cmd: string): Promise<any> {
         let requestId = (requestNumber++).toString();
 
         return new Promise((resolve, reject) => {
@@ -555,7 +579,8 @@ namespace jabra {
                 direction: "jabra-headset-extension-from-page-script",
                 message: cmd,
                 requestId: requestId,
-                apiClientId: apiClientId
+                apiClientId: apiClientId,
+                version_jsapi: apiVersion
             };
 
             logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));

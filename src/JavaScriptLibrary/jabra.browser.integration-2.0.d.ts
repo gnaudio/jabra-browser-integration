@@ -3,6 +3,19 @@
 */
 declare namespace jabra {
     /**
+     * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
+     */
+    const apiVersion = "2.0.beta1";
+    /**
+     * Contains information about installed components.
+     */
+    interface InstallInfo {
+        version_chromehost: string;
+        version_nativesdk: string;
+        version_browserextension: string;
+        version_jsapi: string;
+    }
+    /**
      * Contains information about a jabra device.
      */
     interface DeviceInfo {
@@ -18,8 +31,9 @@ declare namespace jabra {
         stream: MediaStream;
         deviceInfo: DeviceInfo;
     }
+    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "error";
     /**
-     * An enimeration of codes for various device events.
+     * An enumeration of codes for various device events.
      */
     enum DeviceEventCodes {
         mute = 0,
@@ -35,7 +49,8 @@ declare namespace jabra {
         /**
          * A device has been removed.
          */
-        deviceDetached = 7
+        deviceDetached = 7,
+        error = 255
     }
     interface DeviceInfo {
         groupId: string | null;
@@ -62,23 +77,10 @@ declare namespace jabra {
      */
     type EventCallback = (event: Event) => void;
     /**
-     *  @deprecated Since 2.0. Use DeviceEventCodes enumeration instead for new code.
-     *  Warning: Likely to be removed in a future version of this API.
-     **/
-    let requestEnum: {
-        mute: DeviceEventCodes;
-        unmute: DeviceEventCodes;
-        endCall: DeviceEventCodes;
-        acceptCall: DeviceEventCodes;
-        rejectCall: DeviceEventCodes;
-        flash: DeviceEventCodes;
-        deviceAttached: DeviceEventCodes;
-        deviceDetached: DeviceEventCodes;
-    };
-    /**
-     * The JavaScript library must be initialized using this function.
-     */
-    function init(): Promise<{}>;
+     * The JavaScript library must be initialized using this function. It returns a promise that
+     * resolves when initialization is complete.
+    */
+    function init(): Promise<void>;
     /**
     * De-initialize the api after use. Not normally used as api will normally
     * stay in use thoughout an application - mostly of interest for testing.
@@ -128,23 +130,20 @@ declare namespace jabra {
     */
     function getActiveDevice(): Promise<string>;
     /**
-    * List all attached Jabra Devices.
+    * List all attached Jabra Devices as key-value map with
+    * ID as string and name of device as value.
+    *
+    * NB: This method signature has changed from 1.x where it was a string.
     */
-    function getDevices(): Promise<string>;
+    function getDevices(): Promise<object>;
     /**
     * Select a new active device.
     */
     function setActiveDevice(id: string): void;
     /**
-    * Get protocol version.
-    * @deprecated Since 2.0. Use getInstallInfo instead.
-    * Warning: Likely to be removed in a future version of this API.
+    * Get version number information for all components.
     */
-    function getVersion(): Promise<string>;
-    /**
-    * TODO:
-    */
-    function getInstallInfo(): Promise<string>;
+    function getInstallInfo(): Promise<InstallInfo>;
     /**
     * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.

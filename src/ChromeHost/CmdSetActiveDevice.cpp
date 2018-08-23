@@ -52,7 +52,9 @@ void CmdSetActiveDevice::Execute(const Request& request)
   try
   {
     id = std::stoi(subString);
-    m_headsetIntegrationService->SetCurrentDeviceId(id);
+    if (!m_headsetIntegrationService->SetCurrentDeviceId(id)) {
+      m_headsetIntegrationService->Error(request, "no device " + subString + " attached", {});
+    }
   }
   catch (const std::invalid_argument&)
   {

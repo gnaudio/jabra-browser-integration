@@ -51,7 +51,6 @@ inline std::ostream& operator<<(std::ostream& os, const Request& r)
 {
 	os << "Response { ";
 	os << "message: " << r.message;
-	os << ", error: " << r.message;
 	os << ", requestId: " << r.requestId;
 	os << ", apiClientId: " << r.apiClientId;
 	os << "}";

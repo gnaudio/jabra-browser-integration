@@ -125,6 +125,7 @@ void NativeMessagingTransport::Start()
     nlohmann::json message = j.at("message"); // Required - Throws if missing.
     nlohmann::json requestId = j["requestId"]; // Null if missing.
     nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
+    // nlohmann::json data = j["data"]; // Null if missing.
 
     {
       Request req(message.get<std::string>(),
