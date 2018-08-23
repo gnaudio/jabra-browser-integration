@@ -27,6 +27,7 @@ SOFTWARE.
 
 (function () {
   const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
+  var manifestData = chrome.runtime.getManifest();
 
   // Make logLevel variable in sync with storage (updated by options page).
   var logLevel = 1;
@@ -75,7 +76,9 @@ SOFTWARE.
     let msg = {
       message: ensureString(request.message),
       requestId: ensureString(request.requestId),
-      apiClientId: ensureString(request.apiClientId)
+      apiClientId: ensureString(request.apiClientId),
+      version_browserextension: manifestData.version_name,
+      version_jsapi: request.version_jsapi
     }
 
     if (logLevel>=4) { // Log if Loglevel >= Trace
@@ -116,14 +119,18 @@ SOFTWARE.
     sendMessageToNativeApp(request);
   });
 
-  // Send response with message or error to concent script.
+  // Send response with message or error to content script.
   function sendMessageToContentScript(response) {
-    // Messages are always forwarded as they need to be handled (and not just logged).
     let msg = response;
 
     // Remove dummy empty message that may exist for backward compatible.
     if (msg.message === "na") {
       delete msg.message;
+    }
+
+    // For install info command, we need to add chrome extension version number.
+    if (msg.message === "Event: getinstallinfo" && msg.data) {
+      msg.data.version_browserextension = manifestData.version_name;
     }
 
     // Add error field if there is one:

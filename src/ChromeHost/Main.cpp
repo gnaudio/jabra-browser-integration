@@ -49,7 +49,7 @@ int main()
 	  return 2;
   }
 
-  LOG_INFO << "Starting chromehost integrator v" << VERSION << " running nativer SDK v" << getNativeSDKVersion();
+  LOG_INFO << "Starting chromehost integrator v" << VERSION << " running native SDK v" << getNativeSDKVersion();
 
   try {
 	  App app;

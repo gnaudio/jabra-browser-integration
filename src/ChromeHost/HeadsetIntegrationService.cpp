@@ -109,7 +109,7 @@ void HeadsetIntegrationService::SendCmd(const Request& request)
       }
     }
 
-	Error(request, "Unknown cmd " + request.message, {});
+	  Error(request, "Unknown cmd " + request.message, {});
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in SendCmd with message " + request.message);
   } catch (...) {
@@ -164,9 +164,21 @@ unsigned short HeadsetIntegrationService::GetCurrentDeviceId()
   return m_currentDeviceId;
 }
 
-void HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
+bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
 {
-  m_currentDeviceId = id;
+  bool found = false;
+  for (auto device : m_devices) {
+    if (device.deviceID == id) {
+      found = true;
+    }
+  }
+
+  if (found || id == 0) {
+    m_currentDeviceId = id;
+    return true;
+  }
+
+  return false;
 }
 
 std::string HeadsetIntegrationService::GetDevicesAsString()
@@ -184,22 +196,26 @@ std::string HeadsetIntegrationService::GetDevicesAsString()
     devicesAsString += m_devices[i].deviceName;
   }
 
-  return "devices " + devicesAsString;
+  return devicesAsString;
 }
 
-void HeadsetIntegrationService::Error(const Context& context, std::string msg, std::initializer_list<std::pair<const std::string, const std::string>> data)
+const std::vector<Jabra_DeviceInfo> HeadsetIntegrationService::GetDevices() {
+  return m_devices; // return copy.
+}
+
+void HeadsetIntegrationService::Error(const Context& context, std::string msg, customDataType data)
 { 
   IF_LOG(plog::error) {
-      LOG(plog::error) << "Error: " << msg;
+    LOG(plog::error) << "Error: " << msg;
   }
 
   m_callback(Response(context, "", "Error: " + msg, data));
 }
 
-void HeadsetIntegrationService::Event(const Context& context, std::string msg, std::initializer_list<std::pair<const std::string, const std::string>> data)
+void HeadsetIntegrationService::Event(const Context& context, std::string msg, customDataType data)
 {
   IF_LOG(plog::info) {
-      LOG(plog::info) << "Event: " << msg;
+    LOG(plog::info) << "Event: " << msg;
   }
 
   m_callback(Response(context, "Event: " + msg, "", data));
@@ -241,13 +257,13 @@ void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceI
       LOG(plog::info) << "Attaching device " << deviceInfo.deviceName << " with id " << deviceInfo.deviceID;
     }
 
-	Event(Context::device(), "device attached", { std::make_pair("id", std::to_string(deviceInfo.deviceID)) });
+	  Event(Context::device(), "device attached", { std::make_pair("id", std::to_string(deviceInfo.deviceID)) });
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in JabraDeviceAttachedFunc");
-	Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
+	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
   } catch (...) {
-	LOG_ERROR << "Unknown error in JabraDeviceAttachedFunc: ";
-	Error(Context::device(), "Device attachment registration failed", {});
+	  LOG_ERROR << "Unknown error in JabraDeviceAttachedFunc: ";
+	  Error(Context::device(), "Device attachment registration failed", {});
   }
 }
 
@@ -270,7 +286,7 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
       {
         std::string deviceName((*it).deviceName);
 
-		Event(Context::device(), "device detached", { std::make_pair("id", std::to_string(deviceID)) });
+		    Event(Context::device(), "device detached", { std::make_pair("id", std::to_string(deviceID)) });
 
         m_devices.erase(m_devices.begin() + index);
         
@@ -305,8 +321,8 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
     log_exception(plog::Severity::error, e, "in JabraDeviceRemovedFunc");
     Error(Context::device(), "Device removal registration failed", { std::make_pair("exception", e.what()) });
   } catch (...) {
-	LOG_ERROR << "Unknown error in JabraDeviceRemovedFunc";
-	Error(Context::device(), "Device removal registration failed", {});
+	  LOG_ERROR << "Unknown error in JabraDeviceRemovedFunc";
+	  Error(Context::device(), "Device removal registration failed", {});
   }
 }
 
@@ -331,15 +347,14 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
     else
     {
       std::string inDatastring = std::to_string(translatedInData);
-
-	  Error(Context::device(), "No button handler impelmented for " + inDatastring, {});
+	    Error(Context::device(), "No button handler impelmented for " + inDatastring, {});
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in ButtonInDataTranslatedFunc");
     Error(Context::device(), "button translation failed", { std::make_pair("exception", e.what()) });
   } catch (...) {
-	LOG_ERROR << "Unknown error in ButtonInDataTranslatedFunc";
-	Error(Context::device(), "button translation failed", {});
+	  LOG_ERROR << "Unknown error in ButtonInDataTranslatedFunc";
+	  Error(Context::device(), "button translation failed", {});
   }
 }
 

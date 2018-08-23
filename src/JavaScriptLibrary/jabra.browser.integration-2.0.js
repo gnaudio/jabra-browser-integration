@@ -30,10 +30,15 @@ SOFTWARE.
 */
 var jabra;
 (function (jabra) {
+    /**
+     * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
+     */
+    jabra.apiVersion = "2.0.beta1";
+    ;
     ;
     ;
     /**
-     * An enimeration of codes for various device events.
+     * An enumeration of codes for various device events.
      */
     let DeviceEventCodes;
     (function (DeviceEventCodes) {
@@ -51,6 +56,7 @@ var jabra;
          * A device has been removed.
          */
         DeviceEventCodes[DeviceEventCodes["deviceDetached"] = 7] = "deviceDetached";
+        DeviceEventCodes[DeviceEventCodes["error"] = 255] = "error";
     })(DeviceEventCodes = jabra.DeviceEventCodes || (jabra.DeviceEventCodes = {}));
     ;
     ;
@@ -77,7 +83,8 @@ var jabra;
         "acceptcall": DeviceEventCodes.acceptCall,
         "endcall": DeviceEventCodes.endCall,
         "reject": DeviceEventCodes.rejectCall,
-        "flash": DeviceEventCodes.flash
+        "flash": DeviceEventCodes.flash,
+        "error": DeviceEventCodes.error
     };
     const commandEventsList = [
         "devices",
@@ -141,22 +148,9 @@ var jabra;
      */
     let initState = {};
     /**
-     *  @deprecated Since 2.0. Use DeviceEventCodes enumeration instead for new code.
-     *  Warning: Likely to be removed in a future version of this API.
-     **/
-    jabra.requestEnum = {
-        mute: DeviceEventCodes.mute,
-        unmute: DeviceEventCodes.unmute,
-        endCall: DeviceEventCodes.endCall,
-        acceptCall: DeviceEventCodes.acceptCall,
-        rejectCall: DeviceEventCodes.rejectCall,
-        flash: DeviceEventCodes.flash,
-        deviceAttached: DeviceEventCodes.deviceAttached,
-        deviceDetached: DeviceEventCodes.deviceDetached
-    };
-    /**
-     * The JavaScript library must be initialized using this function.
-     */
+     * The JavaScript library must be initialized using this function. It returns a promise that
+     * resolves when initialization is complete.
+    */
     function init() {
         return new Promise((resolve, reject) => {
             // Only Chrome is currently supported
@@ -179,12 +173,6 @@ var jabra;
                     // Only accept responses from our own requests or from device.
                     if (apiClientId === apiClientId || apiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
-                        // Lookup any previous stored result target informaton for the request.
-                        let resultTarget = requestId ? sendRequestResultMap.get(requestId) : undefined;
-                        if (resultTarget) {
-                            // Remember to cleanup to avoid memory leak!
-                            sendRequestResultMap.delete(requestId);
-                        }
                         if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
                             logLevel = parseInt(event.data.message.substring(16));
                             logger.trace("Logger set to level " + logLevel);
@@ -205,6 +193,13 @@ var jabra;
                             const normalizedMsg = event.data.message.substring(7); // Strip "Event" prefix;
                             const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
+                                // For install info command, we need to add api version number.
+                                if (normalizedMsg === "getinstallinfo") {
+                                    event.data.data.version_jsapi = jabra.apiVersion;
+                                }
+                                ;
+                                // Lookup and check that we have identified a (real) command target to pair result with.
+                                let resultTarget = resolveResultTarget(requestId);
                                 if (!resultTarget) {
                                     resultTargetMissingError(event.data.message);
                                     return;
@@ -218,7 +213,7 @@ var jabra;
                                     let dataStr = normalizedMsg.substring(dataPosition);
                                     result = {};
                                     if (dataStr) {
-                                        result.data_from_legazy_chromehost_please_upgrade = dataStr;
+                                        result.legacy_result = dataStr;
                                     }
                                     ;
                                 }
@@ -242,12 +237,14 @@ var jabra;
                         }
                         else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
-                            const normalizedError = event.data.message.substring(7); // Strip "Error" prefix;
+                            const normalizedError = event.data.error.substring(7); // Strip "Error" prefix;
                             let clientError = JSON.parse(JSON.stringify(event.data));
                             delete clientError.direction;
                             delete clientError.apiClientId;
                             delete clientError.requestId;
                             clientError.error = normalizedError;
+                            // Reject promise if we can find a target - otherwise send a general error.
+                            let resultTarget = resolveResultTarget(requestId);
                             if (resultTarget) {
                                 resultTarget.reject(clientError);
                             }
@@ -276,6 +273,33 @@ var jabra;
             }, 5000);
             function resultTargetMissingError(msg) {
                 logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
+            }
+            /** Lookup any previous stored result target informaton for the request.
+            *   Does cleanup if target found (so can not be called twice for a request).
+            *   Nb. requestId's are only provided by >= 0.5 extension and chromehost.
+            */
+            function resolveResultTarget(requestId) {
+                // Lookup any previous stored result target informaton for the request.
+                // Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
+                let resultTarget;
+                if (requestId) {
+                    resultTarget = sendRequestResultMap.get(requestId);
+                    // Remember to cleanup to avoid memory leak!
+                    sendRequestResultMap.delete(requestId);
+                }
+                else if (sendRequestResultMap.size === 1) {
+                    // We don't have a requestId but since only one is being executed we
+                    // can assume this is the one.
+                    let value = sendRequestResultMap.entries().next().value;
+                    resultTarget = value[1];
+                    // Remember to cleanup to avoid memory leak!
+                    sendRequestResultMap.delete(value[0]);
+                }
+                else {
+                    // No idea what target matches what request - give up.
+                    resultTarget = undefined;
+                }
+                return resultTarget;
             }
             initState.initialized = true;
             initState.initializing = false;
@@ -415,7 +439,10 @@ var jabra;
     jabra.getActiveDevice = getActiveDevice;
     ;
     /**
-    * List all attached Jabra Devices.
+    * List all attached Jabra Devices as key-value map with
+    * ID as string and name of device as value.
+    *
+    * NB: This method signature has changed from 1.x where it was a string.
     */
     function getDevices() {
         return sendCmdWithResult("getdevices");
@@ -431,17 +458,7 @@ var jabra;
     jabra.setActiveDevice = setActiveDevice;
     ;
     /**
-    * Get protocol version.
-    * @deprecated Since 2.0. Use getInstallInfo instead.
-    * Warning: Likely to be removed in a future version of this API.
-    */
-    function getVersion() {
-        return sendCmdWithResult("getversion");
-    }
-    jabra.getVersion = getVersion;
-    ;
-    /**
-    * TODO:
+    * Get version number information for all components.
     */
     function getInstallInfo() {
         return sendCmdWithResult("getinstallinfo");
@@ -458,7 +475,8 @@ var jabra;
             direction: "jabra-headset-extension-from-page-script",
             message: cmd,
             requestId: requestId,
-            apiClientId: apiClientId
+            apiClientId: apiClientId,
+            version_jsapi: jabra.apiVersion
         };
         logger.trace("Sending command to content script: " + JSON.stringify(msg));
         window.postMessage(msg, "*");
@@ -476,7 +494,8 @@ var jabra;
                 direction: "jabra-headset-extension-from-page-script",
                 message: cmd,
                 requestId: requestId,
-                apiClientId: apiClientId
+                apiClientId: apiClientId,
+                version_jsapi: jabra.apiVersion
             };
             logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
             window.postMessage(msg, "*");

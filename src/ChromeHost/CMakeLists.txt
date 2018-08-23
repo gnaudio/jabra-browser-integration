@@ -6,7 +6,7 @@ file(GLOB sources *.cpp)
 include_directories(SDK
                     include)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std:c++14)
 
 if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi")

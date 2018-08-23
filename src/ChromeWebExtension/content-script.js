@@ -56,7 +56,7 @@ SOFTWARE.
     });
   });
 
-  // From page script
+  // From page script (API client)
   window.addEventListener("message", function (event) {
     if (event.source === window &&
         event.data.direction &&
