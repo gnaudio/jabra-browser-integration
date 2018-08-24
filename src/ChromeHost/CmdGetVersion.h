@@ -31,7 +31,7 @@ SOFTWARE.
 #include "HeadsetIntegrationService.h"
 
 /**
- * This command is deprecated - use CmdGetInstallInfo instead.
+ * This command is deprecated - use CmdGetInstallInfo instead when possible.
  */
 class CmdGetVersion : public CmdInterface
 {

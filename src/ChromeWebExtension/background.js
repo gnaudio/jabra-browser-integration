@@ -26,14 +26,31 @@ SOFTWARE.
 */
 
 (function () {
+  // Declare all known extension IDs.
   const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
+  const betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
+  const developmentExtensionIds = ["klapphmlodmhfolphohgkmimlkpcindc"]
+
+  // Identify what we know about the actual extension running.
+  let extensionId = chrome.runtime.id;
+  let extensionType;
+  if (extensionId === prodExtensionId) {
+    extensionType = "production";
+  } else if (extensionId === betaExtensionId){
+    extensionType = "beta";
+  } else if (developmentExtensionIds.includes(extensionId)) {
+    extensionType = "development";
+  } else {
+    extensionType = "unknown";
+  }
+  
   var manifestData = chrome.runtime.getManifest();
 
   // Make logLevel variable in sync with storage (updated by options page).
-  var logLevel = 1;
+  var logLevel = 2;
 
   chrome.storage.local.get('logLevel', function(items) {
-    logLevel = parseInt(items.logLevel || "1");  
+    logLevel = parseInt(items.logLevel || "2");
     chrome.storage.onChanged.addListener(function(changes, areaName) {
       for (key in changes) {
         var storageChange = changes[key];
@@ -72,14 +89,11 @@ SOFTWARE.
 
   // Send message to native app
   function sendMessageToNativeApp(request) {
-    // Make sure all entries are strings as expected by native app.
-    let msg = {
-      message: ensureString(request.message),
-      requestId: ensureString(request.requestId),
-      apiClientId: ensureString(request.apiClientId),
-      version_browserextension: manifestData.version_name,
-      version_jsapi: request.version_jsapi
-    }
+    // Make sure all required entries are strings as expected by native app.
+    let msg = JSON.parse(JSON.stringify(request));
+    msg.message = ensureString(msg.message);
+    msg.requestId = ensureString(msg.requestId);
+    msg.apiClientId = ensureString(msg.apiClientId);
 
     if (logLevel>=4) { // Log if Loglevel >= Trace
       console.log("Sending request to native chromehost process: " + JSON.stringify(msg));
@@ -97,9 +111,9 @@ SOFTWARE.
         port.onDisconnect.addListener(() => {
           var err = chrome.runtime.lastError ? chrome.runtime.lastError.message : null;
           if (err === "Specified native messaging host not found.") {
-            sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host</a> and reload this page", request);
-          } else if (err === "Access to the specified native messaging host is forbidden." && chrome.runtime.id !== prodExtensionId) {
-            sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your host installation OR manually add this extension id '" + chrome.runtime.id + "' to allowed_origins (in com.jabra.nm.json)", request);
+            sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host " + (extensionType!=="production") ? "(" + extensionType + " version)" : "" + "</a> and reload this page", request);
+          } else if (err === "Access to the specified native messaging host is forbidden." && extensionId !== prodExtensionId) {
+            sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your native host installation OR manually add this extension id '" + extensionId + "' to allowed_origins (in file com.jabra.nm.json in the installation directory of the native host", request);
           } else {
             sendErrorToContentScript(err, request);
           }
@@ -128,8 +142,13 @@ SOFTWARE.
       delete msg.message;
     }
 
-    // For install info command, we need to add chrome extension version number.
+    // For install info and version commands, we need to add appropiate things only the 
+    // background script knows about like chrome extension version number, extensionId etc.
     if (msg.message === "Event: getinstallinfo" && msg.data) {
+      msg.data.version_browserextension = manifestData.version_name;
+      msg.data.browserextension_id =  extensionId;
+      msg.data.browserextension_type = extensionType
+    } else if (msg.message.startsWith("Event: Version") && msg.data) {
       msg.data.version_browserextension = manifestData.version_name;
     }
 
@@ -154,16 +173,16 @@ SOFTWARE.
     });
   }
 
-  function sendErrorToContentScript(err, request = null) {
+  function sendErrorToContentScript(errStr, request = null) {
     // Errors always forwarded because api user may needs to handle - so no filtering here.
     let msg = {
-      error: err,
+      error: errStr,
       requestId: request ? request.requestId : null,
       apiClientId: request ? request.apiClientId : null,
     };
 
     if (logLevel>=1) { // Log if Loglevel >= Error
-      console.log("Sending error to content script: " + JSON.stringify(msg) );
+      console.log("Sending error to content script: " + JSON.stringify(msg));
     }
 
     window.chrome.tabs.query({

@@ -36,6 +36,11 @@ SOFTWARE.
 void configureLogging();
 
 /**
+* Get path of log file.
+*/
+const std::string& getLogFilePath();
+
+/**
  * Helper method for logging and exception and any nested C++ 11 exceptions also.
  */
 void log_exception(plog::Severity severity, const std::exception& e, const std::string& contextString, int level =  0);
