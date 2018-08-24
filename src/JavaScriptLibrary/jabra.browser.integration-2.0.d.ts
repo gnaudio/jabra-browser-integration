@@ -10,10 +10,14 @@ declare namespace jabra {
      * Contains information about installed components.
      */
     interface InstallInfo {
+        uptodateInstallation: boolean;
+        consistantInstallation: boolean;
         version_chromehost: string;
         version_nativesdk: string;
         version_browserextension: string;
         version_jsapi: string;
+        browserextension_id: string;
+        browserextension_type: string;
     }
     /**
      * Contains information about a jabra device.

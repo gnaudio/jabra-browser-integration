@@ -21,7 +21,7 @@ class ErrorAppender : public plog::IAppender
 			#ifdef _WIN32
 			wcerr << str << std::flush;
 			#else
-			wcerr << str << std::flush;
+			cerr << str << std::flush;
 			#endif
 		}
 	}
@@ -33,6 +33,12 @@ static bool endsWith(const std::string& str, const std::string& suffix)
 }
 
 #pragma warning(disable : 4996)
+
+static std::string configuredLogPath = "";
+
+const std::string& getLogFilePath() {
+  return configuredLogPath;
+}
 
 void configureLogging() {
   // Use same defaults and environment variable as Jabra SDK to setup
@@ -90,6 +96,9 @@ void configureLogging() {
 
   // Setup plog:
 	plog::init(severity, logPath.c_str(), 10000, 10).addAppender(new ErrorAppender());
+
+  // Save log location for reference (if anything is logged).
+  configuredLogPath = (severity!=plog::none) ? logPath : "";
 
   // Log configuration:
   IF_LOG(plog::info) {

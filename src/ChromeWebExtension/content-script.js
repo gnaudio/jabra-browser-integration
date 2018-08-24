@@ -28,10 +28,10 @@ SOFTWARE.
 (function () {
   // Make logLevel variable in sync with storage (updated by options page)
   // and forward changes to page script using a message as well.
-  var logLevel = 1;
+  var logLevel = 2;
 
   chrome.storage.local.get('logLevel', function(items) {
-    logLevel = parseInt(items.logLevel || "1");
+    logLevel = parseInt(items.logLevel || "2");
     if (logLevel>=3) { // Log if Loglevel >= Info
       console.log("Log level set to: " + logLevel);
     }
@@ -66,9 +66,9 @@ SOFTWARE.
         console.log("Retrived event from page api script: " + JSON.stringify(event.data));
       }
 
-      // Respond directly to logLevel requests
+      // Exceptionally, respond directly to logLevel requests since they are unreleated to native host.
       if ( event.data.message === "logLevel") {
-        let msg = {
+        let response = {
           direction: "jabra-headset-extension-from-content-script",
           message: "Event: logLevel " + logLevel,
           requestId: event.data.requestId,
@@ -76,18 +76,18 @@ SOFTWARE.
         };
 
         if (logLevel>=4) { // Log if Loglevel >= Trace
-          console.log("Sending message back to page api script : " + JSON.stringify(msg));
+          console.log("Sending log message response back to page api script : " + JSON.stringify(response));
         }
 
-        window.postMessage(msg, "*");
+        window.postMessage(response, "*");
       } else { // Other requests needs to be passed on to background script.
         let msg = event.data;
 
         if (logLevel>=4) { // Log if Loglevel >= Trace
-          console.log("Sending message  to background script: " + JSON.stringify(msg));
+          console.log("Sending message to background script: " + JSON.stringify(msg));
         }
 
-        window.chrome.runtime.sendMessage( msg );
+        window.chrome.runtime.sendMessage(msg);
       }
     }
   });

@@ -34,6 +34,18 @@ var jabra;
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
     jabra.apiVersion = "2.0.beta1";
+    /**
+     * Is the current version a beta ?
+     */
+    const isBeta = jabra.apiVersion.includes("beta");
+    /**
+     * Id of proper (production) release of browser plugin.
+     */
+    const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
+    /**
+    * Id of beta release of browser plugin.
+    */
+    const betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
     ;
     ;
     ;
@@ -195,11 +207,20 @@ var jabra;
                             const normalizedMsg = event.data.message.substring(7); // Strip "Event" prefix;
                             const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
-                                // For install info command, we need to add api version number.
-                                if (normalizedMsg === "getinstallinfo") {
+                                // For install info and version command, we need to add api version number.
+                                if (normalizedMsg === "getinstallinfo" || (normalizedMsg.startsWith("Version "))) {
+                                    // Old extension/host won't have data so make sure it exists to avoid breakage.
+                                    if (!event.data.data) {
+                                        event.data.data = {};
+                                    }
                                     event.data.data.version_jsapi = jabra.apiVersion;
                                 }
-                                ;
+                                // For install info also check if the full installation is up to date.
+                                if (normalizedMsg === "getinstallinfo") {
+                                    event.data.data.uptodateInstallation = isUpToDate(event.data.data);
+                                    // TODO: Make more correct check for this.
+                                    event.data.data.consistantInstallation = event.data.data.uptodateInstallation;
+                                }
                                 // Lookup and check that we have identified a (real) command target to pair result with.
                                 let resultTarget = identifyAndCleanupResultTarget(requestId);
                                 if (!resultTarget) {
@@ -269,7 +290,7 @@ var jabra;
             setTimeout(() => {
                 sendCmdWithResult("getversion").then((result) => {
                     let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
-                    logger.trace("getversion returnes successfully with : " + resultStr);
+                    logger.trace("getversion returned successfully with : " + resultStr);
                 }).catch((error) => {
                     logger.error(error);
                 });
@@ -278,9 +299,23 @@ var jabra;
             setTimeout(function () {
                 if (duringInit === true) {
                     duringInit = false;
-                    reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
+                    const extensionId = isBeta ? betaExtensionId : prodExtensionId;
+                    reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/" + extensionId + "'>Extension</a> and then reload this page");
                 }
             }, 5000);
+            /**
+             * Helper that checks if the installation is up 2 date.
+             */
+            function isUpToDate(installInfo) {
+                // Check that we have installation information for everything.
+                if (!installInfo.version_browserextension
+                    || !installInfo.version_chromehost
+                    || !installInfo.version_jsapi
+                    || !installInfo.version_nativesdk)
+                    return false;
+                // TODO: Add more here - maybe online lookup.
+                return true;
+            }
             /**
              * Post event/error to subscribers.
              */
