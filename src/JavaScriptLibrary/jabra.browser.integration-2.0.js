@@ -93,33 +93,35 @@ var jabra;
         "Version"
     ];
     /**
-     * The log level curently used.
+     * The log level curently used internally in this api facade. Initially this is set to show errors and
+     * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
+     * changes the log level. Available in the API for testing only - do not use this in normal applications.
      */
-    let logLevel = 1;
+    jabra.logLevel = 2;
     /**
      * An internal logger helper.
      */
     const logger = new class {
         trace(msg) {
-            if (logLevel >= 4) {
+            if (jabra.logLevel >= 4) {
                 console.log(msg);
             }
         }
         ;
         info(msg) {
-            if (logLevel >= 3) {
+            if (jabra.logLevel >= 3) {
                 console.log(msg);
             }
         }
         ;
         warn(msg) {
-            if (logLevel >= 2) {
+            if (jabra.logLevel >= 2) {
                 console.warn(msg);
             }
         }
         ;
         error(msg) {
-            if (logLevel >= 1) {
+            if (jabra.logLevel >= 1) {
                 console.error(msg);
             }
         }
@@ -174,8 +176,8 @@ var jabra;
                     if (apiClientId === apiClientId || apiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
                         if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
-                            logLevel = parseInt(event.data.message.substring(16));
-                            logger.trace("Logger set to level " + logLevel);
+                            jabra.logLevel = parseInt(event.data.message.substring(16));
+                            logger.trace("Logger set to level " + jabra.logLevel);
                         }
                         else if (duringInit === true) {
                             // Hmm... this assume first event will be passed on to native host,
@@ -199,9 +201,14 @@ var jabra;
                                 }
                                 ;
                                 // Lookup and check that we have identified a (real) command target to pair result with.
-                                let resultTarget = resolveResultTarget(requestId);
+                                let resultTarget = identifyAndCleanupResultTarget(requestId);
                                 if (!resultTarget) {
-                                    resultTargetMissingError(event.data.message);
+                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost";
+                                    logger.error(err);
+                                    notify("error", {
+                                        error: err,
+                                        message: event.data.message
+                                    });
                                     return;
                                 }
                                 let result;
@@ -220,19 +227,20 @@ var jabra;
                                 resultTarget.resolve(result);
                             }
                             else if (eventListeners.has(normalizedMsg)) {
-                                let callbacks = eventListeners.get(normalizedMsg);
                                 let clientEvent = JSON.parse(JSON.stringify(event.data));
                                 delete clientEvent.direction;
                                 delete clientEvent.apiClientId;
                                 delete clientEvent.requestId;
                                 clientEvent.message = normalizedMsg;
                                 clientEvent.code = deviceEventsMap[normalizedMsg];
-                                callbacks.forEach((callback) => {
-                                    callback(clientEvent);
-                                });
+                                notify(normalizedMsg, clientEvent);
                             }
                             else {
                                 logger.warn("Unknown message: " + event.data.message);
+                                notify("error", {
+                                    error: "Unknown message: ",
+                                    message: event.data.message
+                                });
                             }
                         }
                         else if (event.data.error) {
@@ -244,15 +252,12 @@ var jabra;
                             delete clientError.requestId;
                             clientError.error = normalizedError;
                             // Reject promise if we can find a target - otherwise send a general error.
-                            let resultTarget = resolveResultTarget(requestId);
+                            let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
                                 resultTarget.reject(clientError);
                             }
                             else {
-                                let callbacks = eventListeners.get("error");
-                                callbacks.forEach((callback) => {
-                                    callback(clientError);
-                                });
+                                notify("error", clientError);
                             }
                         }
                     }
@@ -262,7 +267,12 @@ var jabra;
             sendCmd("logLevel");
             // Initial getversion and loglevel.
             setTimeout(() => {
-                sendCmd("getversion");
+                sendCmdWithResult("getversion").then((result) => {
+                    let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
+                    logger.trace("getversion returnes successfully with : " + resultStr);
+                }).catch((error) => {
+                    logger.error(error);
+                });
             }, 1000);
             // Check if the web-extension is installed
             setTimeout(function () {
@@ -271,14 +281,27 @@ var jabra;
                     reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/okpeabepajdgiepelmhkfhkjlhhmofma'>Extension</a> and then reload this page");
                 }
             }, 5000);
-            function resultTargetMissingError(msg) {
-                logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
+            /**
+             * Post event/error to subscribers.
+             */
+            function notify(eventName, eventMsg) {
+                let callbacks = eventListeners.get(eventName);
+                if (callbacks) {
+                    callbacks.forEach((callback) => {
+                        callback(eventMsg);
+                    });
+                }
+                else {
+                    // This should not occur unless internal event mappings in this file
+                    // are not configured correctly.
+                    logger.error("Unexpected unknown eventName: " + eventName);
+                }
             }
             /** Lookup any previous stored result target informaton for the request.
             *   Does cleanup if target found (so can not be called twice for a request).
             *   Nb. requestId's are only provided by >= 0.5 extension and chromehost.
             */
-            function resolveResultTarget(requestId) {
+            function identifyAndCleanupResultTarget(requestId) {
                 // Lookup any previous stored result target informaton for the request.
                 // Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
                 let resultTarget;

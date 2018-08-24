@@ -160,9 +160,11 @@ namespace jabra {
     ];
 
     /**
-     * The log level curently used.
+     * The log level curently used internally in this api facade. Initially this is set to show errors and 
+     * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
+     * changes the log level. Available in the API for testing only - do not use this in normal applications.
      */
-    let logLevel: number = 1;
+    export let logLevel: number = 2;
 
     /**
      * An internal logger helper.
@@ -279,9 +281,14 @@ namespace jabra {
                                 };
                              
                                 // Lookup and check that we have identified a (real) command target to pair result with.
-                                let resultTarget = resolveResultTarget(requestId);
+                                let resultTarget = identifyAndCleanupResultTarget(requestId);
                                 if (!resultTarget) {
-                                    resultTargetMissingError(event.data.message);
+                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost";
+                                    logger.error(err);
+                                    notify("error", {
+                                        error: err,
+                                        message: event.data.message
+                                    });
                                     return;
                                 }
                                 
@@ -296,11 +303,9 @@ namespace jabra {
                                       result.legacy_result =  dataStr;
                                     };
                                 }
-                                resultTarget.resolve(result);
-                                
-                            } else if (eventListeners.has(normalizedMsg as EventName)) {
-                                let callbacks = eventListeners.get(normalizedMsg as EventName);
 
+                                resultTarget.resolve(result);                                
+                            } else if (eventListeners.has(normalizedMsg as EventName)) {
                                 let clientEvent: ClientMessage = JSON.parse(JSON.stringify(event.data));
                                 delete clientEvent.direction;
                                 delete clientEvent.apiClientId;
@@ -308,11 +313,13 @@ namespace jabra {
                                 clientEvent.message = normalizedMsg;
                                 clientEvent.code =  deviceEventsMap[normalizedMsg as EventName];
 
-                                callbacks!.forEach((callback) => {
-                                    callback(clientEvent);
-                                });
+                                notify(normalizedMsg as EventName, clientEvent);
                             } else {
                                 logger.warn("Unknown message: " + event.data.message);
+                                notify("error", {
+                                    error: "Unknown message: ",
+                                    message: event.data.message
+                                });
                             }
                         } else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
@@ -324,14 +331,11 @@ namespace jabra {
                             clientError.error = normalizedError;
 
                             // Reject promise if we can find a target - otherwise send a general error.
-                            let resultTarget = resolveResultTarget(requestId);
+                            let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
                                 resultTarget.reject(clientError);
                             } else {
-                                let callbacks = eventListeners.get("error");
-                                callbacks!.forEach((callback) => {
-                                    callback(clientError);
-                                });
+                                notify("error", clientError);
                             }
                         }
                     }
@@ -345,7 +349,12 @@ namespace jabra {
             // Initial getversion and loglevel.
             setTimeout(
                 () => {
-                    sendCmd("getversion");
+                    sendCmdWithResult("getversion").then((result) => {
+                        let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
+                        logger.trace("getversion returnes successfully with : " + resultStr);
+                    }).catch((error) => {
+                        logger.error(error);
+                    });
                 },
                 1000
             );
@@ -361,15 +370,27 @@ namespace jabra {
                 5000
             );
 
-            function resultTargetMissingError(msg: string) {
-                logger.error("Result target information missing for message " + msg + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost");
+            /**
+             * Post event/error to subscribers.
+             */
+            function notify(eventName: EventName, eventMsg: ClientMessage | ClientError): void {
+                let callbacks = eventListeners.get(eventName);
+                if (callbacks) {
+                    callbacks.forEach((callback) => {
+                        callback(eventMsg);
+                    });
+                } else {
+                    // This should not occur unless internal event mappings in this file
+                    // are not configured correctly.
+                    logger.error("Unexpected unknown eventName: " + eventName);
+                }
             }
 
             /** Lookup any previous stored result target informaton for the request.
             *   Does cleanup if target found (so can not be called twice for a request).
             *   Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
             */
-            function resolveResultTarget(requestId?: string) : PromiseCallbacks | undefined {
+            function identifyAndCleanupResultTarget(requestId?: string) : PromiseCallbacks | undefined {
                 // Lookup any previous stored result target informaton for the request.
                 // Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
                 let resultTarget: PromiseCallbacks | undefined;
