@@ -77,6 +77,12 @@ declare namespace jabra {
      */
     type EventCallback = (event: Event) => void;
     /**
+     * The log level curently used internally in this api facade. Initially this is set to show errors and
+     * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
+     * changes the log level. Available in the API for testing only - do not use this in normal applications.
+     */
+    let logLevel: number;
+    /**
      * The JavaScript library must be initialized using this function. It returns a promise that
      * resolves when initialization is complete.
     */
