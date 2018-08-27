@@ -82,7 +82,7 @@ namespace jabra {
     };
 
     export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
-                            | "endcall" | "reject" | "flash" | "error";
+                            | "endcall" | "reject" | "flash" | "online" | "offline" | "error";
 
     /**
      * An enumeration of codes for various device events.
@@ -102,6 +102,10 @@ namespace jabra {
          * A device has been removed.
          */
         deviceDetached = 7,
+
+        online = 8,
+
+        offline = 9,
 
         error = 255
     };
@@ -158,6 +162,8 @@ namespace jabra {
     eventListeners.set("reject", []); 
     eventListeners.set("flash", []);
     eventListeners.set("error", []);
+    eventListeners.set("online", []);
+    eventListeners.set("offline", []);
 
     const deviceEventsMap: { [K in EventName]: DeviceEventCodes } = {
         "mute": DeviceEventCodes.mute,
@@ -168,7 +174,10 @@ namespace jabra {
         "endcall": DeviceEventCodes.endCall,
         "reject": DeviceEventCodes.rejectCall,
         "flash": DeviceEventCodes.flash,
-        "error": DeviceEventCodes.error
+        "online": DeviceEventCodes.online,
+        "offline": DeviceEventCodes.offline,
+        "error": DeviceEventCodes.error,
+        
     };
 
     const commandEventsList = [
