@@ -68,6 +68,8 @@ var jabra;
          * A device has been removed.
          */
         DeviceEventCodes[DeviceEventCodes["deviceDetached"] = 7] = "deviceDetached";
+        DeviceEventCodes[DeviceEventCodes["online"] = 8] = "online";
+        DeviceEventCodes[DeviceEventCodes["offline"] = 9] = "offline";
         DeviceEventCodes[DeviceEventCodes["error"] = 255] = "error";
     })(DeviceEventCodes = jabra.DeviceEventCodes || (jabra.DeviceEventCodes = {}));
     ;
@@ -87,6 +89,8 @@ var jabra;
     eventListeners.set("reject", []);
     eventListeners.set("flash", []);
     eventListeners.set("error", []);
+    eventListeners.set("online", []);
+    eventListeners.set("offline", []);
     const deviceEventsMap = {
         "mute": DeviceEventCodes.mute,
         "unmute": DeviceEventCodes.unmute,
@@ -96,7 +100,9 @@ var jabra;
         "endcall": DeviceEventCodes.endCall,
         "reject": DeviceEventCodes.rejectCall,
         "flash": DeviceEventCodes.flash,
-        "error": DeviceEventCodes.error
+        "online": DeviceEventCodes.online,
+        "offline": DeviceEventCodes.offline,
+        "error": DeviceEventCodes.error,
     };
     const commandEventsList = [
         "devices",
