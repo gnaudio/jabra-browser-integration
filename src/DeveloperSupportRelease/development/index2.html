@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jabra Browser Integration</title>
+  <link href="main.css" rel="stylesheet" />
+  <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+</head>
+<body>
+<a href="https://github.com/gnaudio/jabra-browser-integration"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<header>
+  <div class="wrapper center">
+    <h1 class="title">Jabra Browser Integration</h1>
+    <p>Library test</p>
+  </div>
+</header>
+<section id="section">
+  <div class="wrapper">
+    <h4>Description</h4>
+    <p>On this page you can try out the Jabra library. Callbacks are shown as toasts. Look at the source for an example on how to use the library.</p>
+    <br/>
+    <h4>Basic:</h4>
+    <button id="ring" type="button">jabra.ring();</button>
+    <br/>
+    <button id="offhook" type="button">jabra.offHook();</button>
+    <button id="onhook" type="button">jabra.onHook();</button>
+    <br/>
+    <button id="mute" type="button">jabra.mute();</button>
+    <button id="unmute" type="button">jabra.unmute();</button>
+    <h4>Advanced (optional):</h4>
+    <button id="hold" type="button">jabra.hold();</button>
+    <button id="resume" type="button">jabra.resume();</button>
+    <h4>Device management (optional, only required for multi-device handling):</h4>
+    <button id="getactivedevice" type="button">jabra.getActiveDevice();</button>
+    <button id="getdevices" type="button">jabra.getDevices();</button>
+    <br/>
+    <button id="setactivedevice0" type="button">jabra.setActiveDevice(0);</button>
+    <button id="setactivedevice1" type="button">jabra.setActiveDevice(1);</button>
+    <button id="setactivedevice2" type="button">jabra.setActiveDevice(2);</button>
+    <br/>
+  </div>
+
+</section>
+<footer>
+  <div class="wrapper center">
+    <p>GN Audio A/S</p>
+  </div>
+</footer>
+<script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-1.2.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script type="text/javascript" src="main.js"></script>
+</body>
+</html>

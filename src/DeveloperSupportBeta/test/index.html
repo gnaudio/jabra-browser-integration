@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jabra Browser Api Test</title>
+  <link href="main.css" rel="stylesheet" />
+  <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+</head>
+<body>
+<a href="https://github.com/gnaudio/jabra-browser-integration"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<header>
+  <div class="wrapper center">
+    <h1 class="title">Jabra Browser API Test</h1>
+    <p><span>Testing client API v</span><span id="clientlibVersionTxt"></span><span id="otherVersionTxt"></span></p>
+    <p><span id="browserAndOsVersionTxt"></span></p>
+  </div>
+</header>
+<section id="section">
+  <div class="wrapper">
+    <table>
+        <tr> 
+            <td>
+                <input id="initSDKBtn" type="button" value="Init"/>
+            </td>
+            <td>
+                <input id="unInitSDKBtn" type="button" value="UnInit" disabled="true"/>
+            </td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>
+                <input id="checkInstallBtn" type="button" value="CheckInstall" disabled="true"/>
+            </td>
+            <td>
+                 <div id="installCheckResult"></div>
+            </td>
+        </tr>    
+    </table>
+      
+    <p/><p/>
+    
+    <table>
+        <tr>
+            <td>
+                <input id="devicesBtn" type="button" value="Get Devices" disabled="true"/>   
+            </td>
+            <td>
+                <div>   
+                    <select id="deviceSelector"> 
+                    </select>   
+                </div>   
+            </td>
+            <td>
+                 <input id="changeActiveDeviceBtn" type="button" value="Set as active" disabled="true"/>
+            </td>
+        </tr>
+    </table>
+
+    <p>&nbsp;</p>
+        
+    <table>
+        <tr>
+            <td>
+                <label for="methodSelector">Select API call to invoke:</label>
+            </td>
+            <td>
+                <select id="methodSelector">                  
+                </select>   
+            </td>
+            <td>
+                <input id="invokeApiBtn" type="button" value="Invoke" disabled="true"/>
+            </td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td>
+                Parameter 1
+            </td>
+            <td>
+                Parameter 2
+            </td>
+            <td>
+                Parameter 3
+            </td>
+            <td>
+                Parameter 4
+            </td>
+            <td>
+                Parameter 5
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" id="txtParam1" />
+            </td>
+            <td>
+                <input type="text" id="txtParam2" />
+            </td>
+            <td>
+                <input type="text" id="txtParam3" />
+            </td>
+            <td>
+                <input type="text" id="txtParam4" />
+            </td>
+            <td>
+                <input type="text" id="txtParam5" />
+            </td>
+        </tr>
+    </table>
+    
+    
+    <p/><p/>
+    
+    <table>
+        <tr>
+            <td>
+              Message/event output: <input id="clearMessageAreaBtn" type="button" value="Clear" />   
+            </td>
+            <td>
+              Error Output: <input id="clearErrorAreaBtn" type="button" value="Clear" />   
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <textarea id="messageArea" rows="10" cols="50"></textarea>
+            </td>
+            <td>
+              <textarea id="errorArea" rows="10" cols="50"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                API and extension content page log (open chrome developer tools for more details):
+                <input id="clearlogAreaBtn" type="button" value="Clear" /><br/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+              <textarea id="logArea" rows="10" cols="100"></textarea>
+              <br/>
+              Nb. See also: 
+              1) Extension background page console log.
+              2) Native chromehost log file.
+              3) Native SDK log file.
+            </td>
+        </tr>
+    </table>         
+  </div>
+</section>
+<footer>
+  <div class="wrapper center">
+    <p>GN Audio A/S</p>
+  </div>
+</footer>
+<script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script type="text/javascript" src="main.js"></script>
+</body>
+</html>
