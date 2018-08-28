@@ -1,13 +1,18 @@
 {
   "manifest_version": 2,
-  "name": "Jabra Browser Integration Extension",
+  "name": "Jabra Browser Integration Extension Beta",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "version": "0.5.0",
-  "description": "Jabra Integration Extension",
+  "version": "2.0.0.1",
+  "version_name": "2.0.0.beta1",
+  "description": "Jabra Integration Extension Beta",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
       "js": [ "content-script.js" ],
@@ -19,6 +24,6 @@
     "scripts": [ "background.js" ]
   },
   "permissions": [
-    "nativeMessaging"
+    "nativeMessaging", "storage", "tabs"
   ]
 }

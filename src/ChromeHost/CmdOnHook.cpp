@@ -38,17 +38,17 @@ CmdOnHook::~CmdOnHook()
 {
 }
 
-bool CmdOnHook::CanExecute(std::string cmd)
+bool CmdOnHook::CanExecute(const Request& request)
 {
-  return (cmd == "onhook");
+  return (request.message == "onhook");
 }
 
-void CmdOnHook::Execute(std::string cmd)
+void CmdOnHook::Execute(const Request& request)
 {
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error("No device");
+	  m_headsetIntegrationService->Error(request, "No device", {});
     return;
   }
 
@@ -64,7 +64,7 @@ void CmdOnHook::Execute(std::string cmd)
   Jabra_ReturnCode ret = Jabra_SetOffHook(deviceId, false);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error("Unable to go onhook");
+    m_headsetIntegrationService->Error(request, "Unable to go onhook", { std::make_pair("errorcode", std::to_string(ret)) });
     return;
   }
 

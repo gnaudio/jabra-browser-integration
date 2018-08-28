@@ -37,25 +37,27 @@ CmdSetActiveDevice::~CmdSetActiveDevice()
 {
 }
 
-bool CmdSetActiveDevice::CanExecute(std::string cmd)
+bool CmdSetActiveDevice::CanExecute(const Request& request)
 {
-  size_t index = cmd.find("setactivedevice ");
+  size_t index = request.message.find("setactivedevice ");
   return (index == 0);
 }
 
-void CmdSetActiveDevice::Execute(std::string cmd)
+void CmdSetActiveDevice::Execute(const Request& request)
 {
-  std::string subString = cmd.substr(std::string("setactivedevice ").length());
+  std::string subString = request.message.substr(std::string("setactivedevice ").length());
 
   unsigned short id = 0;
 
   try
   {
     id = std::stoi(subString);
-    m_headsetIntegrationService->SetCurrentDeviceId(id);
+    if (!m_headsetIntegrationService->SetCurrentDeviceId(id)) {
+      m_headsetIntegrationService->Error(request, "no device " + subString + " attached", {});
+    }
   }
   catch (const std::invalid_argument&)
   {
-    m_headsetIntegrationService->Error("unable to set active device");
+	  m_headsetIntegrationService->Error(request, "unable to set active device / argument error", {});
   }
 }

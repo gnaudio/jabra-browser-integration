@@ -36,8 +36,8 @@ public:
   explicit CmdHold(HeadsetIntegrationService* headsetIntegrationService);
   ~CmdHold();
 
-  bool CanExecute(std::string cmd) override;
-  void Execute(std::string cmd) override;
+  bool CanExecute(const Request& request) override;
+  void Execute(const Request& request) override;
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;

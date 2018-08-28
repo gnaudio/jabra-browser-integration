@@ -10,7 +10,7 @@ Prerequisites:
 ### Layered architecture
 ![Banner](/docs/AmazonLayers.png)
 
-### Initialization
+### Initialization (API v1.2)
 Both the Amazon Connect Streams and the Jabra Browser integration libraries must be initialized:
 
 ```javascript

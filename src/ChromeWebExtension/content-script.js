@@ -26,33 +26,110 @@ SOFTWARE.
 */
 
 (function () {
+  // Make logLevel variable in sync with storage (updated by options page)
+  // and forward changes to page script using a message as well.
+  var logLevel = 2;
 
-  // From page script
+  chrome.storage.local.get('logLevel', function(items) {
+    logLevel = parseInt(items.logLevel || "2");
+    if (logLevel>=3) { // Log if Loglevel >= Info
+      console.log("Log level set to: " + logLevel);
+    }
+    window.postMessage({
+      direction: "jabra-headset-extension-from-content-script",
+      message: "Event: logLevel " + logLevel
+    }, "*");
+    chrome.storage.onChanged.addListener(function(changes, areaName) {
+      for (key in changes) {
+        var storageChange = changes[key];
+        if (key='logLevel' && areaName === 'local' ) {
+          logLevel = storageChange.newValue;
+          if (logLevel>=3) { // Log if Loglevel >= Info
+            console.log("Log level changed to: " + logLevel);
+          }
+          window.postMessage({
+            direction: "jabra-headset-extension-from-content-script",
+            message: "Event: logLevel " + logLevel
+          }, "*");
+        }
+      }
+    });
+  });
+
+  // From page script (API client)
   window.addEventListener("message", function (event) {
     if (event.source === window &&
         event.data.direction &&
         event.data.direction === "jabra-headset-extension-from-page-script") {
-      window.chrome.runtime.sendMessage({ message: event.data.message });
+
+      if (logLevel>=4) { // Log if Loglevel >= Trace
+        console.log("Retrived event from page api script: " + JSON.stringify(event.data));
+      }
+
+      // Exceptionally, respond directly to logLevel requests since they are unreleated to native host.
+      if ( event.data.message === "logLevel") {
+        let response = {
+          direction: "jabra-headset-extension-from-content-script",
+          message: "Event: logLevel " + logLevel,
+          requestId: event.data.requestId,
+          apiClientId: event.data.apiClientId
+        };
+
+        if (logLevel>=4) { // Log if Loglevel >= Trace
+          console.log("Sending log message response back to page api script : " + JSON.stringify(response));
+        }
+
+        window.postMessage(response, "*");
+      } else { // Other requests needs to be passed on to background script.
+        let msg = event.data;
+
+        if (logLevel>=4) { // Log if Loglevel >= Trace
+          console.log("Sending message to background script: " + JSON.stringify(msg));
+        }
+
+        window.chrome.runtime.sendMessage(msg);
+      }
     }
   });
 
   // From background script
   window.chrome.runtime.onMessage.addListener(
-    function (request) {
-      if (request.message) {
-        window.postMessage({
-            direction: "jabra-headset-extension-from-content-script",
-            message: request.message
-          },
-          "*");
+    function (response) {
+      if (logLevel>=4) { // Log message if Loglevel >= Trace
+        console.log("Received response from background script", JSON.stringify(response));
       }
-      if (request.error) {
-        window.postMessage({
-          direction: "jabra-headset-extension-from-content-script",
-          error: request.error
-        },
-          "*");
-      }
-    });
 
+      let msg = response;
+      msg.direction = "jabra-headset-extension-from-content-script";
+
+      if (msg.message) {
+        if (logLevel>=4) { // Log if Loglevel >= Trace
+          console.log("Sending message to page api script : " + JSON.stringify(msg));
+        }
+      }
+      else if (msg.error) {
+        if (logLevel>=1) { // Log error if Loglevel >= Error.
+          console.log("Sending error message to page api script : " + JSON.stringify(msg));
+        }
+      }
+
+      if (msg.message || msg.error) {
+          // Forward error to api to be handled there if needed.
+          window.postMessage(msg, "*");
+      } else if (msg.info) {
+        if (logLevel>=3) { // Log message if Loglevel >= Info
+          console.log(msg.log);
+        }
+      } 
+      else if (msg.trace) {
+        if (logLevel>=4) { // Log message if Loglevel >= Trace
+          console.log(msg.trace);
+        }
+      }
+      else if (msg.warn) {
+        if (logLevel>=2) { // Log message if Loglevel >= Info
+          console.log(msg.warn);
+        }
+      }
+  });
 })();

@@ -38,17 +38,17 @@ CmdHold::~CmdHold()
 {
 }
 
-bool CmdHold::CanExecute(std::string cmd)
+bool CmdHold::CanExecute(const Request& request)
 {
-  return (cmd == "hold");
+  return (request.message == "hold");
 }
 
-void CmdHold::Execute(std::string cmd)
+void CmdHold::Execute(const Request& request)
 {
   unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-    m_headsetIntegrationService->Error("No device");
+	  m_headsetIntegrationService->Error(request, "No device", {});
     return;
   }
 
@@ -57,6 +57,6 @@ void CmdHold::Execute(std::string cmd)
   Jabra_ReturnCode ret = Jabra_SetHold(deviceId, true);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error("Unable to hold");
+	  m_headsetIntegrationService->Error(request, "Unable to hold", { std::make_pair("errorcode", std::to_string(ret)) });
   }
 }

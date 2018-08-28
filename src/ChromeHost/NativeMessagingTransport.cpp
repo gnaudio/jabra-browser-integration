@@ -38,16 +38,43 @@ NativeMessagingTransport::~NativeMessagingTransport()
 {
 }
 
-void NativeMessagingTransport::AddHandler(std::function<void(std::string)> callback)
+void NativeMessagingTransport::AddHandler(std::function<void(const Request&)> callback)
 {
   m_callback = callback;
 }
 
-void NativeMessagingTransport::SendText(std::string msg)
+void NativeMessagingTransport::SendResponse(const Response& response)
 {
   nlohmann::json j;
-  j["message"] = msg;
+
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Preparing response : " << response;
+  }
+
+  for (auto entry : response.getData())
+      j["data"][entry.first] = entry.second;
+
+  if (!response.error.empty()) {
+	  j["error"] = response.error;
+  }
+
+  if (!response.message.empty()) {
+	  j["message"] = response.message;
+  }
+
+  // For compatibility with old <= 0.5 versions of the extension message
+  // may not be empty so return a dummy value here if there is none.
+  if (!j["message"].is_string()) {
+	  j["message"] = "na";
+  }
+
+  j["requestId"] = response.requestId;
+  j["apiClientId"] = response.apiClientId;
   std::string text = j.dump();
+
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Sending response to extension: " << j;
+  }
 
   unsigned int len = text.length();
   std::cout << char(len >> 0)
@@ -74,6 +101,7 @@ void NativeMessagingTransport::Start()
     // Should the host be closed?
     if (length == 0xffffffff)
     {
+      LOG(plog::debug) << "Received close message from extension.";
       break;
     }
 
@@ -84,9 +112,27 @@ void NativeMessagingTransport::Start()
       msg += getchar();
     }
 
+    IF_LOG(plog::debug) {
+      LOG(plog::debug) << "Parsing received message : " << msg;
+    }
+
     nlohmann::json j = nlohmann::json::parse(msg.c_str());
 
-    std::string m = j["message"];
-    m_callback(m);
+    IF_LOG(plog::debug) {
+      LOG(plog::debug) << "Received message from extension: " << j;
+    }
+
+    nlohmann::json message = j.at("message"); // Required - Throws if missing.
+    nlohmann::json requestId = j["requestId"]; // Null if missing.
+    nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
+    // nlohmann::json data = j["data"]; // Null if missing.
+
+    {
+      Request req(message.get<std::string>(),
+                  requestId.is_string() ? requestId.get<std::string>() : "",
+                  apiClientId.is_string() ? apiClientId.get<std::string>() : "");
+
+      m_callback(req);
+    }
   }
 }

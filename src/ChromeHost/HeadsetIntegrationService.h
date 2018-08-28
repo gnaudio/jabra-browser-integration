@@ -31,28 +31,32 @@ SOFTWARE.
 #include <functional>
 #include <vector>
 #include <map>
+#include <utility>
 #include <mutex>
 #include "CmdInterface.h"
 #include "EventInterface.h"
 #include "SDK/JabraNativeHid.h"
+#include "Request.h"
+#include "Response.h"
 
 class HeadsetIntegrationService
 {
-public:
+  public:
   HeadsetIntegrationService();
   ~HeadsetIntegrationService();
 
-  void AddHandler(std::function<void(std::string)> callback);
-  void SendCmd(std::string msg);
+  void AddHandler(std::function<void(const Response&)> callback);
+  void SendCmd(const Request& request);
 
   bool Start();
 
   unsigned short GetCurrentDeviceId();
-  void SetCurrentDeviceId(unsigned short id);
+  bool SetCurrentDeviceId(unsigned short id);
   std::string GetDevicesAsString();
+  const std::vector<Jabra_DeviceInfo> GetDevices();
 
-  void Error(std::string msg);
-  void Event(std::string msg);
+  void Error(const Context& context, std::string msg, customDataType data);
+  void Event(const Context& context, std::string msg, customDataType data);
 
   void SetHookStatus(unsigned short id, bool mute);
   bool GetHookStatus(unsigned short id);
@@ -60,14 +64,14 @@ public:
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
 
-protected:
+  protected:
   std::map<Jabra_HidInput, EventInterface*> m_events;
   std::vector<CmdInterface*> m_commands;
 
   std::map<unsigned short, bool> m_HookStatus; // Since the Jabra USB stack SDK does not hold state - do it here
   std::map<unsigned short, bool> m_RingerStatus; // Since the Jabra USB stack SDK does not hold state - do it here
 
-  std::function<void(std::string)> m_callback;
+  std::function<void(const Response& txt)> m_callback;
   std::vector<Jabra_DeviceInfo> m_devices;
   std::mutex m_mtx; // mutex for critical section
   unsigned short m_currentDeviceId;

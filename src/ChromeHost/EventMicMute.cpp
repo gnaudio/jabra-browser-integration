@@ -39,5 +39,5 @@ EventMicMute::~EventMicMute()
 
 void EventMicMute::Execute(bool buttonInData)
 {
-  m_headsetIntegrationService->Event(buttonInData ? "mute" : "unmute");
+   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
 }

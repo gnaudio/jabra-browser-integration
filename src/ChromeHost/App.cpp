@@ -35,7 +35,10 @@ App::App()
 {
   transport.AddHandler(OnTransportIcoming);
   headsetService.AddHandler(OnHeadsetIncoming);
-  headsetService.Start();
+  if (!headsetService.Start()) {
+    // TODO: Should this be an error instead ?
+    LOG_WARNING << "Headsets ervice initialization failed";
+  }
 }
 
 App::~App()
@@ -48,13 +51,13 @@ void App::Start()
   transport.Start();
 }
 
-void App::OnTransportIcoming(std::string txt)
+void App::OnTransportIcoming(const Request& request)
 {
   // Route cmds to the headset service for processing
-  headsetService.SendCmd(txt);
+  headsetService.SendCmd(request);
 }
 
-void App::OnHeadsetIncoming(std::string txt)
+void App::OnHeadsetIncoming(const Response& response)
 {
-  transport.SendText(txt);
+  transport.SendResponse(response);
 }

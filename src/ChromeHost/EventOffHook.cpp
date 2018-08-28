@@ -45,14 +45,14 @@ void EventOffHook::Execute(bool buttonInData)
   {
     if (m_headsetIntegrationService->GetRingerStatus(deviceId))
     {
-      m_headsetIntegrationService->Event("acceptcall");
+	  m_headsetIntegrationService->Event(Context::device(), "acceptcall", {});
     }
   }
   else
   {
     if (m_headsetIntegrationService->GetHookStatus(deviceId))
     {
-      m_headsetIntegrationService->Event("endcall");
+	  m_headsetIntegrationService->Event(Context::device(), "endcall", {});
     }
   }
 }

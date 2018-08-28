@@ -27,10 +27,42 @@ SOFTWARE.
 
 #include "stdafx.h"
 #include "App.h"
+#include <exception>
+#include <iostream>
+#include <cstdlib>
+#include "logger.h"
+#include "meta.h"
+
+using namespace std;
 
 int main()
 {
-  App app;
-  app.Start(); // Blocks until done
+  try {
+	  configureLogging();
+  }
+  catch (const std::exception& e) {
+	  cerr << "Fatal error setting up logging" << e.what() << std::flush;
+	  return 2;
+  }
+  catch (...) {
+	  cerr << "Fatal unknown error setting up logging" << std::flush;
+	  return 2;
+  }
+
+  LOG_INFO << "Starting chromehost integrator v" << VERSION << " running native SDK v" << getNativeSDKVersion();
+
+  try {
+	  App app;
+	  app.Start(); // Blocks until done
+  } catch (const std::exception& e) {
+    log_exception(plog::Severity::fatal, e, "in main");
+	  return 1;
+  } catch (...) {
+	  LOG_FATAL << "Fatal unknown error: ";
+	  return 1;
+  }
+
+  LOG_INFO << "Normal termination of main";
+
   return 0;
 }

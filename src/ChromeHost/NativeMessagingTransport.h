@@ -29,21 +29,25 @@ SOFTWARE.
 
 #include <functional>
 #include <string>
+#include "Request.h"
+#include "Response.h"
 
+/**
+ * Handles communication to/from the chrome extension based on standard input/output.
+ */
 class NativeMessagingTransport
 {
-public:
+  public:
   NativeMessagingTransport();
   ~NativeMessagingTransport();
 
-  void AddHandler(std::function<void(std::string)> callback);
+  void AddHandler(std::function<void(const Request&)> callback);
 
-  void SendText(std::string msg);
+  void SendResponse(const Response& response);
 
   void Start();
 
-protected:
-  std::function<void(std::string)> m_callback;
-
+  protected:
+  std::function<void(const Request&)> m_callback;
 };
 
