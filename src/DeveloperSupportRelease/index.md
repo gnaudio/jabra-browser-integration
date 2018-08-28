@@ -17,5 +17,5 @@ This software from Jabra helps developers to make solutions, where basic headset
 # Native Chromehost downloads
 | Operating systems             | Chrome host native download             |
 | ----------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | <a href="https://github.com/gnaudio/jabra-browser-integration/raw/beta1/src/DeveloperSupportBeta/download/JabraChromeHost2.0beta1.msi" download="JabraChromeHost0.5.msi" target="_blank">JabraChromeHost0.5.msi</a> |
+| Windows (Windows 7 or newer)  | [JabraChromeHost0.5.msi](https://github.com/gnaudio/jabra-browser-integration/raw/beta1/src/DeveloperSupportBeta/download/JabraChromeHost2.0beta1.msi) |
 | macOS (El Capitan/Sierra)     | <a href="https://github.com/gnaudio/jabra-browser-integration/raw/beta1/src/DeveloperSupportBeta/download/JabraChromeHost2.0beta1.dmg" download="JabraChromeHost0.5.dmg" target="_blank">JabraChromeHost0.5.dmg</a> |
