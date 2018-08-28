@@ -27,17 +27,21 @@ The following desktop operating systems are supported:
 Google Chrome web browser - stable channel - 32 bit and 64 bit.
 
 ## Using the library 
-Developers must use the JavaScript library file: `jabra.browser.integration-1.2.js` 
+Developers must use the versioned JavaScript library file: `jabra.browser.integration.<majorVersion>.<minorVersion>.js`. This file adheres to semantic versioning
+so increases in majorVersion between releases indicate breaking changes so developers using the software
+may need to change their code when updating. Increases in minorVersion indicates that all changes are backwards compatible.
+
 The library internally checks for dependencies – and will report this to the app using the library. An example: The Jabra library is initialized and an error callback function is called with this text and a link: “You need to use this Extension and then reload this page”. Note that a future version could change the internal implementation and that removes/adds new requirements. 
 
-### Developer web site
+### Developer web site (release version)
 A developer web site with developer tools and a softphone demo: 
 
 https://gnaudio.github.io/jabra-browser-integration
 
 ### The API
 
-[Application Programming Interface documentation](docs/API.md)
+[Application Programming Interface typescript]( docs/API.md)
+[Application Programming Interface documentation]( docs/API.md)
 
 ### Downloads
 #### WebExtension
