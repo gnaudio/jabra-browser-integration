@@ -7,9 +7,9 @@ This software from Jabra helps developers to make solutions, where basic headset
 [API Documentation page](https://github.com/gnaudio/jabra-browser-integration)
 
 # Development tools
-* [Library test](development/index.html) - testpage to try out the library
-* [Playback with autoselection](playback/index.html) - testpage showing autoselection of jabra device with simple audio playback example
-* [WebRTC softphone demo](webrtc/index.html) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
+* [Library test](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/beta1/src/DeveloperSupportRelease/development/index.html) - testpage to try out the library
+* [Playback with autoselection](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/beta1/src/DeveloperSupportRelease/playback/index.html) - testpage showing autoselection of jabra device with simple audio playback example
+* [WebRTC softphone demo](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/beta1/src/DeveloperSupportRelease/webrtc/index.html) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
 
 # Javascript API
 [Javascript API 1.2 file](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/JavaScriptLibrary/jabra.browser.integration-1.2.js)
