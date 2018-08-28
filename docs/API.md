@@ -1,4 +1,7 @@
-### The API
+### The API (v 1.2 and earlier only)
+
+NB: The API documented here wll be changed in upcomming v2.0 release. See [here](BETA.md) for details.
+
 The JavaScript library must be initialized using this function: 
 ```javascript
 jabra.init(onSuccess, onFailure, onNotify) 

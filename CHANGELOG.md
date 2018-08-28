@@ -1,10 +1,10 @@
-# General for information.
+# General information.
 
 Here are listed changes for (1) Javascript API, (2) Browser extension and (3) native chromehost installation. 
 
 ## 1/3 Javascript API changes :
 
-2.0 Added/changed the following
+2.0 (BETA) Added/changed the following ( this section is work in progress )
 * Added typescript definitions `jabra.browser.integration-2.0.d.ts` of API for detailed documentation, static checking and better IDE support. *Tip: Use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools.* 
 * Modern ES5+ promisified Javascript API - All methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks in order to enabled streamlined testing and API usage. This means for instance, the `init()` method now returns a JS promise that user should use then()/catch() on to react on initialization **(breaking change)**.
 * Individual subscription to event(s) using `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` **(breaking change)**.
@@ -26,7 +26,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 ## 2/3 Browser extension changes:
 
-2.0 Added the following
+2.0 (BETA) Added the following ( this section is work in progress ):
 * Support for passing complex input/output as needed by new JS API.
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
 * Support for new getInstallInfo command.
@@ -35,7 +35,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 0.5 Orginal version with call control support.
 
 ## 3/3 Chome host changes:
-2.0 Added the following:
+2.0 (BETA) Added the following ( this section is work in progress ):
 * Logging to files similar to native SDK.
 * Support for more complex input/output needed by new JS API.
 * Support for new getInstallInfo command.
