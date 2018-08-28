@@ -4,6 +4,8 @@
   "path": "/Library/Google/Chrome/NativeMessagingHosts/jabrachromehost",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://okpeabepajdgiepelmhkfhkjlhhmofma/"
+    "chrome-extension://okpeabepajdgiepelmhkfhkjlhhmofma/",
+	  "chrome-extension://igcbbdnhomedfadljgcmcfpdcoonihfe/",
+	  "chrome-extension://klapphmlodmhfolphohgkmimlkpcindc/"
   ]
 }
