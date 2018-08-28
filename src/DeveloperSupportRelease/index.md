@@ -12,11 +12,10 @@ This software from Jabra helps developers to make solutions, where basic headset
 * [WebRTC softphone demo](webrtc/index.html) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
 
 # Javascript API
-[Javascript API 1.2 file](../JavaScriptLibrary/jabra.browser.integration-1.2.js)
+<a href="(../JavaScriptLibrary/jabra.browser.integration-1.2.js" download>Javascript API 1.2 file</a>
 
 # Native Chromehost downloads
-
-| Operating systems             | Chrome host native download |
-| ----------------------------- |:---------------------------:|
-| Windows (Windows 7 or newer)  | [JabraChromeHost0.5.msi](download/JabraChromeHost0.5.msi) |
-| macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](JabraChromeHost0.5.dmg)          |
+| Operating systems             | Chrome host native download             |
+| ----------------------------- | --------------------------------------- |
+| Windows (Windows 7 or newer)  | <a href="download/JabraChromeHost0.5.msi" download>JabraChromeHost0.5.msi</a> |
+| macOS (El Capitan/Sierra)     | <a href="download/JabraChromeHost0.5.dmg" download>JabraChromeHost0.5.dmg</a> |
