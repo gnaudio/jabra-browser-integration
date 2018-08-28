@@ -15,7 +15,7 @@ You need to install ALL updates for all bugfixes and new features to work 100% b
 We consider compatibility important because changes to API, browser extension and native chromehost are often pushed at different times in different channels. Thus, please report any compatibility issues if found!
 
 # BETA Documentation
-* [Typescript API definition/documentation](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/JavaScriptLibrary/jabra.browser.integration-1.2.d.ts)
+* [Typescript API definition/documentation](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts)
 * [Changelog](CHANGELOG.md)
 
 # BETA Javascript API
@@ -28,15 +28,17 @@ so increases in the major version component of the version number between releas
 may need to change their code when updating. Increases in minor version indicates that all changes ought to be backwards compatible.*
 
 # Native Chromehost BETA downloads
-| Operating systems             | Chrome host native download             |
-| ----------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0beta1.msi?raw=true) |
-| macOS (El Capitan/Sierra)     | *comming soon* |
+| Operating systems             | Chrome host native download             | Description                             |
+| ----------------------------- | --------------------------------------- | --------------------------------------- |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0beta1.msi?raw=true) | Newest beta version |
+| Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.51.msi?raw=true) | Security fix for allowing beta with old chrome host executable + downgrades. See note under web extension for details. |
+| macOS (El Capitan/Sierra)     | *comming soon* | |
 
 # WebExtension BETA
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/igcbbdnhomedfadljgcmcfpdcoonihfe)
 
-**Important note**: If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is done by manually adding the new beta extension id "igcbbdnhomedfadljgcmcfpdcoonihfe" to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in "C:\Program Files (x86)\JabraChromeHost". Note, that this security issues is only a beta issue - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
+**Important note**: If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is done by installing
+v0.51 of the chromehost which fixes this issue but otherwise contains the same executables. ALternatively, you can manually add the new beta extension id "igcbbdnhomedfadljgcmcfpdcoonihfe" to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in "C:\Program Files (x86)\JabraChromeHost". Note, that this security issues is only a beta issue - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
 
 
 # BETA Development tools/demos
