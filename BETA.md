@@ -31,21 +31,21 @@ may need to change their code when updating. Increases in minor version indicate
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0beta1.msi?raw=true) | Newest beta version |
-| Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.51.msi?raw=true) | Security fix for allowing beta with old chrome host executable + downgrades. See note under web extension for details. |
+| Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.51.msi?raw=true) | Security fix for allowing beta extension to work with old chrome host executable + allow downgrades. See note under web extension for details. |
 | macOS (El Capitan/Sierra)     | *comming soon* | |
 
 # WebExtension BETA
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/igcbbdnhomedfadljgcmcfpdcoonihfe)
 
 **Important note**: If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is done by installing
-v0.51 of the chromehost which fixes this issue but otherwise contains the same executables. ALternatively, you can manually add the new beta extension id "igcbbdnhomedfadljgcmcfpdcoonihfe" to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in "C:\Program Files (x86)\JabraChromeHost". Note, that this security issues is only a beta issue - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
+v0.51 of the chromehost which fixes this issue but otherwise contains the same executables. ALternatively, you can manually add the new beta extension id `igcbbdnhomedfadljgcmcfpdcoonihfe` to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in `C:\Program Files (x86)\JabraChromeHost`. Note, that this security issues is only a beta issue - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
 
 
 # BETA Development tools/demos
-* [Call control test](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/development/index.html) - testpage to try out call controll in the library
-* [Library api test](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/test/index.html) - **NEW** testpage that allows detailed testing of individual API calls)
-* [Playback demo with autoselection](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/playback/index.html) - demo page showing autoselection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/webrtc/index.html) - demo that supports mute/unmute/end-call from a Jabra device + jabra device autoselection
+* [Call control test](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/development/index.html) - testpage to try out call controll in the library
+* [Library api test](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/test/index.html) - **NEW** testpage that allows detailed testing of individual API calls)
+* [Playback demo with autoselection](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/playback/index.html) - demo page showing autoselection of jabra device with simple audio playback example
+* [WebRTC softphone demo](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/webrtc/index.html) - demo that supports mute/unmute/end-call from a Jabra device + jabra device autoselection
 
 # Upgrading API from 1.2 to 2.0
 As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries and `requestEnu` is removed.
