@@ -4,7 +4,7 @@
 
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-    <MajorUpgrade AllowDowngrades="yes" />
+    	<MajorUpgrade AllowDowngrades="yes" />
     
 		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" CompressionLevel="high" />
 
