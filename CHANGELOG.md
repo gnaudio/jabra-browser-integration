@@ -42,4 +42,8 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
 * Beta support
 
+0.51 (BETA) Added the following
+* Security fix to allow being called from beta browser extensions
+* Installer allow downgrades for easier testing.
+
 0.5 Orginal version with call control support.
