@@ -42,10 +42,10 @@ v0.51 of the chromehost which fixes this issue but otherwise contains the same e
 
 
 # BETA Development tools/demos
-* [Call control test](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/development/index.html) - testpage to try out call controll in the library
-* [Library api test](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/test/index.html) - **NEW** testpage that allows detailed testing of individual API calls)
-* [Playback demo with autoselection](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/playback/index.html) - demo page showing autoselection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://rawgit.com/gnaudio/jabra-browser-integration/master/src/DeveloperSupportBeta/webrtc/index.html) - demo that supports mute/unmute/end-call from a Jabra device + jabra device autoselection
+* [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - testpage to try out call controll in the library
+* [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - **NEW** testpage that allows detailed testing of individual API calls)
+* [Playback demo with autoselection](https://gnaudio.github.io/jabra-browser-integration/beta/platback/) - demo page showing autoselection of jabra device with simple audio playback example
+* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/webrtc/playback/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device autoselection
 
 # Upgrading API from 1.2 to 2.0
 As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries and `requestEnu` is removed.
