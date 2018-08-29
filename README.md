@@ -52,9 +52,9 @@ The library internally checks for dependencies – and will report this to the a
 | macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.5.dmg?raw=true) |
 
 ## Development tools
-* [Library test](https://gnaudio.github.io/jabra-browser-integration/development/) - testpage to try out the library
-* [Playback with autoselection](https://gnaudio.github.io/jabra-browser-integration/playback/) - testpage showing autoselection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/webrtc/) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
+* [Library test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - testpage to try out the library
+* [Playback with autoselection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - testpage showing autoselection of jabra device with simple audio playback example
+* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
 
 ### Example use
 
