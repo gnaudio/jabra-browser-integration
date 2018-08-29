@@ -1,13 +1,13 @@
-#ifndef __JABRANATIVEHID_H__
-#define __JABRANATIVEHID_H__
+#ifndef JABRANATIVEHID_H
+#define JABRANATIVEHID_H
 
 /* --------------------------------------------------------------------
- * 
+ *
  *  GGGGGG  NN    N
  *  G       N N   N
  *  G  GGG  N  N  N - Audio
  *  G    G  N   N N
- *  GGGGGG  N    NN 
+ *  GGGGGG  N    NN
  *
  *  Copyright (c) 2017, GN-Audio
  * -------------------------------------------------------------------- */
@@ -55,7 +55,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_WriteHIDCommand(
 
 /** Set OffHook
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : hook: Off hook/on Hook
+ *  @param[in] : hook: Boolean value to set Off hook/On Hook
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Device_NotLock if device is not locked.
@@ -68,7 +68,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetOffHook(
 
 /** Set Ringer
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : ringer: Ringer on/ringer off
+ *  @param[in] : ringer: Boolean value to set Ringer On/Off
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Device_NotLock if device is not locked.
@@ -79,7 +79,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetRinger(
   bool ringer
 );
 
-/** Hook Support
+/** Checks for OffHook command support by the device.
  *  @param[in] : deviceID: Id for a specific device
  *  @return    : Returns true if off hook is supported for a specific Jabra device.
  */
@@ -87,7 +87,7 @@ LIBRARY_API bool Jabra_IsOffHookSupported(
   unsigned short deviceID
 );
 
-/** Ringer Support
+/** Check for Ringer command support by the device.
  *  @param[in] : deviceID: Id for a specific device
  *  @return    : Returns true if ringer is supported for a specific Jabra device.
  */
@@ -97,18 +97,18 @@ LIBRARY_API bool Jabra_IsRingerSupported(
 
 /** Set Mute
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : mute: Mute on/mute off
+ *  @param[in] : mute: Boolean value to set Mute On/Off
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Device_NotLock if device is not locked.
 				 Not_Supported if HID is not supported.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SetMute(
-  unsigned short deviceID, 
+  unsigned short deviceID,
   bool mute
 );
 
-/** mute Support
+/** Checks for Mute command support by the device.
  *  @param[in] : deviceID: Id for a specific device
  *  @return    : Returns true if mute is supported for the Jabra device.
  */
@@ -118,18 +118,18 @@ LIBRARY_API bool Jabra_IsMuteSupported(
 
 /** Set Hold
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : hold: Hold on/resume
+ *  @param[in] : hold: Boolean value to set device On Hold/Resume
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Device_NotLock if device is not locked.
 				 Not_Supported if HID is not supported.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SetHold(
-  unsigned short deviceID, 
+  unsigned short deviceID,
   bool hold
 );
 
-/** Hold Support
+/** Checks for the Hold support by the device.
  *  @param[in] : deviceID: Id for a specific device
  *  @return    : Returns true if hold is supported for the Jabra device.
  */
@@ -139,18 +139,18 @@ LIBRARY_API bool Jabra_IsHoldSupported(
 
 /** Set Online, it opens radio link between base/dongle and device
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : online: Online on/online off
+ *  @param[in] : online: Boolean value to set Online On/Off
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Device_NotLock if device is not locked.
 				 Not_Supported if HID is not supported.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SetOnline(
-  unsigned short deviceID, 
+  unsigned short deviceID,
   bool audiolink
 );
 
-/** online mode Support
+/** Checks for the online mode support by the device.
  *  @param[in] : deviceID: Id for a specific device
  *  @return    : Returns true if online mode is supported for a specific Jabra device.
  */
@@ -158,4 +158,40 @@ LIBRARY_API bool Jabra_IsOnlineSupported(
  unsigned short deviceID
 );
 
-#endif /* __JABRANATIVEHID_H__ */
+/**
+ * Enum for setting the HID working state.
+ */
+typedef enum _Jabra_HidState {
+  /** Use standard HID as specified in the HID specification from usb.org. */
+  STD_HID = 0,
+  /** Use GN HID as specified by GN. */
+  GN_HID = 1
+} Jabra_HidState;
+
+/**
+ * Gets the HID working state.
+ * @param[in] deviceID ID for a specific device.
+ * @param[out] state HID working state.
+ * @return Return_Ok working state has been set successfully.
+ *         Device_NotLock the device is not locked, use Jabra_GetLock() to lock the device.
+ *         Not_Supported the device does not support remote MMI.
+ *         Device_Unknown the deviceID specified is not known.
+ *         Device_ReadFail if it fails to get the state from the device.
+ *         Return_ParameterFail in case of an incorrect parameter.
+ */
+LIBRARY_API Jabra_ReturnCode Jabra_GetHidWorkingState(unsigned short deviceID, Jabra_HidState* state);
+
+/**
+ * Sets the HID working state to either standard HID (usb.org HID specification) or GN HID.
+ * @param[in] deviceID ID for a specific device.
+ * @param[in] state HID working state.
+ * @return Return_Ok working state has been set successfully.
+ *         Device_NotLock the device is not locked, use Jabra_GetLock() to lock the device.
+ *         Not_Supported the device does not support remote MMI.
+ *         Device_Unknown the deviceID specified is not known.
+ *         Device_WriteFail if it fails to write to the device.
+ *         Return_ParameterFail in case of an incorrect parameter.
+ */
+LIBRARY_API Jabra_ReturnCode Jabra_SetHidWorkingState(unsigned short deviceID, Jabra_HidState state);
+
+#endif /* JABRANATIVEHID_H */
