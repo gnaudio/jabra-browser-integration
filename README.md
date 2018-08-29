@@ -40,7 +40,7 @@ may need to change their code when updating. Increases in minorVersion indicates
 
 The library internally checks for dependencies – and will report this to the app using the library. An example: The Jabra library is initialized and an error callback function is called with this text and a link: “You need to use this Extension and then reload this page”. Note that a future version could change the internal implementation and that removes/adds new requirements. 
 
-[Latest stable version download link: - Javascript API 1.2 file](https://raw.githubusercontent.com/gnaudio/jabra-browser-integration/master/src/JavaScriptLibrary/jabra.browser.integration-1.2.js)
+[Latest stable version download link: - Javascript API 1.2 file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-1.2.js)
 
 #### WebExtension
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
@@ -48,8 +48,8 @@ The library internally checks for dependencies – and will report this to the a
 # Native Chromehost downloads
 | Operating systems             | Chrome host native download             |
 | ----------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost0.5.msi](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.5.msi?raw=true) |
-| macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost0.5.dmg?raw=true) |
+| Windows (Windows 7 or newer)  | [JabraChromeHost0.5.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.msi) |
+| macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) |
 
 ## Development tools
 * [Library test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - testpage to try out the library
