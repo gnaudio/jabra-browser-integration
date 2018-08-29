@@ -10,7 +10,7 @@ For general information about the library please refer to our [main documentatio
 # Compatibility
 With the exception of the new 2.0 API component usage compared with the 1.2 API component and a beta-only security issue documented under the beta browser extension section below, everything in this release is backwards compatible with old version(s). This means that the updated browser extension and the updated chromehost will work in combination with older versions of other components.
 
-That said, it is recommended that you upgrade all components (API, browser extension and chrome host). A full upgrade is needed for new features and bug fixes to work 100%. Rest assured, existing old features will continue to work when updating just one or two components while you wait for the rest to be updated at a later time. 
+That said, it is highly recommended that you upgrade all components (API, browser extension and chrome host) to latest stable release. A full upgrade is needed for new features and bug fixes to work 100%. Rest assured, existing old features will continue to work when updating just one or two components while you wait for the rest to be updated at a later time. 
 
 We consider compatibility important because changes to API, browser extension and native chromehost are often pushed at different times in different channels. Thus, please report any compatibility issues if found!
 
@@ -37,8 +37,11 @@ may need to change their code when updating. Increases in minor version indicate
 # WebExtension BETA
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/igcbbdnhomedfadljgcmcfpdcoonihfe)
 
-**Important note**: If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is easily done by installing
-v0.51 of the chromehost which fixes this issue but otherwise contains the same executable. AAlternatively, you can manually add the new beta extension id `igcbbdnhomedfadljgcmcfpdcoonihfe` to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in `C:\Program Files (x86)\JabraChromeHost`. Note, that this security issues only affects the beta - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
+**Important notes about BETA web extension **: 
+1. The BETA browser extension should not be active at the same time as the standard release version of the browser extension. Please deactivate or uninstall the stable browser extension before installing the BETA browser extension. Running both extensions simultaneously are NOT supported.
+
+2. If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is easily done by installing
+v0.51 of the chromehost which fixes this issue but otherwise contains the same executable. Alternatively, you can manually add the new beta extension id `igcbbdnhomedfadljgcmcfpdcoonihfe` to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in `C:\Program Files (x86)\JabraChromeHost`. Note, that this security issues only affects the beta - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
 
 
 # BETA Development tools/demos
