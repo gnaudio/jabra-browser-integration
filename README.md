@@ -32,6 +32,7 @@ The following desktop operating systems are supported:
 Google Chrome web browser - stable channel - 32 bit and 64 bit.
 
 # Using the library
+The solution consists of a Javascript API that webpages can consume, a chrome web extension and a native chromehost that must be installed separately. 
 
 ## Javascript API
 Developers must use the versioned JavaScript library file with the format `jabra.browser.integration.<majorVersion>.<minorVersion>.js`. This file adheres to semantic versioning
@@ -42,21 +43,21 @@ The library internally checks for dependencies – and will report this to the a
 
 [Latest stable version download link: - Javascript API 1.2 file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-1.2.js)
 
-#### WebExtension
+## WebExtension
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/okpeabepajdgiepelmhkfhkjlhhmofma)
 
-# Native Chromehost downloads
+## Native Chromehost downloads
 | Operating systems             | Chrome host native download             |
 | ----------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.5.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.msi) |
 | macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) |
 
 ## Development tools
-* [Library test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - testpage to try out the library
-* [Playback with autoselection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - testpage showing autoselection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - supports mute/unmute/end-call from a Jabra device + jabra device autoselection
+* [Library test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out the library
+* [Playback with auto selection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - test page showing auto selection of jabra device with simple audio playback example
+* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 
-### Example use
+## Example use
 
 #### Amazon Connect
 [Amazon Connect](https://aws.amazon.com/connect) is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
@@ -71,7 +72,7 @@ Documentation about [deployment](docs/Deployment.md)
 
 ## Version information.
 
-For information about individual releases see [changelog](docs/CHANGELOG.md). For information about upcomming changes see also our [beta information page](BETA.md).
+For information about individual releases see [changelog](docs/CHANGELOG.md). For information about upcoming changes see also our [beta information page](BETA.md).
 
 
 

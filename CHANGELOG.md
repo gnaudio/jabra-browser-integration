@@ -1,4 +1,4 @@
-# General information.
+# Change information.
 
 Here are listed changes for (1) Javascript API, (2) Browser extension and (3) native chromehost installation. 
 
@@ -18,11 +18,11 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Added API test example, updated existing examples for new API version.
 * All internals are now hidden away so they can't be accessed by accident.
 
-1.2 Added jabra device autodetection.
+1.2 Added jabra device auto detection.
 
 1.1 Internal release.
 
-1.0 Orginal version with call control support.
+1.0 Original version with call control support.
 
 ## 2/3 Browser extension changes:
 
@@ -32,9 +32,9 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Support for new getInstallInfo command.
 * Added logging support, configurable using new UI.
 
-0.5 Orginal version with call control support.
+0.5 Original version with call control support.
 
-## 3/3 Chome host changes:
+## 3/3 Chomehost changes:
 2.0 (BETA) Added the following ( this section is work in progress ):
 * Logging to files similar to native SDK.
 * Support for more complex input/output needed by new JS API.
@@ -46,4 +46,4 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Security fix to allow being called from beta browser extensions
 * Installer allow downgrades for easier testing.
 
-0.5 Orginal version with call control support.
+0.5 Original version with call control support.
