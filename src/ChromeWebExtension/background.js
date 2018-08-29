@@ -111,7 +111,8 @@ SOFTWARE.
         port.onDisconnect.addListener(() => {
           var err = chrome.runtime.lastError ? chrome.runtime.lastError.message : null;
           if (err === "Specified native messaging host not found.") {
-            sendErrorToContentScript("You need to install the <a href='https://gnaudio.github.io/jabra-browser-integration/download'>Jabra Browser Integration Host " + (extensionType!=="production") ? "(" + extensionType + " version)" : "" + "</a> and reload this page", request);
+            let errTxt = "You need to install the <a href='" +  ((extensionType!=="production") ? "https://github.com/gnaudio/jabra-browser-integration/blob/master/BETA.md#native-chromehost-beta-downloads" : "https://github.com/gnaudio/jabra-browser-integration#native-chromehost-downloads") + "'>Jabra Browser Integration Host " + ((extensionType!=="production") ? "(" + extensionType + " version)" : "") + "</a> and reload this page";
+            sendErrorToContentScript(errTxt, request);
           } else if (err === "Access to the specified native messaging host is forbidden." && extensionId !== prodExtensionId) {
             sendErrorToContentScript("You are running a beta/development version of the Jabra browser extension which lacks access rights to installed native messaging host. Please upgrade your native host installation OR manually add this extension id '" + extensionId + "' to allowed_origins (in file com.jabra.nm.json in the installation directory of the native host", request);
           } else {
@@ -136,11 +137,6 @@ SOFTWARE.
   // Send response with message or error to content script.
   function sendMessageToContentScript(response) {
     let msg = response;
-
-    // Remove dummy empty message that may exist for backward compatible.
-    if (msg.message === "na") {
-      delete msg.message;
-    }
 
     // For install info and version commands, we need to add appropiate things only the 
     // background script knows about like chrome extension version number, extensionId etc.
@@ -177,6 +173,7 @@ SOFTWARE.
     // Errors always forwarded because api user may needs to handle - so no filtering here.
     let msg = {
       error: errStr,
+      message: 'na', // For backwards compatibility with <2.0 API that expects this to be non-null.
       requestId: request ? request.requestId : null,
       apiClientId: request ? request.apiClientId : null,
     };

@@ -35,10 +35,6 @@ SOFTWARE.
     if (logLevel>=3) { // Log if Loglevel >= Info
       console.log("Log level set to: " + logLevel);
     }
-    window.postMessage({
-      direction: "jabra-headset-extension-from-content-script",
-      message: "Event: logLevel " + logLevel
-    }, "*");
     chrome.storage.onChanged.addListener(function(changes, areaName) {
       for (key in changes) {
         var storageChange = changes[key];
@@ -46,7 +42,7 @@ SOFTWARE.
           logLevel = storageChange.newValue;
           if (logLevel>=3) { // Log if Loglevel >= Info
             console.log("Log level changed to: " + logLevel);
-          }
+          }         
           window.postMessage({
             direction: "jabra-headset-extension-from-content-script",
             message: "Event: logLevel " + logLevel
@@ -66,7 +62,7 @@ SOFTWARE.
         console.log("Retrived event from page api script: " + JSON.stringify(event.data));
       }
 
-      // Exceptionally, respond directly to logLevel requests since they are unreleated to native host.
+      // Exceptionally, respond directly to logLevel requests since they are unrelated to native host.
       if ( event.data.message === "logLevel") {
         let response = {
           direction: "jabra-headset-extension-from-content-script",

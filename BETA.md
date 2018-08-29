@@ -43,7 +43,6 @@ may need to change their code when updating. Increases in minor version indicate
 2. If you are testing the browser extension beta together with the old 0.5 non-beta version of the chrome host, you need to give it explicit permission to call into the old chromehost executable. This is easily done by installing
 v0.51 of the chromehost which fixes this issue but otherwise contains the same executable. Alternatively, you can manually add the new beta extension id `igcbbdnhomedfadljgcmcfpdcoonihfe` to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in `C:\Program Files (x86)\JabraChromeHost`. Note, that this security issues only affects the beta - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
 
-
 # BETA Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - test page to try out call control in the library
 * [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - **NEW** test page that allows detailed testing of individual API calls)
