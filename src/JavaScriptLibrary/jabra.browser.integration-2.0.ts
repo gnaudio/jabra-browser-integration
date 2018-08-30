@@ -53,7 +53,7 @@ namespace jabra {
      * Contains information about installed components.
      */
     export interface InstallInfo {
-        uptodateInstallation: boolean;
+        uptodateInstallation?: boolean;
         consistantInstallation: boolean;
         version_chromehost: string;
         version_nativesdk: string;
@@ -82,33 +82,8 @@ namespace jabra {
     };
 
     export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
-                            | "endcall" | "reject" | "flash" | "online" | "offline" | "error";
-
-    /**
-     * An enumeration of codes for various device events.
-     */
-    export enum DeviceEventCodes {
-        mute = 0,
-        unmute = 1,
-        endCall = 2,
-        acceptCall = 3,
-        rejectCall = 4,
-        flash = 5,
-        /**
-         * A device has been added.
-         */
-        deviceAttached = 6,
-        /**
-         * A device has been removed.
-         */
-        deviceDetached = 7,
-
-        online = 8,
-
-        offline = 9,
-
-        error = 255
-    };
+                            | "endcall" | "reject" | "flash" | "online" | "offline" | "error"
+                            | "devlog";
 
     export interface DeviceInfo {
         groupId: string | null,
@@ -131,7 +106,6 @@ namespace jabra {
      */
     export interface Event {
         name: string;
-        code: DeviceEventCodes;
         arg?: string;
     };
 
@@ -164,21 +138,7 @@ namespace jabra {
     eventListeners.set("error", []);
     eventListeners.set("online", []);
     eventListeners.set("offline", []);
-
-    const deviceEventsMap: { [K in EventName]: DeviceEventCodes } = {
-        "mute": DeviceEventCodes.mute,
-        "unmute": DeviceEventCodes.unmute,
-        "device attached": DeviceEventCodes.deviceAttached,
-        "device detached": DeviceEventCodes.deviceDetached,
-        "acceptcall": DeviceEventCodes.acceptCall,
-        "endcall": DeviceEventCodes.endCall,
-        "reject": DeviceEventCodes.rejectCall,
-        "flash": DeviceEventCodes.flash,
-        "online": DeviceEventCodes.online,
-        "offline": DeviceEventCodes.offline,
-        "error": DeviceEventCodes.error,
-        
-    };
+    eventListeners.set("devlog", []);
 
     const commandEventsList = [
         "devices",
@@ -286,6 +246,11 @@ namespace jabra {
                     if (apiClientId === apiClientId || apiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
 
+                        // For backwards compatibility a blank message might be send as "na".
+                        if (event.data.message === "na") {
+                            delete event.data.message;
+                        }
+
                         if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
                             logLevel = parseInt(event.data.message.substring(16));
                             logger.trace("Logger set to level " + logLevel);
@@ -351,7 +316,6 @@ namespace jabra {
                                 delete clientEvent.apiClientId;
                                 delete clientEvent.requestId;
                                 clientEvent.message = normalizedMsg;
-                                clientEvent.code =  deviceEventsMap[normalizedMsg as EventName];
 
                                 notify(normalizedMsg as EventName, clientEvent);
                             } else {

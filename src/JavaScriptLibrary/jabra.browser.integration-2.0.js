@@ -49,30 +49,6 @@ var jabra;
     ;
     ;
     ;
-    /**
-     * An enumeration of codes for various device events.
-     */
-    let DeviceEventCodes;
-    (function (DeviceEventCodes) {
-        DeviceEventCodes[DeviceEventCodes["mute"] = 0] = "mute";
-        DeviceEventCodes[DeviceEventCodes["unmute"] = 1] = "unmute";
-        DeviceEventCodes[DeviceEventCodes["endCall"] = 2] = "endCall";
-        DeviceEventCodes[DeviceEventCodes["acceptCall"] = 3] = "acceptCall";
-        DeviceEventCodes[DeviceEventCodes["rejectCall"] = 4] = "rejectCall";
-        DeviceEventCodes[DeviceEventCodes["flash"] = 5] = "flash";
-        /**
-         * A device has been added.
-         */
-        DeviceEventCodes[DeviceEventCodes["deviceAttached"] = 6] = "deviceAttached";
-        /**
-         * A device has been removed.
-         */
-        DeviceEventCodes[DeviceEventCodes["deviceDetached"] = 7] = "deviceDetached";
-        DeviceEventCodes[DeviceEventCodes["online"] = 8] = "online";
-        DeviceEventCodes[DeviceEventCodes["offline"] = 9] = "offline";
-        DeviceEventCodes[DeviceEventCodes["error"] = 255] = "error";
-    })(DeviceEventCodes = jabra.DeviceEventCodes || (jabra.DeviceEventCodes = {}));
-    ;
     ;
     ;
     /**
@@ -91,19 +67,7 @@ var jabra;
     eventListeners.set("error", []);
     eventListeners.set("online", []);
     eventListeners.set("offline", []);
-    const deviceEventsMap = {
-        "mute": DeviceEventCodes.mute,
-        "unmute": DeviceEventCodes.unmute,
-        "device attached": DeviceEventCodes.deviceAttached,
-        "device detached": DeviceEventCodes.deviceDetached,
-        "acceptcall": DeviceEventCodes.acceptCall,
-        "endcall": DeviceEventCodes.endCall,
-        "reject": DeviceEventCodes.rejectCall,
-        "flash": DeviceEventCodes.flash,
-        "online": DeviceEventCodes.online,
-        "offline": DeviceEventCodes.offline,
-        "error": DeviceEventCodes.error,
-    };
+    eventListeners.set("devlog", []);
     const commandEventsList = [
         "devices",
         "activedevice",
@@ -193,6 +157,10 @@ var jabra;
                     // Only accept responses from our own requests or from device.
                     if (apiClientId === apiClientId || apiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
+                        // For backwards compatibility a blank message might be send as "na".
+                        if (event.data.message === "na") {
+                            delete event.data.message;
+                        }
                         if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
                             jabra.logLevel = parseInt(event.data.message.substring(16));
                             logger.trace("Logger set to level " + jabra.logLevel);
@@ -259,7 +227,6 @@ var jabra;
                                 delete clientEvent.apiClientId;
                                 delete clientEvent.requestId;
                                 clientEvent.message = normalizedMsg;
-                                clientEvent.code = deviceEventsMap[normalizedMsg];
                                 notify(normalizedMsg, clientEvent);
                             }
                             else {

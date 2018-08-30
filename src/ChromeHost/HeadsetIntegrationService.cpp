@@ -257,6 +257,12 @@ void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceI
       LOG(plog::info) << "Attaching device " << deviceInfo.deviceName << " with id " << deviceInfo.deviceID;
     }
 
+    Jabra_RegisterDevLogCallback(StaticDevLogCallback);
+    Jabra_ReturnCode errCode;
+    if ((errCode = Jabra_EnableDevLog(deviceInfo.deviceID, true)) != Return_Ok ) {
+	    LOG_ERROR << "Failed enabling dev log with code " << errCode;
+    }
+
 	  Event(Context::device(), "device attached", { std::make_pair("id", std::to_string(deviceInfo.deviceID)) });
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in JabraDeviceAttachedFunc");
@@ -291,7 +297,7 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
         m_devices.erase(m_devices.begin() + index);
         
         IF_LOG(plog::info) {
-          LOG(plog::info) << "Sucessfully deattached device " << deviceName << " with id " << deviceID;
+          LOG(plog::info) << "Successfully deattached device " << deviceName << " with id " << deviceID;
         }
 
         found = true;
@@ -356,6 +362,14 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
 	  LOG_ERROR << "Unknown error in ButtonInDataTranslatedFunc";
 	  Error(Context::device(), "button translation failed", {});
   }
+}
+
+void HeadsetIntegrationService::StaticDevLogCallback(unsigned short deviceID, const char* eventStr)
+{
+  g_thisHeadsetIntegrationService->Event(Context::device(), "devlog", { std::make_pair("data", std::string(eventStr)) });
+
+  // TODO: Remove cast after upgrading.
+   Jabra_FreeString((char *)eventStr);
 }
 
 void HeadsetIntegrationService::StaticJabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo)

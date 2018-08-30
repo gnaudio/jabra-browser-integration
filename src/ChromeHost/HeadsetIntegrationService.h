@@ -36,6 +36,7 @@ SOFTWARE.
 #include "CmdInterface.h"
 #include "EventInterface.h"
 #include "SDK/JabraNativeHid.h"
+#include "SDK/JabraDeviceConfig.h"
 #include "Request.h"
 #include "Response.h"
 
@@ -83,4 +84,5 @@ class HeadsetIntegrationService
   static void StaticJabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo);
   static void StaticJabraDeviceRemovedFunc(unsigned short deviceID);
   static void StaticButtonInDataTranslatedFunc(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData);
+  static void StaticDevLogCallback(unsigned short deviceID, const char* eventStr);
 };

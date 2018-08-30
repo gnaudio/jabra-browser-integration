@@ -10,7 +10,7 @@ declare namespace jabra {
      * Contains information about installed components.
      */
     interface InstallInfo {
-        uptodateInstallation: boolean;
+        uptodateInstallation?: boolean;
         consistantInstallation: boolean;
         version_chromehost: string;
         version_nativesdk: string;
@@ -35,29 +35,7 @@ declare namespace jabra {
         stream: MediaStream;
         deviceInfo: DeviceInfo;
     }
-    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error";
-    /**
-     * An enumeration of codes for various device events.
-     */
-    enum DeviceEventCodes {
-        mute = 0,
-        unmute = 1,
-        endCall = 2,
-        acceptCall = 3,
-        rejectCall = 4,
-        flash = 5,
-        /**
-         * A device has been added.
-         */
-        deviceAttached = 6,
-        /**
-         * A device has been removed.
-         */
-        deviceDetached = 7,
-        online = 8,
-        offline = 9,
-        error = 255
-    }
+    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error" | "devlog";
     interface DeviceInfo {
         groupId: string | null;
         audioInputId: string | null;
@@ -69,7 +47,6 @@ declare namespace jabra {
      */
     interface Event {
         name: string;
-        code: DeviceEventCodes;
         arg?: string;
     }
     type ClientError = any | {
