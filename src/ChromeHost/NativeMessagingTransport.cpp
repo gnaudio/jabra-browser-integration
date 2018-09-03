@@ -28,7 +28,6 @@ SOFTWARE.
 #include "stdafx.h"
 #include "NativeMessagingTransport.h"
 #include <iostream>
-#include "json.hpp" // https://github.com/nlohmann/json
 
 NativeMessagingTransport::NativeMessagingTransport()
 {
@@ -51,8 +50,7 @@ void NativeMessagingTransport::SendResponse(const Response& response)
     LOG(plog::debug) << "Preparing response : " << response;
   }
 
-  for (auto entry : response.getData())
-      j["data"][entry.first] = entry.second;
+  j["data"] = response.data;
 
   if (!response.error.empty()) {
 	  j["error"] = response.error;
@@ -122,12 +120,12 @@ void NativeMessagingTransport::Start()
       LOG(plog::debug) << "Received message from extension: " << j;
     }
 
-    nlohmann::json message = j.at("message"); // Required - Throws if missing.
-    nlohmann::json requestId = j["requestId"]; // Null if missing.
-    nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
-    // nlohmann::json data = j["data"]; // Null if missing.
-
     {
+      nlohmann::json message = j.at("message"); // Required - Throws if missing.
+      nlohmann::json requestId = j["requestId"]; // Null if missing.
+      nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
+      // nlohmann::json data = j["data"]; // Null if missing.
+
       Request req(message.get<std::string>(),
                   requestId.is_string() ? requestId.get<std::string>() : "",
                   apiClientId.is_string() ? apiClientId.get<std::string>() : "");

@@ -28,6 +28,7 @@ SOFTWARE.
 #include "stdafx.h"
 #include <string>
 #include "CmdGetDevices.h"
+#include "Util.h"
 
 CmdGetDevices::CmdGetDevices(HeadsetIntegrationService* headsetIntegrationService)
 {
@@ -45,18 +46,28 @@ bool CmdGetDevices::CanExecute(const Request& request)
 
 void CmdGetDevices::Execute(const Request& request)
 {
-  // Get devices as string for <= 0.5 compatability.
-  std::string devicesAsString = m_headsetIntegrationService->GetDevicesAsString();
+  nlohmann::json j;
 
-  // Get device info as proper map for > 0.5:
-  customDataType data = {};
   const std::vector<Jabra_DeviceInfo> devices = m_headsetIntegrationService->GetDevices();
   for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
-    const std::string deviceId = std::to_string(devices[i].deviceID);
-    const std::string deviceName = std::string(devices[i].deviceName);
-    data.insert(std::make_pair(deviceId, deviceName));
+    setDeviceInfo(j[i], devices[i]);
   }
 
-  // Return both old and new device info.
-  m_headsetIntegrationService->Event(request, "devices " + devicesAsString, data);
+  // For backward compatability with <= 0.5, also return devices extract as a string.
+  std::string devicesAsString;
+
+  for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
+
+    if (devicesAsString.length() > 0) {
+      devicesAsString += ",";
+    }
+
+    devicesAsString += std::to_string(devices[i].deviceID);
+    devicesAsString += ",";
+    devicesAsString += devices[i].deviceName;
+  }
+
+
+  // Return both old and new stype device info.
+  m_headsetIntegrationService->Event(request, "devices " + devicesAsString, j);
 }

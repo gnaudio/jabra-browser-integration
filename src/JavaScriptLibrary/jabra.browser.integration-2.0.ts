@@ -63,6 +63,27 @@ namespace jabra {
         browserextension_type: string;
     };
 
+    // TODO: Merge device and DeviceInfo.
+    export interface Device {
+        deviceID: number;
+        deviceName: string;
+        deviceConnection: number;
+        errStatus: number;
+        isBTPaired: boolean;
+        isInFirmwareUpdateMode: boolean;
+        parentInstanceId?: string;
+        productID: number;
+        serialNumber?: string,
+        usbDevicePath?: string;
+        variant: string;
+/*
+        browserGroupId?: string;
+        browserAudioInputId?: string;
+        browserAudioOutputId?: string;
+        browserLabel?: string;
+        */
+    };
+
     /**
      * Contains information about a jabra device.
      */
@@ -84,13 +105,6 @@ namespace jabra {
     export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
                             | "endcall" | "reject" | "flash" | "online" | "offline" | "error"
                             | "devlog";
-
-    export interface DeviceInfo {
-        groupId: string | null,
-        audioInputId: string | null,
-        audioOutputId: string | null,
-        label: string | null
-    };
 
     /**
      * Internal helper that stores information about the promise to resolve/reject
@@ -558,25 +572,22 @@ namespace jabra {
     /**
     * Get the current active Jabra Device.
     */
-    export function getActiveDevice(): Promise<string> {
+    export function getActiveDevice(): Promise<Device> {
         return sendCmdWithResult("getactivedevice");
     };
 
     /**
-    * List all attached Jabra Devices as key-value map with
-    * ID as string and name of device as value.
-    * 
-    * NB: This method signature has changed from 1.x where it was a string.
+    * List all attached Jabra Devices in array of device information
     */
-    export function getDevices(): Promise<object> {
+    export function getDevices(): Promise<ReadonlyArray<Device>> {
         return sendCmdWithResult("getdevices");
     };
 
     /**
     * Select a new active device.
     */
-    export function setActiveDevice(id: string): void {
-        sendCmd("setactivedevice " + id);
+    export function setActiveDeviceId(id: number | string): void {
+        sendCmd("setactivedevice " + id.toString());
     };
 
     /**

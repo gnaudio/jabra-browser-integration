@@ -27,48 +27,21 @@ SOFTWARE.
 
 #pragma once
 
-#include <string>
-#include <map>
-#include <iostream>
-#include "Context.h"
-
-typedef std::map<const std::string, const std::string> customDataType;
+#include "stdafx.h"
 
 /**
  * Contains a response to the chrome extension.
  */
 class Response : public Context {
-  private:
-  std::map<const std::string, const std::string> data;
-
   public:
-  const std::string message;
-  const std::string error;
+  nlohmann::json data;
+  std::string message;
+  std::string error;
 
-  explicit Response(const Context& context, const std::string& message, const std::string& error, const customDataType customData)
-         : Context(context.requestId, context.apiClientId), message(message), error(error), data(customData) {
-  }
-
-  const std::map<const std::string, const std::string>& getData() const {
-    return data;
-  }
+  explicit Response(const Context& context, const std::string& message, const std::string& error, const nlohmann::json& data);
 
   Response(const Response&) = delete;
   Response& operator=(const Response&) = delete;
 
   friend std::ostream& operator<<(std::ostream& os, const Response& r);  
 };
-
-inline std::ostream& operator<<(std::ostream& os, const Response& r)
-{  
-	os << "Response { ";
-	os << "message: " << r.message;
-	os << ", error: " << r.error;
-	os << ", requestId: " << r.requestId;
-	os << ", apiClientId: " << r.apiClientId;
-	for (auto entry : r.getData()) {
-		os << ", " << entry.first << ": " << entry.second;
-	}
-	os << "}";
-    return os;  
-} 

@@ -27,9 +27,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <string>
-#include <iostream>
-#include "Context.h"
+#include "stdafx.h"
 
 /**
  * Contains an incomming request from the chrome extension.
@@ -38,21 +36,10 @@ class Request : public Context {
   public:
   const std::string message;
 
-  explicit Request(const std::string& message, const std::string& requestId, const std::string& apiClientId)
-         : Context(requestId, apiClientId), message(message) {}
+  explicit Request(const std::string& message, const std::string& requestId, const std::string& apiClientId);
 
   Request(const Request&) = delete;
   Request& operator=(const Request&) = delete;
 
   friend std::ostream& operator<<(std::ostream& os, const Request& r);
 };
-
-inline std::ostream& operator<<(std::ostream& os, const Request& r)
-{
-	os << "Response { ";
-	os << "message: " << r.message;
-	os << ", requestId: " << r.requestId;
-	os << ", apiClientId: " << r.apiClientId;
-	os << "}";
-	return os;
-}

@@ -51,13 +51,13 @@ class HeadsetIntegrationService
 
   bool Start();
 
+  const Jabra_DeviceInfo GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
   bool SetCurrentDeviceId(unsigned short id);
-  std::string GetDevicesAsString();
   const std::vector<Jabra_DeviceInfo> GetDevices();
 
-  void Error(const Context& context, std::string msg, customDataType data);
-  void Event(const Context& context, std::string msg, customDataType data);
+  void Error(const Context& context, const std::string& msg, const nlohmann::json& data);
+  void Event(const Context& context, const std::string& msg, const nlohmann::json& data);
 
   void SetHookStatus(unsigned short id, bool mute);
   bool GetHookStatus(unsigned short id);

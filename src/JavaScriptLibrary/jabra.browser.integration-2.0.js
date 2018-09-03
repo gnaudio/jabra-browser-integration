@@ -470,10 +470,7 @@ var jabra;
     jabra.getActiveDevice = getActiveDevice;
     ;
     /**
-    * List all attached Jabra Devices as key-value map with
-    * ID as string and name of device as value.
-    *
-    * NB: This method signature has changed from 1.x where it was a string.
+    * List all attached Jabra Devices in array of device information
     */
     function getDevices() {
         return sendCmdWithResult("getdevices");
@@ -483,10 +480,10 @@ var jabra;
     /**
     * Select a new active device.
     */
-    function setActiveDevice(id) {
-        sendCmd("setactivedevice " + id);
+    function setActiveDeviceId(id) {
+        sendCmd("setactivedevice " + id.toString());
     }
-    jabra.setActiveDevice = setActiveDevice;
+    jabra.setActiveDeviceId = setActiveDeviceId;
     ;
     /**
     * Get version number information for all components.

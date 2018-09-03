@@ -19,6 +19,19 @@ declare namespace jabra {
         browserextension_id: string;
         browserextension_type: string;
     }
+    interface Device {
+        deviceID: number;
+        deviceName: string;
+        deviceConnection: number;
+        errStatus: number;
+        isBTPaired: boolean;
+        isInFirmwareUpdateMode: boolean;
+        parentInstanceId?: string;
+        productID: number;
+        serialNumber?: string;
+        usbDevicePath?: string;
+        variant: string;
+    }
     /**
      * Contains information about a jabra device.
      */
@@ -36,12 +49,6 @@ declare namespace jabra {
         deviceInfo: DeviceInfo;
     }
     type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error" | "devlog";
-    interface DeviceInfo {
-        groupId: string | null;
-        audioInputId: string | null;
-        audioOutputId: string | null;
-        label: string | null;
-    }
     /**
      * Event type for call backs.
      */
@@ -117,18 +124,15 @@ declare namespace jabra {
     /**
     * Get the current active Jabra Device.
     */
-    function getActiveDevice(): Promise<string>;
+    function getActiveDevice(): Promise<Device>;
     /**
-    * List all attached Jabra Devices as key-value map with
-    * ID as string and name of device as value.
-    *
-    * NB: This method signature has changed from 1.x where it was a string.
+    * List all attached Jabra Devices in array of device information
     */
-    function getDevices(): Promise<object>;
+    function getDevices(): Promise<ReadonlyArray<Device>>;
     /**
     * Select a new active device.
     */
-    function setActiveDevice(id: string): void;
+    function setActiveDeviceId(id: number | string): void;
     /**
     * Get version number information for all components.
     */

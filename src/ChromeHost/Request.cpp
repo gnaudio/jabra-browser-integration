@@ -25,36 +25,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <climits>
-#include "stdafx.h"
-#include "CmdGetActiveDevice.h"
-#include "Util.h"
+#include "Request.h"
 
-CmdGetActiveDevice::CmdGetActiveDevice(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
+Request::Request(const std::string& message, const std::string& requestId, const std::string& apiClientId)
+                : Context(requestId, apiClientId), message(message) {
 }
 
-CmdGetActiveDevice::~CmdGetActiveDevice()
+std::ostream& operator<<(std::ostream& os, const Request& r)
 {
-}
-
-bool CmdGetActiveDevice::CanExecute(const Request& request)
-{
-  return (request.message == "getactivedevice");
-}
-
-void CmdGetActiveDevice::Execute(const Request& request)
-{
-  Jabra_DeviceInfo device = m_headsetIntegrationService->GetCurrentDevice();
-
-  nlohmann::json j;
-  setDeviceInfo(j, device);
-
-  if (device.deviceID == USHRT_MAX)
-  {
-	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
-  } else {
-    m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(device.deviceID), j); 
-  }
+	os << "Response { ";
+	os << "message: " << r.message;
+	os << ", requestId: " << r.requestId;
+	os << ", apiClientId: " << r.apiClientId;
+	os << "}";
+	return os;
 }

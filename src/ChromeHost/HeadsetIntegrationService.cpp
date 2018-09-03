@@ -156,6 +156,17 @@ bool HeadsetIntegrationService::Start()
   return true;
 }
 
+const Jabra_DeviceInfo HeadsetIntegrationService::GetCurrentDevice() {
+  for (auto device : m_devices) {
+    if (device.deviceID == m_currentDeviceId) {
+      return device;
+    }
+  }
+
+  // Return no device:
+  return { USHRT_MAX, USHRT_MAX, nullptr, nullptr, nullptr, DeviceInfoError, false, nullptr, nullptr, nullptr, false, USB };
+}
+
 unsigned short HeadsetIntegrationService::GetCurrentDeviceId()
 {
   if (m_devices.size() == 0)
@@ -181,29 +192,11 @@ bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
   return false;
 }
 
-std::string HeadsetIntegrationService::GetDevicesAsString()
-{
-  std::string devicesAsString;
-
-  for (std::vector<int>::size_type i = 0; i != m_devices.size(); i++) {
-
-    if (devicesAsString.length() > 0) {
-      devicesAsString += ",";
-    }
-
-    devicesAsString += std::to_string(m_devices[i].deviceID);
-    devicesAsString += ",";
-    devicesAsString += m_devices[i].deviceName;
-  }
-
-  return devicesAsString;
-}
-
 const std::vector<Jabra_DeviceInfo> HeadsetIntegrationService::GetDevices() {
   return m_devices; // return copy.
 }
 
-void HeadsetIntegrationService::Error(const Context& context, std::string msg, customDataType data)
+void HeadsetIntegrationService::Error(const Context& context, const std::string& msg, const nlohmann::json& data)
 { 
   IF_LOG(plog::error) {
     LOG(plog::error) << "Error: " << msg;
@@ -212,7 +205,7 @@ void HeadsetIntegrationService::Error(const Context& context, std::string msg, c
   m_callback(Response(context, "", "Error: " + msg, data));
 }
 
-void HeadsetIntegrationService::Event(const Context& context, std::string msg, customDataType data)
+void HeadsetIntegrationService::Event(const Context& context, const std::string& msg, const nlohmann::json& data)
 {
   IF_LOG(plog::info) {
     LOG(plog::info) << "Event: " << msg;
@@ -263,7 +256,7 @@ void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceI
 	    LOG_ERROR << "Failed enabling dev log with code " << errCode;
     }
 
-	  Event(Context::device(), "device attached", { std::make_pair("id", std::to_string(deviceInfo.deviceID)) });
+	  Event(Context::device(), "device attached", {{ "id", deviceInfo.deviceID }});
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in JabraDeviceAttachedFunc");
 	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
@@ -292,7 +285,7 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
       {
         std::string deviceName((*it).deviceName);
 
-		    Event(Context::device(), "device detached", { std::make_pair("id", std::to_string(deviceID)) });
+		    Event(Context::device(), "device detached", { { "id", deviceID } });
 
         m_devices.erase(m_devices.begin() + index);
         
@@ -353,7 +346,7 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
     else
     {
       std::string inDatastring = std::to_string(translatedInData);
-	    Error(Context::device(), "No button handler impelmented for " + inDatastring, {});
+	  Error(Context::device(), "No button handler implemented for " + inDatastring, {});
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in ButtonInDataTranslatedFunc");
@@ -366,10 +359,19 @@ void HeadsetIntegrationService::ButtonInDataTranslatedFunc(unsigned short device
 
 void HeadsetIntegrationService::StaticDevLogCallback(unsigned short deviceID, const char* eventStr)
 {
-  g_thisHeadsetIntegrationService->Event(Context::device(), "devlog", { std::make_pair("data", std::string(eventStr)) });
+  try {
+    nlohmann::json j = nlohmann::json::parse(eventStr);
+    g_thisHeadsetIntegrationService->Event(Context::device(), "devlog", j);
+  } catch (const std::exception& e) {
+    log_exception(plog::Severity::error, e, "in DevLogCallback");
+    g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", { std::make_pair("exception", e.what()) });
+  } catch (...) {
+	  LOG_ERROR << "Unknown error in DevLogCallback";
+	  g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", {});
+  }
 
   // TODO: Remove cast after upgrading.
-   Jabra_FreeString((char *)eventStr);
+  Jabra_FreeString((char *)eventStr);
 }
 
 void HeadsetIntegrationService::StaticJabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo)
