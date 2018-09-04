@@ -63,7 +63,7 @@ namespace jabra {
     };
 
     // TODO: Merge device and DeviceInfo.
-    export interface Device {
+    export interface DeviceInfo {
         deviceID: number;
         deviceName: string;
         deviceConnection: number;
@@ -86,7 +86,7 @@ namespace jabra {
     /**
      * Contains information about a jabra device.
      */
-    export interface DeviceInfo {
+    export interface BrowserDeviceInfo {
         groupId: string | null;
         audioInputId: string | null;
         audioOutputId: string | null;
@@ -98,7 +98,7 @@ namespace jabra {
      */
     export interface MediaStreamAndDevicePair {
         stream: MediaStream;
-        deviceInfo: DeviceInfo
+        deviceInfo: BrowserDeviceInfo
     };
 
     export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
@@ -216,7 +216,7 @@ namespace jabra {
     /**
      * Cached information about current Jabra Device.
      */
-    let jabraDeviceInfo: DeviceInfo | null = null;
+    let jabraDeviceInfo: BrowserDeviceInfo | null = null;
 
     /**
      * Contains initialization information used by the init/shutdown methods.
@@ -580,15 +580,15 @@ namespace jabra {
     /**
     * Get the current active Jabra Device.
     */
-    export function getActiveDevice(): Promise<Device> {
-        return sendCmdWithResult<Device>("getactivedevice");
+    export function getActiveDevice(): Promise<DeviceInfo> {
+        return sendCmdWithResult<DeviceInfo>("getactivedevice");
     };
 
     /**
     * List all attached Jabra Devices in array of device information
     */
-    export function getDevices(): Promise<ReadonlyArray<Device>> {
-        return sendCmdWithResult<ReadonlyArray<Device>>("getdevices");
+    export function getDevices(): Promise<ReadonlyArray<DeviceInfo>> {
+        return sendCmdWithResult<ReadonlyArray<DeviceInfo>>("getdevices");
      };
 
     /**
@@ -661,7 +661,7 @@ namespace jabra {
     * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
-    export function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: DeviceInfo): Promise<boolean> {
+    export function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: BrowserDeviceInfo): Promise<boolean> {
         if (!audioElement || !deviceInfo) {
             return Promise.reject(new Error('Call to trySetDeviceOutput has argument(s) missing'));
         }
@@ -670,7 +670,7 @@ namespace jabra {
             return Promise.reject(new Error('Your browser does not support required Audio Output Devices API'));
         }
 
-        return (audioElement as any).setSinkId(deviceInfo.audioOutputId).then(function () {
+        return (audioElement as any).setSinkId(deviceInfo.audioOutputId).then(() => {
             var success = (audioElement as any).sinkId === deviceInfo.audioOutputId;
             return success;
         });
@@ -680,7 +680,7 @@ namespace jabra {
      * Checks if a Jabra Input device is in fact selected in a media stream.
      * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
      */
-    export function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: DeviceInfo): boolean {
+    export function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: BrowserDeviceInfo): boolean {
         if (!mediaStream || !deviceInfo) {
             throw Error('Call to isDeviceSelectedForInput has argument(s) missing');
         }
@@ -695,27 +695,6 @@ namespace jabra {
         }
 
         return true;
-    };
-
-    /**
-    * Drop-in replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device 
-    * to be used for the microphone.
-    * 
-    * Like the orginal getUserMedia this method returns a promise that resolve to a media stream if successful.
-    * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
-    * 
-    * See also getUserDeviceMediaExt that returns device information in addition to the stream! In most cases,
-    * this is an better alternative since the device information is needed for additional steps.
-    * 
-    */
-    export function getUserDeviceMedia(additionalConstraints: MediaStreamConstraints): Promise<MediaStream> {
-        if (initState.initialized) {
-            return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
-                return obj.stream;
-            });
-        } else {
-            return Promise.reject(new Error("Browser integration not initialized"));
-        }
     };
 
     /**
@@ -762,26 +741,26 @@ namespace jabra {
         // call to getUserMedia to make sure the Jabra input device is selected.
         if (jabraDeviceInfo && jabraDeviceInfo.audioInputId) {
             return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: jabraDeviceInfo.audioInputId } }, additionalConstraints))
-                .then(function (stream) {
+                .then((stream) => {
                     return {
                         stream: stream,
                         deviceInfo: jabraDeviceInfo!
                     };
                 });
         } else {
-            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then(function (dummyStream) {
-                return getDeviceInfo().then(function (jabraDeviceInfo) {
+            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
+                return getFirstDeviceInfo().then((browserDeviceInfo) => {
                     // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-                    dummyStream.getTracks().forEach(function (track) {
+                    dummyStream.getTracks().forEach((track) => {
                         track.stop();
                     });
 
-                    if (jabraDeviceInfo && jabraDeviceInfo.audioInputId) {
-                        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: jabraDeviceInfo.audioInputId } }, additionalConstraints))
-                            .then(function (stream) {
+                    if (browserDeviceInfo && browserDeviceInfo.audioInputId) {
+                        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: browserDeviceInfo.audioInputId } }, additionalConstraints))
+                            .then((stream) => {
                                 return {
                                     stream: stream,
-                                    deviceInfo: jabraDeviceInfo
+                                    deviceInfo: browserDeviceInfo
                                 };
                             })
                     } else {
@@ -793,7 +772,7 @@ namespace jabra {
     };
 
     /** 
-     * Returns a promise resolving to all known ID for (first found) Jabra device valid for the current
+     * Returns a promise resolving to all known IDs for (first found) Jabra device valid for the current
      * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For 
      * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device. 
      * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling 
@@ -811,7 +790,7 @@ namespace jabra {
      * General non-chrome browser note:  
      * 1) Returning output devices requires support for new Audio Output Devices API.
      */
-    function getDeviceInfo(): Promise<DeviceInfo> {
+    export function getFirstDeviceInfo(): Promise<BrowserDeviceInfo> {
         // Use cached value if already have found the devices.
         // TODO: Check if this works if the device has been unplugged/re-attached since last call ?
         if (jabraDeviceInfo) {
@@ -835,7 +814,7 @@ namespace jabra {
 
         // Look for Jabra devices among all media devices. The list is in random order
         // and not necessarily complete in all browsers.
-        return navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        return navigator.mediaDevices.enumerateDevices().then((devices) => {
             var groupId = null;
             var audioInputId = null;
             var audioOutputId = null;
@@ -869,7 +848,7 @@ namespace jabra {
             }
 
             // Result is an ID combination for single device + device label.
-            var result: DeviceInfo = {
+            var result: BrowserDeviceInfo = {
                 groupId: groupId,
                 audioInputId: audioInputId,
                 audioOutputId: audioOutputId,

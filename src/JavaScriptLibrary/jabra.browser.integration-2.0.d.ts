@@ -18,7 +18,7 @@ declare namespace jabra {
         browserextension_id: string;
         browserextension_type: string;
     }
-    interface Device {
+    interface DeviceInfo {
         deviceID: number;
         deviceName: string;
         deviceConnection: number;
@@ -34,7 +34,7 @@ declare namespace jabra {
     /**
      * Contains information about a jabra device.
      */
-    interface DeviceInfo {
+    interface BrowserDeviceInfo {
         groupId: string | null;
         audioInputId: string | null;
         audioOutputId: string | null;
@@ -45,7 +45,7 @@ declare namespace jabra {
      */
     interface MediaStreamAndDevicePair {
         stream: MediaStream;
-        deviceInfo: DeviceInfo;
+        deviceInfo: BrowserDeviceInfo;
     }
     type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error" | "devlog";
     /**
@@ -123,11 +123,11 @@ declare namespace jabra {
     /**
     * Get the current active Jabra Device.
     */
-    function getActiveDevice(): Promise<Device>;
+    function getActiveDevice(): Promise<DeviceInfo>;
     /**
     * List all attached Jabra Devices in array of device information
     */
-    function getDevices(): Promise<ReadonlyArray<Device>>;
+    function getDevices(): Promise<ReadonlyArray<DeviceInfo>>;
     /**
     * Select a new active device.
     */
@@ -140,24 +140,12 @@ declare namespace jabra {
     * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
-    function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: DeviceInfo): Promise<boolean>;
+    function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: BrowserDeviceInfo): Promise<boolean>;
     /**
      * Checks if a Jabra Input device is in fact selected in a media stream.
      * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
      */
-    function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: DeviceInfo): boolean;
-    /**
-    * Drop-in replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
-    * to be used for the microphone.
-    *
-    * Like the orginal getUserMedia this method returns a promise that resolve to a media stream if successful.
-    * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
-    *
-    * See also getUserDeviceMediaExt that returns device information in addition to the stream! In most cases,
-    * this is an better alternative since the device information is needed for additional steps.
-    *
-    */
-    function getUserDeviceMedia(additionalConstraints: MediaStreamConstraints): Promise<MediaStream>;
+    function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: BrowserDeviceInfo): boolean;
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
@@ -169,4 +157,24 @@ declare namespace jabra {
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(additionalConstraints: MediaStreamConstraints): Promise<MediaStreamAndDevicePair>;
+    /**
+     * Returns a promise resolving to all known IDs for (first found) Jabra device valid for the current
+     * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For
+     * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device.
+     * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
+     * setSinkId (when supported by the browser) to set output. Called internally by getUserDeviceMedia
+     * replacement for mediaDevices.getUserMedia.
+     *
+     * Chrome note:
+     * 1) Only works if hosted under https.
+     *
+     * Firefox note:
+     * 1) Output devices not supported yet. See "https://bugzilla.mozilla.org/show_bug.cgi?id=934425"
+     * 2) The user must have provided permission to use the specific device to use it as a constraint.
+     * 3) GroupId not supported.
+     *
+     * General non-chrome browser note:
+     * 1) Returning output devices requires support for new Audio Output Devices API.
+     */
+    function getFirstDeviceInfo(): Promise<BrowserDeviceInfo>;
 }

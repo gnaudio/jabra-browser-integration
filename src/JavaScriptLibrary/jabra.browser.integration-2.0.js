@@ -559,7 +559,7 @@ var jabra;
         if (!(typeof (audioElement.setSinkId) === "function")) {
             return Promise.reject(new Error('Your browser does not support required Audio Output Devices API'));
         }
-        return audioElement.setSinkId(deviceInfo.audioOutputId).then(function () {
+        return audioElement.setSinkId(deviceInfo.audioOutputId).then(() => {
             var success = audioElement.sinkId === deviceInfo.audioOutputId;
             return success;
         });
@@ -585,29 +585,6 @@ var jabra;
         return true;
     }
     jabra.isDeviceSelectedForInput = isDeviceSelectedForInput;
-    ;
-    /**
-    * Drop-in replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
-    * to be used for the microphone.
-    *
-    * Like the orginal getUserMedia this method returns a promise that resolve to a media stream if successful.
-    * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
-    *
-    * See also getUserDeviceMediaExt that returns device information in addition to the stream! In most cases,
-    * this is an better alternative since the device information is needed for additional steps.
-    *
-    */
-    function getUserDeviceMedia(additionalConstraints) {
-        if (initState.initialized) {
-            return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
-                return obj.stream;
-            });
-        }
-        else {
-            return Promise.reject(new Error("Browser integration not initialized"));
-        }
-    }
-    jabra.getUserDeviceMedia = getUserDeviceMedia;
     ;
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
@@ -653,7 +630,7 @@ var jabra;
         // call to getUserMedia to make sure the Jabra input device is selected.
         if (jabraDeviceInfo && jabraDeviceInfo.audioInputId) {
             return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: jabraDeviceInfo.audioInputId } }, additionalConstraints))
-                .then(function (stream) {
+                .then((stream) => {
                 return {
                     stream: stream,
                     deviceInfo: jabraDeviceInfo
@@ -661,18 +638,18 @@ var jabra;
             });
         }
         else {
-            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then(function (dummyStream) {
-                return getDeviceInfo().then(function (jabraDeviceInfo) {
+            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
+                return getFirstDeviceInfo().then((browserDeviceInfo) => {
                     // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-                    dummyStream.getTracks().forEach(function (track) {
+                    dummyStream.getTracks().forEach((track) => {
                         track.stop();
                     });
-                    if (jabraDeviceInfo && jabraDeviceInfo.audioInputId) {
-                        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: jabraDeviceInfo.audioInputId } }, additionalConstraints))
-                            .then(function (stream) {
+                    if (browserDeviceInfo && browserDeviceInfo.audioInputId) {
+                        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: browserDeviceInfo.audioInputId } }, additionalConstraints))
+                            .then((stream) => {
                             return {
                                 stream: stream,
-                                deviceInfo: jabraDeviceInfo
+                                deviceInfo: browserDeviceInfo
                             };
                         });
                     }
@@ -686,7 +663,7 @@ var jabra;
     jabra.getUserDeviceMediaExt = getUserDeviceMediaExt;
     ;
     /**
-     * Returns a promise resolving to all known ID for (first found) Jabra device valid for the current
+     * Returns a promise resolving to all known IDs for (first found) Jabra device valid for the current
      * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For
      * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device.
      * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
@@ -704,7 +681,7 @@ var jabra;
      * General non-chrome browser note:
      * 1) Returning output devices requires support for new Audio Output Devices API.
      */
-    function getDeviceInfo() {
+    function getFirstDeviceInfo() {
         // Use cached value if already have found the devices.
         // TODO: Check if this works if the device has been unplugged/re-attached since last call ?
         if (jabraDeviceInfo) {
@@ -724,7 +701,7 @@ var jabra;
         }
         // Look for Jabra devices among all media devices. The list is in random order
         // and not necessarily complete in all browsers.
-        return navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        return navigator.mediaDevices.enumerateDevices().then((devices) => {
             var groupId = null;
             var audioInputId = null;
             var audioOutputId = null;
@@ -768,6 +745,7 @@ var jabra;
             return result;
         });
     }
+    jabra.getFirstDeviceInfo = getFirstDeviceInfo;
     ;
 })(jabra || (jabra = {}));
 ;
