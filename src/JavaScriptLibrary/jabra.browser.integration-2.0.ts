@@ -488,12 +488,16 @@ namespace jabra {
      * Internal helper that returns an array of valid event keys that correspond to the event specificator 
      * and are know to exist in our event listener map.
      */
-    function getEvents(nameSpec: string | RegExp): ReadonlyArray<string> {
-        if (nameSpec instanceof RegExp) {
+    function getEvents(nameSpec: string | RegExp | Array<string | RegExp>): ReadonlyArray<string> {
+        if (Array.isArray(nameSpec)) {
+            return [ ...new Set<string>([].concat.apply([], nameSpec.map(a => getEvents(a)))) ];
+        } else if (nameSpec instanceof RegExp) {
             return Array.from<string>(eventListeners.keys()).filter(key => nameSpec.test(key))
         } else { // String
             if (eventListeners.has(nameSpec as EventName)) {
              return [ nameSpec ];
+            } else {
+                logger.warn("Unknown event " + nameSpec + " ignored");
             }
         }
 
@@ -503,9 +507,10 @@ namespace jabra {
     /**
      * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
      * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
-     * expression all the lister subscribes to all matching events.
+     * expression all lister subscribes to all matching events. If the argument is an array it recursively subscribes
+     * to all events specified in the array.
      */
-    export function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
+    export function addEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void {
         getEvents(nameSpec).map(name => {
             let callbacks = eventListeners.get(name as EventName);
             if (!callbacks!.find((c) => c === callback)) {
@@ -518,7 +523,7 @@ namespace jabra {
      * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
      * to a previous addEventListener. 
      */
-    export function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void {
+    export function removeEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void {
         getEvents(nameSpec).map(name => {
             let callbacks = eventListeners.get(name as EventName);
             let findIndex = callbacks!.findIndex((c) => c === callback);

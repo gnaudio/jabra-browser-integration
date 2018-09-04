@@ -373,12 +373,18 @@ var jabra;
      * and are know to exist in our event listener map.
      */
     function getEvents(nameSpec) {
-        if (nameSpec instanceof RegExp) {
+        if (Array.isArray(nameSpec)) {
+            return [...new Set([].concat.apply([], nameSpec.map(a => getEvents(a))))];
+        }
+        else if (nameSpec instanceof RegExp) {
             return Array.from(eventListeners.keys()).filter(key => nameSpec.test(key));
         }
         else { // String
             if (eventListeners.has(nameSpec)) {
                 return [nameSpec];
+            }
+            else {
+                logger.warn("Unknown event " + nameSpec + " ignored");
             }
         }
         return [];
@@ -386,7 +392,8 @@ var jabra;
     /**
      * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
      * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
-     * expression all the lister subscribes to all matching events.
+     * expression all lister subscribes to all matching events. If the argument is an array it recursively subscribes
+     * to all events specified in the array.
      */
     function addEventListener(nameSpec, callback) {
         getEvents(nameSpec).map(name => {

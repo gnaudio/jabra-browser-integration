@@ -84,14 +84,15 @@ declare namespace jabra {
     /**
      * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
      * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
-     * expression all the lister subscribes to all matching events.
+     * expression all lister subscribes to all matching events. If the argument is an array it recursively subscribes
+     * to all events specified in the array.
      */
-    function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
+    function addEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void;
     /**
      * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
      * to a previous addEventListener.
      */
-    function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
+    function removeEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void;
     /**
     * Activate ringer (if supported) on the Jabra Device
     */
