@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
       unInitSDKBtn.disabled = false;
       checkInstallBtn.disabled = false;
       devicesBtn.disabled = false;
-      invokeApiBtn.disabled = false;
     }).catch((err) => {
       addError(err);
     });
@@ -89,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
       unInitSDKBtn.disabled = true;
       checkInstallBtn.disabled = true;
       devicesBtn.disabled = true;
-      invokeApiBtn.disabled = true;
       changeActiveDeviceBtn.disabled = true;
       while (deviceSelector.options.length > 0) {                
         deviceSelector.remove(0);
@@ -164,20 +162,25 @@ document.addEventListener('DOMContentLoaded', function () {
   // Change active device
   changeActiveDeviceBtn.onclick = () => {
     let id = deviceSelector.value;
-    jabra.setActiveDevice(id);
+    jabra.setActiveDeviceId(id);
   };
 
   // Call into user selected API method.
   invokeApiBtn.onclick = () => {
     let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
     let apiFunc = jabra[apiFuncName];
-    let result = apiFunc.call(jabra, txtParam1.value, txtParam2.value, txtParam3.value, txtParam4.value, txtParam5.value);
-    if (result && result instanceof Promise) {
-      result.then((value) => {
-        addResponseMessage(value);
-      }).catch((error) => {
-        addError(error);
-      });
+    let result;
+    try {
+      result = apiFunc.call(jabra, txtParam1.value, txtParam2.value, txtParam3.value, txtParam4.value, txtParam5.value);
+      if (result && result instanceof Promise) {
+        result.then((value) => {
+          addResponseMessage(value);
+        }).catch((error) => {
+          addError(error);
+        });
+      }
+    } catch (err) {
+      addError(err);
     }
   };
 
@@ -194,7 +197,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function addError(err) {  
-    let txt = (typeof err === 'string' || err instanceof String) ? "errorstring: " + err : "error object: " + JSON.stringify(err, null, 2);
+    let txt;
+    if (typeof err === 'string' || err instanceof String) {
+      txt = "error string: " + err;
+    } else if (err instanceof Error) {
+      txt = "error message: " + err.message;
+    } else {
+      text = "error object: " + JSON.stringify(err, null, 2);
+    }
     errorArea.value = errorArea.value + "\n" + txt;
     errorArea.scrollTop = errorArea.scrollHeight;
   }

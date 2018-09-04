@@ -110,8 +110,8 @@ namespace jabra {
      * for a command being processed.
      */
     interface PromiseCallbacks {
-        resolve: (value: string) => any;
-        reject: (reason: string) => any;
+        resolve: (value?: any | PromiseLike<any> | undefined) => void;
+        reject: (err: Error) => void;
     }
 
     /**
@@ -236,11 +236,11 @@ namespace jabra {
             // Only Chrome is currently supported
             let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
             if (!isChrome) {
-                return reject("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
+                return reject(new Error("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>."));
             }
 
             if (initState.initialized || initState.initializing) {
-                return reject("Jabra Browser Integration already initialized");
+                return reject(new Error("Jabra Browser Integration already initialized"));
             }
 
             initState.initializing = true;
@@ -272,7 +272,7 @@ namespace jabra {
                             // so it won't work with logLevel. Thus we check log level first.
                             duringInit = false;
                             if (event.data.error != null && event.data.error != undefined) {
-                                return reject(event.data.error);
+                                return reject(new Error(event.data.error));
                             } else {
                                 return resolve();
                             }
@@ -338,17 +338,18 @@ namespace jabra {
                         } else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
                             const normalizedError: string = event.data.error.substring(7); // Strip "Error" prefix;
-                            let clientError: ClientError = JSON.parse(JSON.stringify(event.data));
-                            delete clientError.direction;
-                            delete clientError.apiClientId;
-                            delete clientError.requestId;
-                            clientError.error = normalizedError;
 
-                            // Reject promise if we can find a target - otherwise send a general error.
+                            // Reject target promise if there is one - otherwise send a general error.
                             let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
-                                resultTarget.reject(clientError);
+                                resultTarget.reject(new Error(normalizedError));
                             } else {
+                                let clientError: ClientError = JSON.parse(JSON.stringify(event.data));
+                                delete clientError.direction;
+                                delete clientError.apiClientId;
+                                delete clientError.requestId;
+                                clientError.error = normalizedError;
+
                                 notify("error", clientError);
                             }
                         }
@@ -358,12 +359,12 @@ namespace jabra {
 
             window.addEventListener("message", initState.eventCallback!);
 
-            sendCmd("logLevel");
+            sendCmd("logLevel", false);
 
             // Initial getversion and loglevel.
             setTimeout(
                 () => {
-                    sendCmdWithResult("getversion").then((result) => {
+                    sendCmdWithResult("getversion", false).then((result) => {
                         let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                         logger.trace("getversion returned successfully with : " + resultStr);
                     }).catch((error) => {
@@ -379,7 +380,7 @@ namespace jabra {
                     if (duringInit === true) {
                         duringInit = false;
                         const extensionId = isBeta ? betaExtensionId : prodExtensionId;
-                        reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/" + extensionId + "'>Extension</a> and then reload this page");
+                        reject(new Error("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/" + extensionId + "'>Extension</a> and then reload this page"));
                     }
                 },
                 5000
@@ -580,15 +581,15 @@ namespace jabra {
     * Get the current active Jabra Device.
     */
     export function getActiveDevice(): Promise<Device> {
-        return sendCmdWithResult("getactivedevice");
+        return sendCmdWithResult<Device>("getactivedevice");
     };
 
     /**
     * List all attached Jabra Devices in array of device information
     */
     export function getDevices(): Promise<ReadonlyArray<Device>> {
-        return sendCmdWithResult("getdevices");
-    };
+        return sendCmdWithResult<ReadonlyArray<Device>>("getdevices");
+     };
 
     /**
     * Select a new active device.
@@ -601,38 +602,16 @@ namespace jabra {
     * Get version number information for all components.
     */
     export function getInstallInfo(): Promise<InstallInfo> {
-        return sendCmdWithResult("getinstallinfo");
+        return sendCmdWithResult<InstallInfo>("getinstallinfo");
     };
 
     /**
     * Internal helper that forwards a command to the browser extension
     * without expecting a response.
     */
-    function sendCmd(cmd: string): void {
-        let requestId = (requestNumber++).toString();
-
-        let msg = {
-            direction: "jabra-headset-extension-from-page-script",
-            message: cmd,
-            requestId: requestId,
-            apiClientId: apiClientId,
-            version_jsapi: apiVersion
-        };
-
-        logger.trace("Sending command to content script: " + JSON.stringify(msg));
-
-        window.postMessage(msg, "*");
-    };
-
-    /**
-    * Internal helper that forwards a command to the browser extension
-    * expecting a response (a promise).
-    */
-    function sendCmdWithResult(cmd: string): Promise<any> {
-        let requestId = (requestNumber++).toString();
-
-        return new Promise((resolve, reject) => {
-            sendRequestResultMap.set(requestId, { resolve, reject });
+    function sendCmd(cmd: string, requireInitializedCheck: boolean = true): void {
+        if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
+            let requestId = (requestNumber++).toString();
 
             let msg = {
                 direction: "jabra-headset-extension-from-page-script",
@@ -642,10 +621,40 @@ namespace jabra {
                 version_jsapi: apiVersion
             };
 
-            logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
+            logger.trace("Sending command to content script: " + JSON.stringify(msg));
 
             window.postMessage(msg, "*");
-        });
+        } else {
+            throw new Error("Browser integration not initialized");
+        }
+    };
+
+    /**
+    * Internal helper that forwards a command to the browser extension
+    * expecting a response (a promise).
+    */
+    function sendCmdWithResult<T>(cmd: string, requireInitializedCheck: boolean = true): Promise<T> {
+        if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
+            let requestId = (requestNumber++).toString();
+
+            return new Promise<T>((resolve, reject) => {
+                sendRequestResultMap.set(requestId, { resolve, reject });
+
+                let msg = {
+                    direction: "jabra-headset-extension-from-page-script",
+                    message: cmd,
+                    requestId: requestId,
+                    apiClientId: apiClientId,
+                    version_jsapi: apiVersion
+                };
+
+                logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
+
+                window.postMessage(msg, "*");
+            });
+        } else {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
     };
 
     /**
@@ -700,9 +709,13 @@ namespace jabra {
     * 
     */
     export function getUserDeviceMedia(additionalConstraints: MediaStreamConstraints): Promise<MediaStream> {
-        return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
-            return obj.stream;
-        });
+        if (initState.initialized) {
+            return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
+                return obj.stream;
+            });
+        } else {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
     };
 
     /**
@@ -721,9 +734,14 @@ namespace jabra {
             return Promise.reject(new Error('Your browser does not support required media api'));
         }
 
+        // Init completed ?
+        if (!initState.initialized) {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
+
         // Warn of degraded UX experience unless we are running https.
         if (location.protocol !== 'https:') {
-            console.warn("This function needs to run under https for best UX experience (persisted permissions)");
+            logger.warn("This function needs to run under https for best UX experience (persisted permissions)");
         }
 
         /**
@@ -793,7 +811,7 @@ namespace jabra {
      * General non-chrome browser note:  
      * 1) Returning output devices requires support for new Audio Output Devices API.
      */
-    export function getDeviceInfo(): Promise<DeviceInfo> {
+    function getDeviceInfo(): Promise<DeviceInfo> {
         // Use cached value if already have found the devices.
         // TODO: Check if this works if the device has been unplugged/re-attached since last call ?
         if (jabraDeviceInfo) {
@@ -803,6 +821,11 @@ namespace jabra {
         // Good error if using old browser:
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
             return Promise.reject(new Error('Your browser does not support required media api'));
+        }
+
+        // Init completed ?
+        if (!initState.initialized) {
+            return Promise.reject(new Error("Browser integration not initialized"));
         }
 
         // Browser security rules (for at least chrome) requires site to run under https for labels to be read.

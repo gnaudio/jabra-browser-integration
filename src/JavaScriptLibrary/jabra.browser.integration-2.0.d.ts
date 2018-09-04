@@ -169,24 +169,4 @@ declare namespace jabra {
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(additionalConstraints: MediaStreamConstraints): Promise<MediaStreamAndDevicePair>;
-    /**
-     * Returns a promise resolving to all known ID for (first found) Jabra device valid for the current
-     * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For
-     * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device.
-     * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
-     * setSinkId (when supported by the browser) to set output. Called internally by getUserDeviceMedia
-     * replacement for mediaDevices.getUserMedia.
-     *
-     * Chrome note:
-     * 1) Only works if hosted under https.
-     *
-     * Firefox note:
-     * 1) Output devices not supported yet. See "https://bugzilla.mozilla.org/show_bug.cgi?id=934425"
-     * 2) The user must have provided permission to use the specific device to use it as a constraint.
-     * 3) GroupId not supported.
-     *
-     * General non-chrome browser note:
-     * 1) Returning output devices requires support for new Audio Output Devices API.
-     */
-    function getDeviceInfo(): Promise<DeviceInfo>;
 }

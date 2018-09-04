@@ -140,10 +140,10 @@ var jabra;
             // Only Chrome is currently supported
             let isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
             if (!isChrome) {
-                return reject("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>.");
+                return reject(new Error("Jabra Browser Integration: Only supported by <a href='https://google.com/chrome'>Google Chrome</a>."));
             }
             if (initState.initialized || initState.initializing) {
-                return reject("Jabra Browser Integration already initialized");
+                return reject(new Error("Jabra Browser Integration already initialized"));
             }
             initState.initializing = true;
             sendRequestResultMap.clear();
@@ -170,7 +170,7 @@ var jabra;
                             // so it won't work with logLevel. Thus we check log level first.
                             duringInit = false;
                             if (event.data.error != null && event.data.error != undefined) {
-                                return reject(event.data.error);
+                                return reject(new Error(event.data.error));
                             }
                             else {
                                 return resolve();
@@ -238,17 +238,17 @@ var jabra;
                         else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
                             const normalizedError = event.data.error.substring(7); // Strip "Error" prefix;
-                            let clientError = JSON.parse(JSON.stringify(event.data));
-                            delete clientError.direction;
-                            delete clientError.apiClientId;
-                            delete clientError.requestId;
-                            clientError.error = normalizedError;
-                            // Reject promise if we can find a target - otherwise send a general error.
+                            // Reject target promise if there is one - otherwise send a general error.
                             let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
-                                resultTarget.reject(clientError);
+                                resultTarget.reject(new Error(normalizedError));
                             }
                             else {
+                                let clientError = JSON.parse(JSON.stringify(event.data));
+                                delete clientError.direction;
+                                delete clientError.apiClientId;
+                                delete clientError.requestId;
+                                clientError.error = normalizedError;
                                 notify("error", clientError);
                             }
                         }
@@ -256,10 +256,10 @@ var jabra;
                 }
             };
             window.addEventListener("message", initState.eventCallback);
-            sendCmd("logLevel");
+            sendCmd("logLevel", false);
             // Initial getversion and loglevel.
             setTimeout(() => {
-                sendCmdWithResult("getversion").then((result) => {
+                sendCmdWithResult("getversion", false).then((result) => {
                     let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                     logger.trace("getversion returned successfully with : " + resultStr);
                 }).catch((error) => {
@@ -271,7 +271,7 @@ var jabra;
                 if (duringInit === true) {
                     duringInit = false;
                     const extensionId = isBeta ? betaExtensionId : prodExtensionId;
-                    reject("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/" + extensionId + "'>Extension</a> and then reload this page");
+                    reject(new Error("Jabra Browser Integration: You need to use this <a href='https://chrome.google.com/webstore/detail/" + extensionId + "'>Extension</a> and then reload this page"));
                 }
             }, 5000);
             /**
@@ -505,27 +505,9 @@ var jabra;
     * Internal helper that forwards a command to the browser extension
     * without expecting a response.
     */
-    function sendCmd(cmd) {
-        let requestId = (requestNumber++).toString();
-        let msg = {
-            direction: "jabra-headset-extension-from-page-script",
-            message: cmd,
-            requestId: requestId,
-            apiClientId: apiClientId,
-            version_jsapi: jabra.apiVersion
-        };
-        logger.trace("Sending command to content script: " + JSON.stringify(msg));
-        window.postMessage(msg, "*");
-    }
-    ;
-    /**
-    * Internal helper that forwards a command to the browser extension
-    * expecting a response (a promise).
-    */
-    function sendCmdWithResult(cmd) {
-        let requestId = (requestNumber++).toString();
-        return new Promise((resolve, reject) => {
-            sendRequestResultMap.set(requestId, { resolve, reject });
+    function sendCmd(cmd, requireInitializedCheck = true) {
+        if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
+            let requestId = (requestNumber++).toString();
             let msg = {
                 direction: "jabra-headset-extension-from-page-script",
                 message: cmd,
@@ -533,9 +515,37 @@ var jabra;
                 apiClientId: apiClientId,
                 version_jsapi: jabra.apiVersion
             };
-            logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
+            logger.trace("Sending command to content script: " + JSON.stringify(msg));
             window.postMessage(msg, "*");
-        });
+        }
+        else {
+            throw new Error("Browser integration not initialized");
+        }
+    }
+    ;
+    /**
+    * Internal helper that forwards a command to the browser extension
+    * expecting a response (a promise).
+    */
+    function sendCmdWithResult(cmd, requireInitializedCheck = true) {
+        if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
+            let requestId = (requestNumber++).toString();
+            return new Promise((resolve, reject) => {
+                sendRequestResultMap.set(requestId, { resolve, reject });
+                let msg = {
+                    direction: "jabra-headset-extension-from-page-script",
+                    message: cmd,
+                    requestId: requestId,
+                    apiClientId: apiClientId,
+                    version_jsapi: jabra.apiVersion
+                };
+                logger.trace("Sending command to content script expecting result: " + JSON.stringify(msg));
+                window.postMessage(msg, "*");
+            });
+        }
+        else {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
     }
     ;
     /**
@@ -588,9 +598,14 @@ var jabra;
     *
     */
     function getUserDeviceMedia(additionalConstraints) {
-        return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
-            return obj.stream;
-        });
+        if (initState.initialized) {
+            return getUserDeviceMediaExt(additionalConstraints).then(function (obj) {
+                return obj.stream;
+            });
+        }
+        else {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
     }
     jabra.getUserDeviceMedia = getUserDeviceMedia;
     ;
@@ -609,9 +624,13 @@ var jabra;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             return Promise.reject(new Error('Your browser does not support required media api'));
         }
+        // Init completed ?
+        if (!initState.initialized) {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
         // Warn of degraded UX experience unless we are running https.
         if (location.protocol !== 'https:') {
-            console.warn("This function needs to run under https for best UX experience (persisted permissions)");
+            logger.warn("This function needs to run under https for best UX experience (persisted permissions)");
         }
         /**
          * Utility method that combines constraints with ours taking precendence (shallow).
@@ -695,6 +714,10 @@ var jabra;
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
             return Promise.reject(new Error('Your browser does not support required media api'));
         }
+        // Init completed ?
+        if (!initState.initialized) {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
         // Browser security rules (for at least chrome) requires site to run under https for labels to be read.
         if (location.protocol !== 'https:') {
             return Promise.reject(new Error('Your browser needs https for lookup to work'));
@@ -745,7 +768,6 @@ var jabra;
             return result;
         });
     }
-    jabra.getDeviceInfo = getDeviceInfo;
     ;
 })(jabra || (jabra = {}));
 ;
