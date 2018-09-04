@@ -99,14 +99,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   checkInstallBtn.onclick = () => {
     jabra.getInstallInfo().then((installInfo) => {
-      if (installInfo.uptodateInstallation) {
-        installCheckResult.innerHTML = " Installation is up to date with full functionality";
+      if (installInfo.installationOk) {
+        installCheckResult.innerHTML = " Installation is ok.";
         installCheckResult.style.color = "green";
-      } else if (installInfo.consistantInstallation){
-        installCheckResult.innerHTML = " Installation not up to date but should work fine - optional upgrade for full functionality and new bug fixes";
-        installCheckResult.style.color = "red";
       } else {
-        installCheckResult.innerHTML = " Installation is not up to date or consistent and might fail in some cases - please upgrade for full functionality and new bug fixes";
+        installCheckResult.innerHTML = " Installation is not up to date or in-consistent - please upgrade for full functionality and new bug fixes.";
         installCheckResult.style.color = "red";
       }
 
@@ -115,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 + ", Native platform SDK v" + (installInfo.version_nativesdk || "?");
 
     }).catch((err) => {
-      installCheckResult.innerHTML = " Failed verifying installation. Likely because installation is too old to verify or not working";
+      installCheckResult.innerHTML = " Failed verifying installation. Likely because installation is not working or too old to support verification.";
       installCheckResult.style.color = "red";
     })
   };

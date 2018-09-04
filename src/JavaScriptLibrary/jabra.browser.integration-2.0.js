@@ -189,11 +189,9 @@ var jabra;
                                     }
                                     event.data.data.version_jsapi = jabra.apiVersion;
                                 }
-                                // For install info also check if the full installation is up to date.
+                                // For install info also check if the full installation is consistant.
                                 if (normalizedMsg === "getinstallinfo") {
-                                    event.data.data.uptodateInstallation = isUpToDate(event.data.data);
-                                    // TODO: Make more correct check for this.
-                                    event.data.data.consistantInstallation = event.data.data.uptodateInstallation;
+                                    event.data.data.installationOk = isInstallationOk(event.data.data);
                                 }
                                 // Lookup and check that we have identified a (real) command target to pair result with.
                                 let resultTarget = identifyAndCleanupResultTarget(requestId);
@@ -277,16 +275,26 @@ var jabra;
                 }
             }, 5000);
             /**
-             * Helper that checks if the installation is up 2 date.
+             * Helper that checks if the installation is consistant.
              */
-            function isUpToDate(installInfo) {
-                // Check that we have installation information for everything.
-                if (!installInfo.version_browserextension
-                    || !installInfo.version_chromehost
-                    || !installInfo.version_jsapi
-                    || !installInfo.version_nativesdk)
+            function isInstallationOk(installInfo) {
+                let browserSdkVersions = [installInfo.version_browserextension, installInfo.version_chromehost, installInfo.version_jsapi];
+                // Check that we have install information for all components.
+                if (browserSdkVersions.some(v => !v) || !installInfo.version_nativesdk) {
                     return false;
-                // TODO: Add more here - maybe online lookup.
+                }
+                // Check that different beta versions are not mixed.
+                if (!browserSdkVersions.map(v => {
+                    let betaIndex = v.lastIndexOf('beta');
+                    if (betaIndex && v.length > betaIndex + 4) {
+                        return v.substr(betaIndex + 4);
+                    }
+                    else {
+                        return undefined;
+                    }
+                }).filter(v => v).every((v, i, arr) => v === arr[0])) {
+                    return false;
+                }
                 return true;
             }
             /**
