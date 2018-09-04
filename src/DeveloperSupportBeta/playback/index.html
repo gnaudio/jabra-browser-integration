@@ -40,14 +40,13 @@
   unmuteButton.addEventListener('click', function() {
     player.muted = false;
     jabra.trySetDeviceOutput(player, self.deviceInfo).then(success => {
-      outputStat.innerText = success ? "Jabra output device '" + self.deviceInfo.label + "' sucessfully selected" : "Jabra output device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
+      outputStat.innerText = success ? "Jabra output device '" + self.deviceInfo.label + "' successfully selected" : "Jabra output device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
     }).catch(err => {
       outputStat.innerText = err.name + ": " + err.message;
     });
   });
-
-
-  jabra.getUserDeviceMediaExt({}).then( streamAndDeviceInfo => {
+  
+  jabra.init().then(() => jabra.getUserDeviceMediaExt({})).then((streamAndDeviceInfo) => {
     var stream = streamAndDeviceInfo.stream;
     var deviceInfo = streamAndDeviceInfo.deviceInfo;
     self.deviceInfo = deviceInfo;
