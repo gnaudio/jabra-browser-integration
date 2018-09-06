@@ -156,15 +156,15 @@ bool HeadsetIntegrationService::Start()
   return true;
 }
 
-const Jabra_DeviceInfo HeadsetIntegrationService::GetCurrentDevice() {
-  for (auto device : m_devices) {
-    if (device.deviceID == m_currentDeviceId) {
+const DeviceInfo& HeadsetIntegrationService::GetCurrentDevice() {
+  for (const DeviceInfo& device : m_devices) {
+    if (device.getDeviceID() == m_currentDeviceId) {
       return device;
     }
   }
 
-  // Return no device:
-  return { USHRT_MAX, USHRT_MAX, nullptr, nullptr, nullptr, DeviceInfoError, false, nullptr, nullptr, nullptr, false, USB };
+  // Return empty structure indicating NO device:
+  return DeviceInfo::empty();
 }
 
 unsigned short HeadsetIntegrationService::GetCurrentDeviceId()
@@ -178,8 +178,8 @@ unsigned short HeadsetIntegrationService::GetCurrentDeviceId()
 bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
 {
   bool found = false;
-  for (auto device : m_devices) {
-    if (device.deviceID == id) {
+  for (const DeviceInfo& device : m_devices) {
+    if (device.getDeviceID() == id) {
       found = true;
     }
   }
@@ -192,7 +192,7 @@ bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
   return false;
 }
 
-const std::vector<Jabra_DeviceInfo> HeadsetIntegrationService::GetDevices() {
+const std::vector<DeviceInfo> HeadsetIntegrationService::GetDevices() {
   return m_devices; // return copy.
 }
 
@@ -234,29 +234,32 @@ bool HeadsetIntegrationService::GetRingerStatus(unsigned short id)
   return m_RingerStatus[id];
 }
 
-void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo)
+void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo basicDeviceInfo)
 {
   try {
     std::lock_guard<std::mutex> lock(m_mtx);
 
+    unsigned short deviceId = basicDeviceInfo.deviceID;
+
     IF_LOG(plog::debug) {
-      LOG(plog::debug) << "Received device " << deviceInfo.deviceID << " attached notification";
+      LOG(plog::debug) << "Received device " << deviceId << " attached notification";
     }
 
+	DeviceInfo deviceInfo(basicDeviceInfo, getExtraDeviceInfo(deviceId));
     m_devices.push_back(deviceInfo);
-    std::string deviceName(deviceInfo.deviceName);
+    std::string deviceName = deviceInfo.getDeviceName();
 
     IF_LOG(plog::info) {
-      LOG(plog::info) << "Attaching device " << deviceInfo.deviceName << " with id " << deviceInfo.deviceID;
+      LOG(plog::info) << "Attaching device " << deviceName << " with id " << deviceName;
     }
 
     Jabra_RegisterDevLogCallback(StaticDevLogCallback);
     Jabra_ReturnCode errCode;
-    if ((errCode = Jabra_EnableDevLog(deviceInfo.deviceID, true)) != Return_Ok ) {
+    if ((errCode = Jabra_EnableDevLog(deviceId, true)) != Return_Ok ) {
 	    LOG_ERROR << "Failed enabling dev log with code " << errCode;
     }
 
-	  Event(Context::device(), "device attached", {{ "id", deviceInfo.deviceID }});
+	  Event(Context::device(), "device attached", {{ "id", deviceId }});
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in JabraDeviceAttachedFunc");
 	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
@@ -264,6 +267,52 @@ void HeadsetIntegrationService::JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceI
 	  LOG_ERROR << "Unknown error in JabraDeviceAttachedFunc: ";
 	  Error(Context::device(), "Device attachment registration failed", {});
   }
+}
+
+ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned short deviceId) {
+	return ExtraDeviceInfo::empty();
+	// TODO: Add real lookup once we have introduced a new thread to do so outside callback.
+
+	/*
+    // Serial number:
+    char serialNumberChars[128];
+    if (Jabra_GetSerialNumber(deviceId, serialNumberChars, sizeof(serialNumberChars)) != Return_Ok) {
+      serialNumberChars[0]=0;
+    }
+
+    // Construct ESNs:
+    std::map<int, std::string> electricSerialNumbers;
+
+    Map_Int_String * esns = Jabra_GetMultiESN(deviceId);
+    if (esns) {
+      for (int i=0; i < esns->length; ++i) {
+          electricSerialNumbers[esns->entries[i].key] = esns->entries[i].value;
+      }
+      Jabra_FreeMap(esns);
+    }
+
+    // Firmware version:
+    char firmwareChars[128];
+    if (Jabra_GetFirmwareVersion(deviceId, firmwareChars, sizeof(firmwareChars)) != Return_Ok) {
+      firmwareChars[0];
+    }
+
+    // Skype certification:
+    bool skypeCertified = Jabra_IsCertifiedForSkypeForBusiness(deviceId);
+
+    // BatteryStatus
+    BatteryCombinedStatus batteryStatus;
+    if (Jabra_GetBatteryStatus(deviceId, &batteryStatus.levelInPercent, &batteryStatus.charging, &batteryStatus.batteryLow) != Return_Ok) {
+      batteryStatus = BatteryCombinedStatus::empty();
+    }
+
+    // Put everything together:
+	return ExtraDeviceInfo(serialNumberChars,
+                           electricSerialNumbers,
+                           firmwareChars,
+                           skypeCertified,
+                           batteryStatus);
+     */
 }
 
 void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
@@ -278,12 +327,11 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
     int index = -1;
     bool found = false;
 
-    using Iter = std::vector<Jabra_DeviceInfo>::const_iterator;
+    using Iter = std::vector<DeviceInfo>::const_iterator;
     for (Iter it = m_devices.begin(); it != m_devices.end(); ++it) {
       index++;
-      if ((*it).deviceID == deviceID)
-      {
-        std::string deviceName((*it).deviceName);
+      if ((*it).getDeviceID() == deviceID) {
+        std::string deviceName((*it).basicInfo.deviceName);
 
 		    Event(Context::device(), "device detached", { { "id", deviceID } });
 
@@ -313,7 +361,7 @@ void HeadsetIntegrationService::JabraDeviceRemovedFunc(unsigned short deviceID)
       }
       else
       {
-        SetCurrentDeviceId(m_devices[0].deviceID);
+        SetCurrentDeviceId(m_devices[0].getDeviceID());
       }
     }
   } catch (const std::exception& e) {

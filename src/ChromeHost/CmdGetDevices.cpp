@@ -48,7 +48,7 @@ void CmdGetDevices::Execute(const Request& request)
 {
   nlohmann::json j;
 
-  const std::vector<Jabra_DeviceInfo> devices = m_headsetIntegrationService->GetDevices();
+  const std::vector<DeviceInfo> devices = m_headsetIntegrationService->GetDevices();
   for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
     setDeviceInfo(j[i], devices[i]);
   }
@@ -62,9 +62,9 @@ void CmdGetDevices::Execute(const Request& request)
       devicesAsString += ",";
     }
 
-    devicesAsString += std::to_string(devices[i].deviceID);
+    devicesAsString += std::to_string(devices[i].getDeviceID());
     devicesAsString += ",";
-    devicesAsString += devices[i].deviceName;
+    devicesAsString += devices[i].getDeviceName();
   }
 
 

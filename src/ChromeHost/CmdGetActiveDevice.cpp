@@ -46,15 +46,15 @@ bool CmdGetActiveDevice::CanExecute(const Request& request)
 
 void CmdGetActiveDevice::Execute(const Request& request)
 {
-  Jabra_DeviceInfo device = m_headsetIntegrationService->GetCurrentDevice();
+  const DeviceInfo& deviceInfo = m_headsetIntegrationService->GetCurrentDevice();
 
   nlohmann::json j;
-  setDeviceInfo(j, device);
+  setDeviceInfo(j, deviceInfo);
 
-  if (device.deviceID == USHRT_MAX)
+  if (deviceInfo.isEmpty())
   {
 	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
   } else {
-    m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(device.deviceID), j); 
+    m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
   }
 }

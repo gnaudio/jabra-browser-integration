@@ -1,26 +1,38 @@
 #include "Util.h"
+#include "Types.h"
 
-void setDeviceInfo(nlohmann::json& dest, const Jabra_DeviceInfo& src) {
-    dest["deviceID"] = src.deviceID;
-    dest["deviceName"] = src.deviceName ? src.deviceName : "unknown device";
-    if (src.usbDevicePath) {
-      dest["usbDevicePath"] = src.usbDevicePath;
+void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src) {
+	// Flatten nested structures:
+
+	dest["deviceID"] = src.getDeviceID();
+	dest["deviceName"] = src.getDeviceName();
+    if (src.basicInfo.usbDevicePath) {
+      dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
     }
-    if (src.parentInstanceId) {
-      dest["parentInstanceId"] = src.parentInstanceId;
+    if (src.basicInfo.parentInstanceId) {
+      dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
     }
-    dest["productID"] = src.deviceID;
-    dest["errStatus"] = src.errStatus;
-    dest["isBTPaired"] = src.isBTPaired;
-    if (src.dongleName) {
-      dest["dongleName"] = src.dongleName;
+    dest["productID"] = src.basicInfo.productID;
+    dest["errStatus"] = src.basicInfo.errStatus;
+    dest["isBTPaired"] = src.basicInfo.isBTPaired;
+    if (src.basicInfo.dongleName) {
+      dest["dongleName"] = src.basicInfo.dongleName;
     }
-    if (src.variant) {
-      dest["variant"] = src.variant;
+    if (src.basicInfo.variant) {
+      dest["variant"] = src.basicInfo.variant;
     }
-    if (src.serialNumber) {
-      dest["serialNumber"] = src.serialNumber;
+    if (src.basicInfo.serialNumber) {
+      dest["serialNumber"] = src.basicInfo.serialNumber;
     }
-    dest["isInFirmwareUpdateMode"] = src.isInFirmwareUpdateMode;
-    dest["deviceConnection"] = src.deviceconnection;
+    dest["isInFirmwareUpdateMode"] = src.basicInfo.isInFirmwareUpdateMode;
+    dest["deviceConnection"] = src.basicInfo.deviceconnection;
+
+
+	dest["firmwareVersion"] = src.extendedInfo.firmwareVersion;
+	dest["serialNumber"] = src.extendedInfo.serialNumber;
+	dest["electricSerialNumbers"] = src.extendedInfo.electricSerialNumbers;
+	dest["battertyStatus"]["levelInPercent"] = src.extendedInfo.battertyStatus.levelInPercent;
+	dest["battertyStatus"]["charging"] = src.extendedInfo.battertyStatus.charging;
+	dest["battertyStatus"]["batteryLow"] = src.extendedInfo.battertyStatus.batteryLow;
+	dest["skypeCertified"] = src.extendedInfo.skypeCertified;
 }
