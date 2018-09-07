@@ -153,7 +153,7 @@ class DeviceDeAttachedWork : public DeviceWork {
 
 class DeviceDevLogWork : public DeviceWork {
     public:
-    const std::string& eventStr;
+    const std::string eventStr;
 
     explicit DeviceDevLogWork(const unsigned short deviceID, const std::string& eventStr) : DeviceWork(deviceID), eventStr(eventStr) {}
 
