@@ -51,6 +51,11 @@ SOFTWARE.
 
 HeadsetIntegrationService* g_thisHeadsetIntegrationService;
 
+// Helper to avoid wierd lambda compiler error if executing directly.
+static void logQueued(Work * work) {
+  LOG_INFO << "Queuing " << *work;
+}
+
 HeadsetIntegrationService::HeadsetIntegrationService() 
    : workQueue()
 {
@@ -104,7 +109,9 @@ HeadsetIntegrationService::~HeadsetIntegrationService()
 
 void HeadsetIntegrationService::QueueRequest(const Request& request)
 {
-  workQueue.enqueue(new RequestWork(request));
+  RequestWork * const work = new RequestWork(request);
+  logQueued(work);
+  workQueue.enqueue(work);
 }
 
 void HeadsetIntegrationService::AddHandler(std::function<void(const Response&)> callback)
@@ -122,14 +129,20 @@ bool HeadsetIntegrationService::Start()
       [](Jabra_DeviceInfo rawBasicDeviceInfo) {
         BasicDeviceInfo basicDevicdInfo(rawBasicDeviceInfo);
         Jabra_FreeDeviceInfo(rawBasicDeviceInfo);
-        g_thisHeadsetIntegrationService->workQueue.enqueue(new DeviceAttachedWork(basicDevicdInfo));
+        Work * const work = new DeviceAttachedWork(basicDevicdInfo);
+        logQueued(work);
+        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
       [](unsigned short deviceID) {
-        g_thisHeadsetIntegrationService->workQueue.enqueue(new DeviceDeAttachedWork(deviceID));
+        Work * const work = new DeviceDeAttachedWork(deviceID);
+		logQueued(work);
+        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
       NULL,
       [](unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData) {
-        g_thisHeadsetIntegrationService->workQueue.enqueue(new ButtonInDataTranslatedWork(deviceID, translatedInData, buttonInData));
+        Work * const work = new ButtonInDataTranslatedWork(deviceID, translatedInData, buttonInData);
+		logQueued(work);
+        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
       0
     )) {
@@ -162,7 +175,7 @@ void HeadsetIntegrationService::Stop()
 
   workQueue.stop();
   if (workerThread.joinable()) {
-	workerThread.join();
+	  workerThread.join();
   }
 
   LOG_INFO << "Integration service sucessfully stopped";
@@ -178,7 +191,7 @@ void HeadsetIntegrationService::workerThreadRunner() {
 
   while (!workQueue.closed()) {
     try {
-      Work* work = workQueue.dequeue();
+      Work* const work = workQueue.dequeue();
       if (work) {
         LOG_INFO << "before executing work " << *work;
         work->accept(* this);
@@ -201,8 +214,6 @@ void HeadsetIntegrationService::workerThreadRunner() {
 
 void HeadsetIntegrationService::visit(const RequestWork& work) {
   try {
-    std::lock_guard<std::mutex> lock(m_mtx);
-
     using Iter = std::vector<CmdInterface*>::const_iterator;
     for (Iter it = m_commands.begin(); it != m_commands.end(); ++it) {
       if ((*it)->CanExecute(work.request))
@@ -212,18 +223,16 @@ void HeadsetIntegrationService::visit(const RequestWork& work) {
       }
     }
 
-	Error(work.request, "Unknown cmd " + work.request.message, {});
+	  Error(work.request, "Unknown cmd " + work.request.message, {});
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in SendCmd with message " + work.request.message);
   } catch (...) {
-	LOG_ERROR << "Unknown error in SendCmd with message " + work.request.message;
+	  LOG_ERROR << "Unknown error in SendCmd with message " + work.request.message;
   }
 }
 
 void HeadsetIntegrationService::visit(const ButtonInDataTranslatedWork& work) {
   try {
-    std::lock_guard<std::mutex> lock(m_mtx);
-
     // Only handle input data from current device
     if (work.deviceID != GetCurrentDeviceId())
       return;
@@ -240,21 +249,19 @@ void HeadsetIntegrationService::visit(const ButtonInDataTranslatedWork& work) {
     else
     {
       std::string inDatastring = std::to_string(work.translatedInData);
-	  Error(Context::device(), "No button handler implemented for " + inDatastring, {});
+	    Error(Context::device(), "No button handler implemented for " + inDatastring, {});
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in ButtonInDataTranslatedFunc");
     Error(Context::device(), "button translation failed", { std::make_pair("exception", e.what()) });
   } catch (...) {
-	LOG_ERROR << "Unknown error in ButtonInDataTranslatedFunc";
-	Error(Context::device(), "button translation failed", {});
+	  LOG_ERROR << "Unknown error in ButtonInDataTranslatedFunc";
+	  Error(Context::device(), "button translation failed", {});
   }
 }
 
 void HeadsetIntegrationService::visit(const DeviceAttachedWork& work) {
  try {
-    std::lock_guard<std::mutex> lock(m_mtx);
-
     unsigned short deviceId = work.basicDeviceInfo.deviceID;
 
     IF_LOG(plog::debug) {
@@ -270,10 +277,14 @@ void HeadsetIntegrationService::visit(const DeviceAttachedWork& work) {
     }
 
     WorkQueue& queue = workQueue;
-    Jabra_RegisterDevLogCallback([](unsigned short deviceID, const char* eventStrAry) {
-      std::string eventStr(eventStrAry);
-      Jabra_FreeString((char *)eventStrAry);
-      g_thisHeadsetIntegrationService->workQueue.enqueue(new DeviceDevLogWork(deviceID, eventStr));
+    Jabra_RegisterDevLogCallback([](unsigned short deviceID, const char* eventStrRaw) {
+      if (eventStrRaw) {
+        std::string eventStr(eventStrRaw);
+        Jabra_FreeString((char *)eventStrRaw);
+        Work * const work = new DeviceDevLogWork(deviceID, eventStr);
+        logQueued(work);
+        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+      }
     });
 
     Jabra_ReturnCode errCode;
@@ -287,17 +298,15 @@ void HeadsetIntegrationService::visit(const DeviceAttachedWork& work) {
     Event(Context::device(), "device attached", j);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in JabraDeviceAttachedFunc");
-	Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
+	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
   } catch (...) {
-	LOG_ERROR << "Unknown error in JabraDeviceAttachedFunc: ";
-	Error(Context::device(), "Device attachment registration failed", {});
+	  LOG_ERROR << "Unknown error in JabraDeviceAttachedFunc: ";
+	  Error(Context::device(), "Device attachment registration failed", {});
   }
 }
 
 void HeadsetIntegrationService::visit(const DeviceDeAttachedWork& work) {
  try {
-    std::lock_guard<std::mutex> lock(m_mtx);
-
     IF_LOG(plog::debug) {
       LOG(plog::debug) << "Received device " << work.deviceID << " removal notification";
     }
@@ -444,44 +453,47 @@ bool HeadsetIntegrationService::GetRingerStatus(unsigned short id)
   return m_RingerStatus[id];
 }
 
-ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned short deviceId) {
-    // Serial number:
-    char serialNumberChars[128];
-    if (Jabra_GetSerialNumber(deviceId, serialNumberChars, sizeof(serialNumberChars)) != Return_Ok) {
-      serialNumberChars[0]=0;
+ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned short deviceId) 
+{
+  // Serial number:
+  char serialNumberChars[128];
+  if (Jabra_GetSerialNumber(deviceId, serialNumberChars, sizeof(serialNumberChars)) != Return_Ok) {
+    serialNumberChars[0]=0;
+  }
+
+  // Construct ESNs:
+  std::map<int, std::string> electricSerialNumbers;
+
+  Map_Int_String * esns = Jabra_GetMultiESN(deviceId);
+  if (esns) {
+    for (int i=0; i < esns->length; ++i) {
+		if (esns->entries[i].value) {
+			electricSerialNumbers[esns->entries[i].key] = esns->entries[i].value;
+		}
     }
+    Jabra_FreeMap(esns);
+  }
 
-    // Construct ESNs:
-    std::map<int, std::string> electricSerialNumbers;
+  // Firmware version:
+  char firmwareChars[128];
+  if (Jabra_GetFirmwareVersion(deviceId, firmwareChars, sizeof(firmwareChars)) != Return_Ok) {
+    firmwareChars[0];
+  }
 
-    Map_Int_String * esns = Jabra_GetMultiESN(deviceId);
-    if (esns) {
-      for (int i=0; i < esns->length; ++i) {
-          electricSerialNumbers[esns->entries[i].key] = esns->entries[i].value;
-      }
-      Jabra_FreeMap(esns);
-    }
+  // Skype certification:
+  bool skypeCertified = Jabra_IsCertifiedForSkypeForBusiness(deviceId);
 
-    // Firmware version:
-    char firmwareChars[128];
-    if (Jabra_GetFirmwareVersion(deviceId, firmwareChars, sizeof(firmwareChars)) != Return_Ok) {
-      firmwareChars[0];
-    }
-
-    // Skype certification:
-    bool skypeCertified = Jabra_IsCertifiedForSkypeForBusiness(deviceId);
-
-    // BatteryStatus
-    BatteryCombinedStatusInfo batteryStatus;
-    if (Jabra_GetBatteryStatus(deviceId, &batteryStatus.levelInPercent, &batteryStatus.charging, &batteryStatus.batteryLow) != Return_Ok) {
-      batteryStatus = BatteryCombinedStatusInfo::empty();
-    }
+  // BatteryStatus
+  BatteryCombinedStatusInfo batteryStatus;
+  if (Jabra_GetBatteryStatus(deviceId, &batteryStatus.levelInPercent, &batteryStatus.charging, &batteryStatus.batteryLow) != Return_Ok) {
+    batteryStatus = BatteryCombinedStatusInfo::empty();
+  }
 
     // Put everything together:
 	return ExtraDeviceInfo(serialNumberChars,
-                           electricSerialNumbers,
-                           firmwareChars,
-                           skypeCertified,
-                           batteryStatus);
+                         electricSerialNumbers,
+                         firmwareChars,
+                         skypeCertified,
+                         batteryStatus);
 }
 
