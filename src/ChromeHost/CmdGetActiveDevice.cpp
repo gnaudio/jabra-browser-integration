@@ -53,7 +53,7 @@ void CmdGetActiveDevice::Execute(const Request& request)
 
   if (deviceInfo.isEmpty())
   {
-	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
+	m_headsetIntegrationService->Event(request, "activedevice -1", j);
   } else {
     m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
   }

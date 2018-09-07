@@ -49,8 +49,13 @@ void CmdGetDevices::Execute(const Request& request)
   nlohmann::json j;
 
   const std::vector<DeviceInfo> devices = m_headsetIntegrationService->GetDevices();
-  for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
-    setDeviceInfo(j[i], devices[i]);
+  if (devices.size() == 0) {
+	  j = nlohmann::json::array(); // Empty json array.
+  }
+  else {
+	  for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
+		  setDeviceInfo(j[i], devices[i]);
+	  }
   }
 
   // For backward compatability with <= 0.5, also return devices extract as a string.

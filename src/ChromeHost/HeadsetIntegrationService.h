@@ -31,21 +31,30 @@ SOFTWARE.
 #include <functional>
 #include <utility>
 #include <mutex>
+#include <thread>
 #include "CmdInterface.h"
 #include "EventInterface.h"
 #include "Request.h"
 #include "Response.h"
+#include "Work.h"
 
-class HeadsetIntegrationService
+class HeadsetIntegrationService : public WorkVisitor
 {
   public:
   HeadsetIntegrationService();
   ~HeadsetIntegrationService();
 
+  void visit(const RequestWork& work) override;
+  void visit(const ButtonInDataTranslatedWork& work) override;
+  void visit(const DeviceAttachedWork& work) override;
+  void visit(const DeviceDeAttachedWork& work) override;
+  void visit(const DeviceDevLogWork& work) override;
+
   void AddHandler(std::function<void(const Response&)> callback);
-  void SendCmd(const Request& request);
+  void QueueRequest(const Request& request);
 
   bool Start();
+  void Stop();
 
   const DeviceInfo& GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
@@ -60,8 +69,12 @@ class HeadsetIntegrationService
 
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
-
+    
   protected:
+  WorkQueue workQueue;
+  std::thread workerThread;
+  void workerThreadRunner();
+
   std::map<Jabra_HidInput, EventInterface*> m_events;
   std::vector<CmdInterface*> m_commands;
 
@@ -74,13 +87,4 @@ class HeadsetIntegrationService
   unsigned short m_currentDeviceId;
 
   ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);
-
-  void JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo);
-  void JabraDeviceRemovedFunc(unsigned short deviceID);
-  void ButtonInDataTranslatedFunc(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData);
-
-  static void StaticJabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo);
-  static void StaticJabraDeviceRemovedFunc(unsigned short deviceID);
-  static void StaticButtonInDataTranslatedFunc(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData);
-  static void StaticDevLogCallback(unsigned short deviceID, const char* eventStr);
 };

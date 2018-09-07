@@ -25,29 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+#include "work.h"
 
-#include "stdafx.h"
+std::atomic<unsigned long> Work::workCount = 0;
 
-/**
- * Contains an incomming request from the chrome extension.
- */
-class Request : public Context {
-  public:
-  const std::string message;
-
-  explicit Request(const std::string& message, const std::string& requestId, const std::string& apiClientId);
-
-  /**
-   * Return an empty request
-   **/
-  static const Request& empty() {
-	  static Request instance(
-		  "", "", ""
-    );
-
-	  return instance;
-  }
-
-  friend std::ostream& operator<<(std::ostream& os, const Request& r);
-};
+std::ostream& operator<<(std::ostream& out, const Work& work) {
+    work.print(out);
+    return out;
+}

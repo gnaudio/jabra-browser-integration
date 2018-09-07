@@ -34,14 +34,81 @@ SOFTWARE.
 /**
  * Just a triple of all battery status
  */
-struct BatteryCombinedStatus {
+struct BatteryCombinedStatusInfo {
   int levelInPercent;
   bool charging;
   bool batteryLow;
 
-  static BatteryCombinedStatus empty() {
+  static BatteryCombinedStatusInfo empty() {
     return { 0, false, false };
   }
+};
+
+struct BasicDeviceInfo {
+	unsigned short deviceID;
+	unsigned short productID;
+	std::string deviceName;
+	std::string usbDevicePath;
+	std::string parentInstanceId;
+	Jabra_ErrorStatus errStatus;
+	bool isBTPaired;
+	std::string dongleName;
+	std::string variant;
+	std::string serialNumber;
+    bool isInFirmwareUpdateMode;
+    DeviceConnectionType deviceconnection;
+
+    private:
+	BasicDeviceInfo() : deviceID(-1), productID(-1), errStatus(Device_NotFound), isBTPaired(false), isInFirmwareUpdateMode(false),
+		                deviceconnection(USB) {}
+
+    public:
+	explicit BasicDeviceInfo(Jabra_DeviceInfo source) 
+				   : deviceID(source.deviceID),
+	                 productID(source.productID),
+					 deviceName(source.deviceName ? source.deviceName : ""),
+					 usbDevicePath(source.usbDevicePath ? source.usbDevicePath : ""),
+					 parentInstanceId(source.parentInstanceId ? source.parentInstanceId : ""),
+					 errStatus(source.errStatus),
+					 isBTPaired(source.isBTPaired),
+					 dongleName(source.dongleName ? source.dongleName : ""),
+					 variant(source.variant ? source.variant : ""),
+					 serialNumber(source.serialNumber ? source.serialNumber : ""),
+					 isInFirmwareUpdateMode(source.isInFirmwareUpdateMode),
+					 deviceconnection(source.deviceconnection) {}
+
+	explicit BasicDeviceInfo(unsigned short deviceID,
+	                unsigned short productID,
+	                std::string deviceName,
+	                std::string usbDevicePath,
+	                std::string parentInstanceId,
+	                Jabra_ErrorStatus errStatus,
+	                bool isBTPaired,
+	                std::string dongleName,
+	                std::string variant,
+	                std::string serialNumber,
+                    bool isInFirmwareUpdateMode,
+                    DeviceConnectionType deviceconnection)
+					: deviceID(deviceID),
+	                  productID(productID),
+					  deviceName(deviceName),
+					  usbDevicePath(usbDevicePath),											
+					  parentInstanceId(parentInstanceId),
+					  errStatus(errStatus),
+					  isBTPaired(isBTPaired),
+					  dongleName(dongleName),											
+					  variant(variant),
+					  serialNumber(serialNumber),
+					  isInFirmwareUpdateMode(isInFirmwareUpdateMode),
+					  deviceconnection(deviceconnection) {}
+
+	/**
+	* Empty device information for non-existing device.
+	*/
+	static const BasicDeviceInfo& empty() {
+		static BasicDeviceInfo instance;
+		return instance;
+	}
 };
 
 /**
@@ -52,13 +119,13 @@ struct ExtraDeviceInfo {
 	std::map<int, std::string> electricSerialNumbers;
 	std::string firmwareVersion;
 	bool skypeCertified;
-	BatteryCombinedStatus battertyStatus;
+	BatteryCombinedStatusInfo battertyStatus;
 
-	ExtraDeviceInfo(const std::string& serialNumber,
+	explicit ExtraDeviceInfo(const std::string& serialNumber,
 		const std::map<int, std::string>& electricSerialNumbers,
 		const std::string& firmwareVersion,
 		const bool skypeCertified,
-		const BatteryCombinedStatus& battertyStatus)
+		const BatteryCombinedStatusInfo& battertyStatus)
 		: serialNumber(serialNumber),
 		electricSerialNumbers(electricSerialNumbers),
 		firmwareVersion(firmwareVersion),
@@ -74,7 +141,7 @@ struct ExtraDeviceInfo {
 			{},
 			"",
 			false,
-			BatteryCombinedStatus::empty()
+			BatteryCombinedStatusInfo::empty()
 		);
 
 		return instance;
@@ -85,14 +152,14 @@ struct ExtraDeviceInfo {
  * Combination of core and extra information about a device.
  */
 struct DeviceInfo {
-  Jabra_DeviceInfo basicInfo;
+  BasicDeviceInfo basicInfo;
   ExtraDeviceInfo extendedInfo;
 
   bool isEmpty() const { return basicInfo.deviceID != USHRT_MAX; }
   unsigned short getDeviceID() const { return basicInfo.deviceID; }
-  std::string getDeviceName() const { return basicInfo.deviceName ? basicInfo.deviceName : "unknown device name"; }
+  std::string getDeviceName() const { return basicInfo.deviceName; }
 
-  DeviceInfo(const Jabra_DeviceInfo& basicInfo, 
+  explicit DeviceInfo(const BasicDeviceInfo& basicInfo, 
              const ExtraDeviceInfo& extendedInfo)
 	  : basicInfo(basicInfo), 
 	  extendedInfo(extendedInfo) {}
@@ -102,7 +169,7 @@ struct DeviceInfo {
    */
   static const DeviceInfo& empty() {
 	  static DeviceInfo instance(
-		  { USHRT_MAX, USHRT_MAX, nullptr, nullptr, nullptr, DeviceInfoError, false, nullptr, nullptr, nullptr, false, USB },
+		  BasicDeviceInfo::empty(),
 		  ExtraDeviceInfo::empty()
     );
 

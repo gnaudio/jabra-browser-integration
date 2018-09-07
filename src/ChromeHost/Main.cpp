@@ -54,8 +54,9 @@ int main()
   try {
 	  App app;
 	  app.Start(); // Blocks until done
+	  LOG_INFO << "Application start ended normally";
   } catch (const std::exception& e) {
-    log_exception(plog::Severity::fatal, e, "in main");
+      log_exception(plog::Severity::fatal, e, "in main");
 	  return 1;
   } catch (...) {
 	  LOG_FATAL << "Fatal unknown error: ";
