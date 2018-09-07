@@ -38,6 +38,15 @@ SOFTWARE.
 #include "Response.h"
 #include "Work.h"
 
+/**
+ * Manages device handling incomming requests (from browser api)
+ * and events (from device).
+ * 
+ * All requests/events are put directly in a common thread-safe work
+ * queue and than retrived in a single seperate thread. This internal
+ * thread pulls the work and displatch it to the appropiate visit methods.
+ * This means that code for actions and modifications is single-threaded.
+ */
 class HeadsetIntegrationService : public WorkVisitor
 {
   public:
@@ -83,7 +92,6 @@ class HeadsetIntegrationService : public WorkVisitor
 
   std::function<void(const Response& txt)> m_callback;
   std::vector<DeviceInfo> m_devices;
-  std::mutex m_mtx; // mutex for critical section
   unsigned short m_currentDeviceId;
 
   ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);

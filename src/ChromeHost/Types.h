@@ -64,43 +64,18 @@ struct BasicDeviceInfo {
 
     public:
 	explicit BasicDeviceInfo(Jabra_DeviceInfo source) 
-				   : deviceID(source.deviceID),
-	                 productID(source.productID),
-					 deviceName(source.deviceName ? source.deviceName : ""),
-					 usbDevicePath(source.usbDevicePath ? source.usbDevicePath : ""),
-					 parentInstanceId(source.parentInstanceId ? source.parentInstanceId : ""),
-					 errStatus(source.errStatus),
-					 isBTPaired(source.isBTPaired),
-					 dongleName(source.dongleName ? source.dongleName : ""),
-					 variant(source.variant ? source.variant : ""),
-					 serialNumber(source.serialNumber ? source.serialNumber : ""),
-					 isInFirmwareUpdateMode(source.isInFirmwareUpdateMode),
-					 deviceconnection(source.deviceconnection) {}
-
-	explicit BasicDeviceInfo(unsigned short deviceID,
-	                unsigned short productID,
-	                std::string deviceName,
-	                std::string usbDevicePath,
-	                std::string parentInstanceId,
-	                Jabra_ErrorStatus errStatus,
-	                bool isBTPaired,
-	                std::string dongleName,
-	                std::string variant,
-	                std::string serialNumber,
-                    bool isInFirmwareUpdateMode,
-                    DeviceConnectionType deviceconnection)
-					: deviceID(deviceID),
-	                  productID(productID),
-					  deviceName(deviceName),
-					  usbDevicePath(usbDevicePath),											
-					  parentInstanceId(parentInstanceId),
-					  errStatus(errStatus),
-					  isBTPaired(isBTPaired),
-					  dongleName(dongleName),											
-					  variant(variant),
-					  serialNumber(serialNumber),
-					  isInFirmwareUpdateMode(isInFirmwareUpdateMode),
-					  deviceconnection(deviceconnection) {}
+							: deviceID(source.deviceID),
+							  productID(source.productID),
+							  deviceName(source.deviceName ? source.deviceName : ""),
+							  usbDevicePath(source.usbDevicePath ? source.usbDevicePath : ""),
+							  parentInstanceId(source.parentInstanceId ? source.parentInstanceId : ""),
+							  errStatus(source.errStatus),
+							  isBTPaired(source.isBTPaired),
+							  dongleName(source.dongleName ? source.dongleName : ""),
+							  variant(source.variant ? source.variant : ""),
+							  serialNumber(source.serialNumber ? source.serialNumber : ""),
+							  isInFirmwareUpdateMode(source.isInFirmwareUpdateMode),
+							  deviceconnection(source.deviceconnection) {}
 
 	/**
 	* Empty device information for non-existing device.
@@ -122,15 +97,15 @@ struct ExtraDeviceInfo {
 	BatteryCombinedStatusInfo battertyStatus;
 
 	explicit ExtraDeviceInfo(const std::string& serialNumber,
-		const std::map<int, std::string>& electricSerialNumbers,
-		const std::string& firmwareVersion,
-		const bool skypeCertified,
-		const BatteryCombinedStatusInfo& battertyStatus)
-		: serialNumber(serialNumber),
-		electricSerialNumbers(electricSerialNumbers),
-		firmwareVersion(firmwareVersion),
-		skypeCertified(skypeCertified),
-		battertyStatus(battertyStatus) {}
+							 const std::map<int, std::string>& electricSerialNumbers,
+							 const std::string& firmwareVersion,
+							 const bool skypeCertified,
+							 const BatteryCombinedStatusInfo& battertyStatus)
+							: serialNumber(serialNumber),
+							  electricSerialNumbers(electricSerialNumbers),
+						  	  firmwareVersion(firmwareVersion),
+							  skypeCertified(skypeCertified),
+							  battertyStatus(battertyStatus) {}
 
 	/**
 	* Empty device information for non-existing device.
@@ -160,9 +135,9 @@ struct DeviceInfo {
   std::string getDeviceName() const { return basicInfo.deviceName; }
 
   explicit DeviceInfo(const BasicDeviceInfo& basicInfo, 
-             const ExtraDeviceInfo& extendedInfo)
-	  : basicInfo(basicInfo), 
-	  extendedInfo(extendedInfo) {}
+                      const ExtraDeviceInfo& extendedInfo)
+					 : basicInfo(basicInfo), 
+					   extendedInfo(extendedInfo) {}
 
   /**
    * Empty device information for non-existing device.
@@ -171,7 +146,7 @@ struct DeviceInfo {
 	  static DeviceInfo instance(
 		  BasicDeviceInfo::empty(),
 		  ExtraDeviceInfo::empty()
-    );
+      );
 
 	return instance;
   }
