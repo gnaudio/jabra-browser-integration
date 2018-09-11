@@ -497,7 +497,7 @@ namespace jabra {
             if (eventListeners.has(nameSpec as EventName)) {
              return [ nameSpec ];
             } else {
-                logger.warn("Unknown event " + nameSpec + " ignored");
+                logger.warn("Unknown event " + nameSpec + " ignored when adding/removing eventlistener");
             }
         }
 

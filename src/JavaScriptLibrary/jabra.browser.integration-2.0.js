@@ -384,7 +384,7 @@ var jabra;
                 return [nameSpec];
             }
             else {
-                logger.warn("Unknown event " + nameSpec + " ignored");
+                logger.warn("Unknown event " + nameSpec + " ignored when adding/removing eventlistener");
             }
         }
         return [];
