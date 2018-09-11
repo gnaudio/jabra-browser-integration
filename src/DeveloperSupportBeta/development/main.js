@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     toastr.info("Accept call from the device");
   });
 
-  jabra.addEventListener("rejectCall", (event) => {
+  jabra.addEventListener("reject", (event) => {
     toastr.info("Accept call from the device");
   });
 
