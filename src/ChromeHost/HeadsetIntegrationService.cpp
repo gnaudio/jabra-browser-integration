@@ -135,13 +135,13 @@ bool HeadsetIntegrationService::Start()
       },
       [](unsigned short deviceID) {
         Work * const work = new DeviceDeAttachedWork(deviceID);
-		logQueued(work);
+		    logQueued(work);
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
       NULL,
       [](unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData) {
         Work * const work = new ButtonInDataTranslatedWork(deviceID, translatedInData, buttonInData);
-		logQueued(work);
+		    logQueued(work);
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
       0
