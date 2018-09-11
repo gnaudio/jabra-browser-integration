@@ -27,15 +27,57 @@ SOFTWARE.
 
 'use strict';
 
-var logLevelDropdown = document.getElementById('logLevel');
-chrome.storage.local.get('logLevel', function(items) {
-    var logLevel = items.logLevel || 1;
-    logLevelDropdown.value = logLevel;
+let configurationSection = document.getElementById('configuration');
+let permissionSection = document.getElementById('permission');
+let restartSection =  document.getElementById('restart');
 
-    logLevelDropdown.addEventListener('change', function() {
-        var value = logLevelDropdown.options[logLevelDropdown.selectedIndex].value;
-        chrome.storage.local.set({logLevel: value}, function() {
-            // Called when storage updated.
+function setupConfiguration() {
+    var logLevelDropdown = document.getElementById('logLevel');
+    chrome.storage.local.get('logLevel', (items) => {
+        var logLevel = items.logLevel || 1;
+        logLevelDropdown.value = logLevel;
+    
+        logLevelDropdown.addEventListener('change', () => {
+            var value = logLevelDropdown.options[logLevelDropdown.selectedIndex].value;
+            chrome.storage.local.set({logLevel: value}, () => {
+                // Called when storage updated.
+            });
         });
     });
+}
+
+chrome.permissions.contains({
+    permissions: ['storage']
+}, (allowed) => {
+    if (allowed) {
+        configurationSection.style.display = "block";
+        permissionSection.style.display = "none";
+        restartSection.style.display = "none";
+        setupConfiguration();
+    } else {
+        configurationSection.style.display = "none";
+        restartSection.style.display = "none";
+        permissionSection.style.display = "block";
+
+        console.info("User asked for permission to access storage");
+
+        let askPermission = document.getElementById('askPermission');
+        askPermission.onclick = () => {
+            chrome.permissions.request({
+                permissions: ['storage']
+            }, function(granted) {
+                if (granted) { // Permitted
+                    configurationSection.style.display = "none";
+                    restartSection.style.display = "block";                    
+                    permissionSection.style.display = "none";
+                    console.info("Access to storage granted");
+                } else { // Not permitted:
+                    // Do nothing - wait for the user to re-consider.
+                    console.warn("Access to storage not granted");
+                }
+            });
+        };
+    }
 });
+
+

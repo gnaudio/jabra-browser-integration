@@ -43,23 +43,55 @@ SOFTWARE.
   } else {
     extensionType = "unknown";
   }
-  
+
+  let extensionTitle = (extensionType == "production") ? "Jabra Integration Extension" : "Jabra Integration Extension (" + extensionType + ")";
+
+  // Set title dynamically and clear badge - if we have been granted permission to do it.
+  try {
+    if (chrome.browserAction) {
+      if (chrome.browserAction.setBadgeText) {
+        chrome.browserAction.setBadgeText({text: ''});
+      }
+      if (chrome.browserAction.setBadgeBackgroundColor) {
+        chrome.browserAction.setBadgeBackgroundColor({color: '#ffffff'});
+      }
+      if (chrome.browserAction.setTitle) {
+        chrome.browserAction.setTitle({title: extensionTitle});
+      }
+    }
+  } catch (err) {
+    console.error("Could not change badge/title: " + err);
+  }
+
   var manifestData = chrome.runtime.getManifest();
 
   // Make logLevel variable in sync with storage (updated by options page).
   var logLevel = 2;
 
-  chrome.storage.local.get('logLevel', function(items) {
-    logLevel = parseInt(items.logLevel || "2");
-    chrome.storage.onChanged.addListener(function(changes, areaName) {
-      for (key in changes) {
-        var storageChange = changes[key];
-        if (key='logLevel' && areaName === 'local' ) {
-          logLevel = storageChange.newValue;
-        }
+  // Sync log level if we have storage permission
+  try {
+    chrome.permissions.contains({
+      permissions: ['storage']
+    }, (allowed) => {
+      if (allowed && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get('logLevel', function(items) {
+          logLevel = parseInt(items.logLevel || "2");
+          chrome.storage.onChanged.addListener(function(changes, areaName) {
+            for (key in changes) {
+              var storageChange = changes[key];
+              if (key='logLevel' && areaName === 'local' ) {
+                logLevel = storageChange.newValue;
+              }
+            }
+          });
+        });
+      } else {
+        // console.warn("Could not access storage to read/watch log level changes");
       }
     });
-  });
+  } catch (err) {
+    console.error("Error during log/level listener setup " + err);
+  }
 
   // Native messages port
   var port = null;
@@ -140,12 +172,39 @@ SOFTWARE.
 
     // For install info and version commands, we need to add appropiate things only the 
     // background script knows about like chrome extension version number, extensionId etc.
-    if (msg.message === "Event: getinstallinfo" && msg.data) {
+    if (msg.message === "Event: getinstallinfo") {
+      msg.data = msg.data || {};
       msg.data.version_browserextension = manifestData.version_name;
       msg.data.browserextension_id =  extensionId;
       msg.data.browserextension_type = extensionType
-    } else if (msg.message.startsWith("Event: Version") && msg.data) {
+    } else if (msg.message.startsWith("Event: Version")) {
+      msg.data = msg.data || {};
       msg.data.version_browserextension = manifestData.version_name;
+
+      // TODO: Full compatability check.
+      let isInstallOk = (msg.data.version_chromehost && msg.data.version_nativesdk);
+      if (!isInstallOk) {
+        // For backwards compatability, we can't report this to the API client
+        // as it expect version response first.
+        console.warn("Chromehost installation incomplete / needs update");
+        
+        // Display warning about incomptability if we have persmission:
+        try {
+          if (chrome.browserAction) {
+            if (chrome.browserAction.setBadgeText) {
+              chrome.browserAction.setBadgeText({text: '!'});
+            }
+            if (chrome.browserAction.setBadgeBackgroundColor) {
+              chrome.browserAction.setBadgeBackgroundColor({color: '#ff0000'});
+            }
+            if (chrome.browserAction.setTitle) {
+              chrome.browserAction.setTitle({title: extensionTitle + " - incomplete / needs update"});
+            }
+          }
+        } catch (err) {
+          console.error("Could not change badge/title: " + err);
+        }
+      }
     }
 
     // Add error field if there is one:
