@@ -8,7 +8,7 @@ jabra.init(onSuccess, onFailure, onNotify)
 ```
 Example use of the library:
 
-https://gnaudio.github.io/jabra-browser-integration/development
+https://gnaudio.github.io/jabra-browser-integration/release/development/
 
 Basic functions: 
 
