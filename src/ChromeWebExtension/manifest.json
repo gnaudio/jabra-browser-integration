@@ -6,7 +6,7 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "version": "2.0.0.3",
+  "version": "2.0.0.4",
   "version_name": "2.0.0.beta2",
   "description": "Jabra Integration Extension Beta",
   "options_ui": {
