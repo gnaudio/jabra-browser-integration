@@ -25,20 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+#include "Request.h"
 
-#include "EventInterface.h"
-#include "HeadsetIntegrationService.h"
+Request::Request(const std::string& message, const nlohmann::json& args, const std::string& requestId, const std::string& apiClientId)
+                : Context(requestId, apiClientId), args(args), message(message) {
+}
 
-class EventOffHook : public EventInterface
+std::ostream& operator<<(std::ostream& os, const Request& r)
 {
-public:
-  explicit EventOffHook(HeadsetIntegrationService* headsetIntegrationService);
-  ~EventOffHook();
-
-  void Execute(bool buttonInData) override;
-
-protected:
-  HeadsetIntegrationService* m_headsetIntegrationService;
-};
-
+	os << "Request { ";
+	os << "message: " << r.message;
+    os << ", args: " << r.args;
+	os << ", requestId: " << r.requestId;
+	os << ", apiClientId: " << r.apiClientId;
+	os << "}";
+	return os;
+}

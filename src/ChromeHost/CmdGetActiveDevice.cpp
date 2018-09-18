@@ -28,6 +28,7 @@ SOFTWARE.
 #include <climits>
 #include "stdafx.h"
 #include "CmdGetActiveDevice.h"
+#include "Util.h"
 
 CmdGetActiveDevice::CmdGetActiveDevice(HeadsetIntegrationService* headsetIntegrationService)
 {
@@ -45,13 +46,15 @@ bool CmdGetActiveDevice::CanExecute(const Request& request)
 
 void CmdGetActiveDevice::Execute(const Request& request)
 {
-  unsigned short id = m_headsetIntegrationService->GetCurrentDeviceId();
-  if (id == USHRT_MAX)
-  {
-	  m_headsetIntegrationService->Event(request, "activedevice -1", { std::make_pair("id", "-1") } );
-    return;
-  }
+  const DeviceInfo& deviceInfo = m_headsetIntegrationService->GetCurrentDevice();
 
-  std::string activeDevice = "activedevice " + std::to_string(id);
-  m_headsetIntegrationService->Event(request, activeDevice, { std::make_pair("id", std::to_string(id)) });
+  nlohmann::json j;
+
+  if (deviceInfo.isEmpty())
+  {
+	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
+  } else {
+	  setDeviceInfo(j, deviceInfo, m_headsetIntegrationService->getDynamicDeviceInfo(deviceInfo.getDeviceID()));
+    m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
+  }
 }

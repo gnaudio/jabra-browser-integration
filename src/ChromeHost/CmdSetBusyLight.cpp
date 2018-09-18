@@ -25,15 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+#include "stdafx.h"
+#include "CmdSetBusyLight.h"
 
-#include <string>
-
-class EventInterface
+CmdSetBusyLight::CmdSetBusyLight(HeadsetIntegrationService* headsetIntegrationService)
 {
-public:
+  m_headsetIntegrationService = headsetIntegrationService;
+}
 
-  virtual void Execute(bool buttonInData) = 0;
+CmdSetBusyLight::~CmdSetBusyLight()
+{
+}
 
-};
+bool CmdSetBusyLight::CanExecute(const Request& request)
+{
+  return (request.message == "setbusylight");
+}
 
+void CmdSetBusyLight::Execute(const Request& request)
+{
+  bool busy = request.args["busy"];
+
+  Jabra_ReturnCode retv;
+  if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
+	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
+  }
+
+  if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
+  	  m_headsetIntegrationService->Error(request, "Could not set busy light", { "error", retv });
+  }
+}

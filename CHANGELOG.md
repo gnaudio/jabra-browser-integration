@@ -9,7 +9,9 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Modern ES5+ promisified Javascript API - All methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks in order to enabled streamlined testing and API usage. This means for instance, the `init()` method now returns a JS promise that user should use then()/catch() on to react on initialization **(breaking change)**.
 * Individual subscription to event(s) using `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` **(breaking change)**.
 * Removed requestEnum. Use of individual subscription event handlers (see above) abolish the need for this enumeration **(breaking change)**.
-* `getDevices()` now return a JS map with key/values rather than a simple string **(breaking change)**.
+* `getActiveDevice()` now return a JS object with detailed information rather than a simple number **(breaking change)**.
+* `getDevices()` now return a JS array of objects with detailed information rather than a simple string **(breaking change)**.
+* `getUserDeviceMedia()` has been removed. Use `getUserDeviceMediaExt` instead.
 * Added `getInstallInfo()` that checks and details the current installation.    
 * Added shutdown method (for use in testing).
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.

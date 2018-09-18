@@ -33,15 +33,30 @@ SOFTWARE.
   <body>
     <p>Configurable settings for Jabra Browser extension:</p>
 
-    <label for="logLevel">Log level:</label>
+    <div id="permission">
+      <p>
+        This extension needs additional permissions to persist configuration settings.
+        After giving permission, please restart your browser and try again.
+        </p>
+        <button id="askPermission">Click here to proceed</button>
+    </div>
 
-    <select id="logLevel">
-        <option value="0">No logging</option>
-        <option value="1">Log errors</option>
-        <option value="2">Log warnings</option>
-        <option value="3">Log informational messages</option>
-        <option value="4">Log everything</option>        
-    </select>
+    <div id="restart">
+      Permission to use configuration granted. Please restart your browser to apply
+      permission and retry this operation.
+    </div>
+
+    <div id="configuration">
+      <label for="logLevel">Log level:</label>
+
+      <select id="logLevel">
+          <option value="0">No logging</option>
+          <option value="1">Log errors</option>
+          <option value="2">Log warnings</option>
+          <option value="3">Log informational messages</option>
+          <option value="4">Log everything</option>        
+      </select>
+    </div>
   </body>
   <script src="options.js"></script>
 </html>

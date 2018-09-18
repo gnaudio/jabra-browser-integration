@@ -31,16 +31,22 @@ document.addEventListener('DOMContentLoaded', function () {
   let clientlibVersionTxt = document.getElementById('clientlibVersionTxt');
   let otherVersionTxt = document.getElementById('otherVersionTxt');
 
+  let player = document.getElementById('player');
+
+  let variables = {
+    "audioElement": player
+  }
+
   // Help function
   function isFunction(obj) {
     return !!(obj && obj.constructor && obj.call && obj.apply);
   };
   
   // Advanced methods not available for normal testing.
-  let nonMethodSelectorMethods = ["init", "shutdown", 
-                                  "getUserDeviceMedia", "getUserDeviceMediaExt", 
-                                  "isDeviceSelectedForInput", "trySetDeviceOutput",
-                                  "addEventListener", "removeEventListener"
+  let nonMethodSelectorMethods = ["init", 
+                                  "shutdown",                                  
+                                  "addEventListener",
+                                  "removeEventListener"
                                  ];
 
   // Add all other methods as testable api's.
@@ -67,9 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
       unInitSDKBtn.disabled = false;
       checkInstallBtn.disabled = false;
       devicesBtn.disabled = false;
-      invokeApiBtn.disabled = false;
     }).catch((err) => {
-      addError(err);
+       addError(err);
     });
   };
 
@@ -89,24 +94,23 @@ document.addEventListener('DOMContentLoaded', function () {
       unInitSDKBtn.disabled = true;
       checkInstallBtn.disabled = true;
       devicesBtn.disabled = true;
-      invokeApiBtn.disabled = true;
       changeActiveDeviceBtn.disabled = true;
       while (deviceSelector.options.length > 0) {                
         deviceSelector.remove(0);
+      }
+      variables = {
+        "audioElement": player
       }
     }
   };
 
   checkInstallBtn.onclick = () => {
     jabra.getInstallInfo().then((installInfo) => {
-      if (installInfo.uptodateInstallation) {
-        installCheckResult.innerHTML = " Installation is up to date with full functionality";
+      if (installInfo.installationOk) {
+        installCheckResult.innerHTML = " Installation is ok.";
         installCheckResult.style.color = "green";
-      } else if (installInfo.consistantInstallation){
-        installCheckResult.innerHTML = " Installation not up to date but should work fine - optional upgrade for full functionality and new bug fixes";
-        installCheckResult.style.color = "red";
       } else {
-        installCheckResult.innerHTML = " Installation is not up to date or consistent and might fail in some cases - please upgrade for full functionality and new bug fixes";
+        installCheckResult.innerHTML = " Installation is not up to date or in-consistent - please upgrade for full functionality and new bug fixes.";
         installCheckResult.style.color = "red";
       }
 
@@ -115,11 +119,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                 + ", Native platform SDK v" + (installInfo.version_nativesdk || "?");
 
     }).catch((err) => {
-      installCheckResult.innerHTML = " Failed verifying installation. Likely because installation is too old to verify or not working";
+      installCheckResult.innerHTML = " Failed verifying installation. Likely because installation is not working or too old to support verification.";
       installCheckResult.style.color = "red";
     })
   };
-
 
   // Fillout devices dropdown when asked.
   devicesBtn.onclick = () => {
@@ -131,9 +134,10 @@ document.addEventListener('DOMContentLoaded', function () {
       // Normally one should not need to check for legacy_result, but for this
       // special test page we would like it to work with older extensions/chromehosts
       // while at the same time using newest JS API. This is not normally
-      // supported so we need to deal with legazy result formats as well.
-      // Do not do this for normal pages - upgrade dependencies or use older API.
-      if (devices.legacy_result) {
+      // supported so we need special code to deal with legazy result formats as well.
+      // Do not do this yourself - upgrade dependencies or use older API.
+
+      if (!Array.isArray(devices) && devices && devices.legacy_result) {
         let devicesAry = devices.legacy_result.split(",");
         for (var i = 0; i < devicesAry.length; i += 2){
           Object.entries(devices).forEach(([key, value]) => {
@@ -145,10 +149,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       } else {
         // Decode device information normally - recommended way going forward.
-        Object.entries(devices).forEach(([key, value]) => {
+        devices.forEach(device => {
           var opt = document.createElement('option');
-          opt.value = key;
-          opt.innerHTML = value;
+          opt.value = device.deviceID;
+          opt.innerHTML = device.deviceName;
           deviceSelector.appendChild(opt);
         });
       }
@@ -166,20 +170,80 @@ document.addEventListener('DOMContentLoaded', function () {
   // Change active device
   changeActiveDeviceBtn.onclick = () => {
     let id = deviceSelector.value;
-    jabra.setActiveDevice(id);
+    jabra.setActiveDeviceId(id);
   };
 
   // Call into user selected API method.
   invokeApiBtn.onclick = () => {
     let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
     let apiFunc = jabra[apiFuncName];
-    let result = apiFunc.call(jabra, txtParam1.value, txtParam2.value, txtParam3.value, txtParam4.value, txtParam5.value);
-    if (result && result instanceof Promise) {
-      result.then((value) => {
-        addResponseMessage(value);
-      }).catch((error) => {
-        addError(error);
-      });
+    let result;
+
+    let arg1 = undefined;
+    let arg2 = undefined;
+    let arg3 = undefined;
+    let arg4 = undefined;
+    let arg5 = undefined;
+
+    // Setup arguments for special calls that have special needs:
+    if (apiFuncName === "trySetDeviceOutput") {
+      arg1 = variables.audioElement;
+      arg2 = variables.deviceInfo;
+      if (!arg1 || !arg2) {
+        addError("Prior call of getUserDeviceMediaExt required to setup custom arguments in this test application");
+        return;
+      }
+    } else if (apiFuncName === "isDeviceSelectedForInput") {
+      arg1 = variables.mediaStream;
+      arg2 = variables.deviceInfo;
+      if (!arg1 || !arg2) {
+        addError("Prior call of getUserDeviceMediaExt required to setup custom arguments in this test application");
+        return;
+      }      
+    } else if (apiFuncName === "getUserDeviceMediaExt") {
+      try {
+        arg1 = JSON.parse(txtParam1.value || "{}");
+      } catch (err) {
+        addError("Value of text parameter 1 should be a parse-able json object for this api method")
+        return;
+      }
+    } else {
+      // Setup arguments for trivial calls that just use text as input.
+      arg1 = txtParam1.value;
+      arg2 = txtParam2.value;
+      arg3 = txtParam3.value;
+      arg4 = txtParam4.value;
+      arg5 = txtParam5.value;
+    }
+
+    try {
+      result = apiFunc.call(jabra, arg1, arg2, arg3, arg4, arg5);
+      if (result instanceof Promise) {
+        result.then((value) => {
+          // Handle special calls that must have side effects in this test application:
+          if (apiFuncName === "getUserDeviceMediaExt") {
+            // Store result for future use in new API calls that needs them.
+            variables.mediaStream = value.stream;
+            variables.deviceInfo = value.deviceInfo;
+
+            // Configure player to use stream
+            player.srcObject =  value.stream;
+
+            // Print prettyfied result:
+            addResponseMessage({ stream: (value.stream ? "<MediaStream instance>" : value.stream), "deviceInfo": value.deviceInfo });
+            addStatusMessage("NB: Storing stream and deviceinfo to use for subsequent API calls!");
+          } else {
+            // Normal call - just print output
+            addResponseMessage(value);
+          }
+        }).catch((error) => {
+          addError(error);
+        });
+      } else if (result !== undefined ) {
+        addResponseMessage(result);
+      }
+    } catch (err) {
+      addError(err);
     }
   };
 
@@ -196,7 +260,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function addError(err) {  
-    let txt = (typeof err === 'string' || err instanceof String) ? "errorstring: " + err : "error object: " + JSON.stringify(err, null, 2);
+    let txt;
+    if (typeof err === 'string' || err instanceof String) {
+      txt = "error string: " + err;
+    } else if (err instanceof Error) {
+      txt = err.name + " : " + err.message;
+    } else {
+      txt = "error object: " + JSON.stringify(err, null, 2);
+    }
     errorArea.value = errorArea.value + "\n" + txt;
     errorArea.scrollTop = errorArea.scrollHeight;
   }

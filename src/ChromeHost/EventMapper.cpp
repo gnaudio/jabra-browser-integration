@@ -26,33 +26,13 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
-#include "EventOffHook.h"
+#include "EventMapper.h"
+#include "HeadsetIntegrationService.h"
 
-EventOffHook::EventOffHook(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
+bool EventOffHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
+  return (service->GetRingerStatus(deviceId));
 }
 
-EventOffHook::~EventOffHook()
-{
-}
-
-void EventOffHook::Execute(bool buttonInData)
-{
-  unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
-
-  if (buttonInData)
-  {
-    if (m_headsetIntegrationService->GetRingerStatus(deviceId))
-    {
-	  m_headsetIntegrationService->Event(Context::device(), "acceptcall", {});
-    }
-  }
-  else
-  {
-    if (m_headsetIntegrationService->GetHookStatus(deviceId))
-    {
-	  m_headsetIntegrationService->Event(Context::device(), "endcall", {});
-    }
-  }
+bool EventOnHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
+  return (service->GetHookStatus(deviceId));
 }

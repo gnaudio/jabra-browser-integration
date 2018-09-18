@@ -45,6 +45,7 @@ bool CmdSetActiveDevice::CanExecute(const Request& request)
 
 void CmdSetActiveDevice::Execute(const Request& request)
 {
+  // Use old-style was of passing in argument for backwards compatability.
   std::string subString = request.message.substr(std::string("setactivedevice ").length());
 
   unsigned short id = 0;

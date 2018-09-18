@@ -43,8 +43,8 @@ class Context {
   explicit Context(const char * const requestId, const char * const apiClientId)
          : requestId(requestId), apiClientId(apiClientId) {}
 
+  /**
+  * Uniform context for device events that do no originate in a user request.
+  */ 
   static Context& device() { static Context inst("", ""); return inst; }
-
-  Context(const Context&) = delete;
-  Context& operator=(const Context&) = delete;
 };

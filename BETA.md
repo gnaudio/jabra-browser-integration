@@ -30,7 +30,8 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta1.msi) | Newest beta version |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta2.msi) | Chromehost 2.0 Beta 2 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta1.msi) | Chromehost 2.0 Beta 1 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix for allowing beta extension to work with old chrome host executable + allow downgrades. Otherwise same as 0.5 release. See note under web extension for details. |
 | macOS (El Capitan/Sierra)     | *coming soon* | |
 
@@ -50,9 +51,11 @@ v0.51 of the chromehost which fixes this issue but otherwise contains the same e
 * [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/beta/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 
 # Upgrading API from 1.2 to 2.0
-As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries and `requestEnu` is removed.
+As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
 
-This means that 1.2 code like this:
+The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example the changes made it easy to create our new API test tool. With the addition of typescript, the new API is also much easier and type safe.
+
+The example below shows how to convert old 1.2 code like this:
 
 ```
 jabra.init(
@@ -72,7 +75,7 @@ jabra.init(
 );
 ```
 
-should be converted to 2.0 code like this:
+to new 2.0 compliant code:
 
 ```
 jabra.init().then(() => {
@@ -90,12 +93,16 @@ jabra.addEventListener("unmute", (event) => {
 });
 ```
 
-The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example the changes made it easy to create our new API test tool.
-
 # Typescript support (new notable BETA feature / documentation)
 Added typescript definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) of API for detailed documentation, static checking and better IDE support. Refer to this file for detailed documentation about the API, including exactly what each API method expect for parameters and what each method returns.
 
 You can use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools. 
+
+# Expanded device information/events (new notable BETA feature).
+Methods like `GetDevices()` and `getActiveDevice()` now return detailed device information. Likewise do "device attached" and "device detached" events.
+
+Support for >30 more device events like for example batteryStatus, keys,
+devlog etc. See typescript definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for details.
 
 # Logging (new notable BETA feature)
 In this beta version of the extension, chromehost and api has logging support that can be used

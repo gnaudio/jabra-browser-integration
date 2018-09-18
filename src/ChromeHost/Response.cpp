@@ -25,19 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "stdafx.h"
-#include "EventMicMute.h"
+#include "Response.h"
 
-EventMicMute::EventMicMute(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
+Response::Response(const Context& context, const std::string& message, const std::string& error, const nlohmann::json& data)
+         : Context(context.requestId, context.apiClientId), message(message), error(error), data(data) {
 }
 
-EventMicMute::~EventMicMute()
-{
-}
+std::ostream& operator<<(std::ostream& os, const Response& r)
+{  
+	os << "Response { ";
+	os << "message: " << r.message;
+	os << ", error: " << r.error;
+	os << ", requestId: " << r.requestId;
+	os << ", apiClientId: " << r.apiClientId;
+	os << ", data: " << r.data;
 
-void EventMicMute::Execute(bool buttonInData)
-{
-   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
-}
+	os << "}";
+    return os;  
+} 

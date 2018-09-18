@@ -27,36 +27,54 @@ SOFTWARE.
 
 #pragma once
 
-#include <string>
+#include "stdafx.h"
 #include <functional>
-#include <vector>
-#include <map>
 #include <utility>
 #include <mutex>
+#include <thread>
 #include "CmdInterface.h"
-#include "EventInterface.h"
-#include "SDK/JabraNativeHid.h"
 #include "Request.h"
 #include "Response.h"
+#include "Work.h"
+#include "EventMapper.h"
 
-class HeadsetIntegrationService
+/**
+ * Manages device handling incomming requests (from browser api)
+ * and events (from device).
+ * 
+ * All requests/events are put directly in a common thread-safe work
+ * queue and than retrived in a single seperate thread. This internal
+ * thread pulls the work and displatch it to the appropiate visit methods.
+ * This means that code for actions and modifications is single-threaded.
+ */
+class HeadsetIntegrationService : public WorkProcessor
 {
   public:
   HeadsetIntegrationService();
   ~HeadsetIntegrationService();
 
+  void processRequest(const RequestWork& work) override;
+  void processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) override;
+  void processDeviceAttached(const DeviceAttachedWork& work) override;
+  void processDeviceDeAttached(const DeviceDeAttachedWork& work) override;
+  void processDevLog(const DeviceDevLogWork& work) override;
+  void processBusylight(const BusylightWork& work) override;
+  void processHearThroughSetting(const HearThroughSettingWork& work) override;
+  void processBatteryStatus(const BatteryStatusWork& work) override;
+
   void AddHandler(std::function<void(const Response&)> callback);
-  void SendCmd(const Request& request);
+  void QueueRequest(const Request& request);
 
   bool Start();
+  void Stop();
 
+  const DeviceInfo& GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
   bool SetCurrentDeviceId(unsigned short id);
-  std::string GetDevicesAsString();
-  const std::vector<Jabra_DeviceInfo> GetDevices();
+  const std::vector<DeviceInfo> GetDevices();
 
-  void Error(const Context& context, std::string msg, customDataType data);
-  void Event(const Context& context, std::string msg, customDataType data);
+  void Error(const Context& context, const std::string& msg, const nlohmann::json& data);
+  void Event(const Context& context, const std::string& msg, const nlohmann::json& data);
 
   void SetHookStatus(unsigned short id, bool mute);
   bool GetHookStatus(unsigned short id);
@@ -64,23 +82,22 @@ class HeadsetIntegrationService
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
 
+  DynamicDeviceInfo getDynamicDeviceInfo(const unsigned short deviceId);
+    
   protected:
-  std::map<Jabra_HidInput, EventInterface*> m_events;
+  WorkQueue workQueue;
+  std::thread workerThread;
+  void workerThreadRunner();
+
+  std::map<ButtonHidInfo, EventMapper *> buttonEventMappings;
   std::vector<CmdInterface*> m_commands;
 
   std::map<unsigned short, bool> m_HookStatus; // Since the Jabra USB stack SDK does not hold state - do it here
   std::map<unsigned short, bool> m_RingerStatus; // Since the Jabra USB stack SDK does not hold state - do it here
 
   std::function<void(const Response& txt)> m_callback;
-  std::vector<Jabra_DeviceInfo> m_devices;
-  std::mutex m_mtx; // mutex for critical section
+  std::vector<DeviceInfo> m_devices;
   unsigned short m_currentDeviceId;
 
-  void JabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo);
-  void JabraDeviceRemovedFunc(unsigned short deviceID);
-  void ButtonInDataTranslatedFunc(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData);
-
-  static void StaticJabraDeviceAttachedFunc(Jabra_DeviceInfo deviceInfo);
-  static void StaticJabraDeviceRemovedFunc(unsigned short deviceID);
-  static void StaticButtonInDataTranslatedFunc(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData);
+  ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);
 };

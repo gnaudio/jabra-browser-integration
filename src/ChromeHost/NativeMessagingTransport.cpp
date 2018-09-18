@@ -28,7 +28,6 @@ SOFTWARE.
 #include "stdafx.h"
 #include "NativeMessagingTransport.h"
 #include <iostream>
-#include "json.hpp" // https://github.com/nlohmann/json
 
 NativeMessagingTransport::NativeMessagingTransport()
 {
@@ -51,8 +50,7 @@ void NativeMessagingTransport::SendResponse(const Response& response)
     LOG(plog::debug) << "Preparing response : " << response;
   }
 
-  for (auto entry : response.getData())
-      j["data"][entry.first] = entry.second;
+  j["data"] = response.data;
 
   if (!response.error.empty()) {
 	  j["error"] = response.error;
@@ -72,10 +70,6 @@ void NativeMessagingTransport::SendResponse(const Response& response)
   j["apiClientId"] = response.apiClientId;
   std::string text = j.dump();
 
-  IF_LOG(plog::debug) {
-    LOG(plog::debug) << "Sending response to extension: " << j;
-  }
-
   unsigned int len = text.length();
   std::cout << char(len >> 0)
     << char(len >> 8)
@@ -83,6 +77,10 @@ void NativeMessagingTransport::SendResponse(const Response& response)
     << char(len >> 24);
 
   std::cout << text << std::flush;
+
+  IF_LOG(plog::debug) {
+    LOG(plog::debug) << "Response send to extension: '" << text << "' (length = " << len << ")";
+  }
 }
 
 void NativeMessagingTransport::Start()
@@ -116,23 +114,37 @@ void NativeMessagingTransport::Start()
       LOG(plog::debug) << "Parsing received message : " << msg;
     }
 
-    nlohmann::json j = nlohmann::json::parse(msg.c_str());
+    nlohmann::json j;
+    try {
+      j = nlohmann::json::parse(msg.c_str());
+    } catch (const std::exception& e) {
+      log_exception(plog::Severity::error, e, "Error parsing message: " + msg);
+      continue;
+    } catch (...) {
+	    LOG_ERROR << "Error parsing msg: " <<  msg;
+      continue;
+    } 
 
     IF_LOG(plog::debug) {
       LOG(plog::debug) << "Received message from extension: " << j;
     }
 
-    nlohmann::json message = j.at("message"); // Required - Throws if missing.
-    nlohmann::json requestId = j["requestId"]; // Null if missing.
-    nlohmann::json apiClientId = j["apiClientId"]; // Null if missing.
-    // nlohmann::json data = j["data"]; // Null if missing.
+    try {
+      nlohmann::json message = j.at("message"); // Required - Throws if missing.
+      nlohmann::json requestId = j["requestId"]; 
+      nlohmann::json apiClientId = j["apiClientId"];
+      nlohmann::json args = j["args"];
 
-    {
       Request req(message.get<std::string>(),
+                  args,
                   requestId.is_string() ? requestId.get<std::string>() : "",
                   apiClientId.is_string() ? apiClientId.get<std::string>() : "");
 
       m_callback(req);
+    } catch (const std::exception& e) {
+      log_exception(plog::Severity::error, e, "Error receiving msg: " + msg);
+    } catch (...) {
+	    LOG_ERROR << "Error receiving msg: " <<  msg;
     }
   }
 }

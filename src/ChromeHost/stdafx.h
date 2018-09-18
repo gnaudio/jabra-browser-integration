@@ -7,8 +7,14 @@
 
 // TODO: reference additional headers your program requires here
 #include <string>
+#include <iostream>
+#include <map>
 #include <plog/Log.h>
+#include "json.hpp"
+#include "SDK/JabraNativeHid.h"
+#include "SDK/JabraDeviceConfig.h"
 #include "logger.h"
 #include "Context.h"
+#include "Types.h"
 
 

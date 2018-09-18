@@ -5,13 +5,12 @@ declare namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    const apiVersion = "2.0.beta1";
+    const apiVersion = "2.0.beta2";
     /**
      * Contains information about installed components.
      */
     interface InstallInfo {
-        uptodateInstallation: boolean;
-        consistantInstallation: boolean;
+        installationOk: boolean;
         version_chromehost: string;
         version_nativesdk: string;
         version_browserextension: string;
@@ -19,10 +18,33 @@ declare namespace jabra {
         browserextension_id: string;
         browserextension_type: string;
     }
+    interface DeviceInfo {
+        deviceID: number;
+        deviceName: string;
+        deviceConnection: number;
+        errStatus: number;
+        isBTPaired?: boolean;
+        isInFirmwareUpdateMode: boolean;
+        parentInstanceId?: string;
+        productID: number;
+        serialNumber?: string;
+        usbDevicePath?: string;
+        variant: string;
+        dongleName?: string;
+        skypeCertified: boolean;
+        firmwareVersion?: string;
+        electricSerialNumbers?: ReadonlyArray<string>;
+        batteryLevelInPercent?: number;
+        batteryCharging?: boolean;
+        batteryLow?: boolean;
+        leftEarBudStatus?: boolean;
+        equalizerEnabled?: boolean;
+        busyLight?: boolean;
+    }
     /**
      * Contains information about a jabra device.
      */
-    interface DeviceInfo {
+    interface BrowserDeviceInfo {
         groupId: string | null;
         audioInputId: string | null;
         audioOutputId: string | null;
@@ -33,44 +55,20 @@ declare namespace jabra {
      */
     interface MediaStreamAndDevicePair {
         stream: MediaStream;
-        deviceInfo: DeviceInfo;
+        deviceInfo: BrowserDeviceInfo;
     }
-    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error";
     /**
-     * An enumeration of codes for various device events.
+     * All possible device events as discriminative  union.
      */
-    enum DeviceEventCodes {
-        mute = 0,
-        unmute = 1,
-        endCall = 2,
-        acceptCall = 3,
-        rejectCall = 4,
-        flash = 5,
-        /**
-         * A device has been added.
-         */
-        deviceAttached = 6,
-        /**
-         * A device has been removed.
-         */
-        deviceDetached = 7,
-        online = 8,
-        offline = 9,
-        error = 255
-    }
-    interface DeviceInfo {
-        groupId: string | null;
-        audioInputId: string | null;
-        audioOutputId: string | null;
-        label: string | null;
-    }
+    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5" | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound" | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy" | "outOfRange" | "pseudoOffHook" | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm" | "jackConnection" | "qdConnection" | "headsetConnection" | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "error";
     /**
      * Event type for call backs.
      */
     interface Event {
         name: string;
-        code: DeviceEventCodes;
-        arg?: string;
+        data: {
+            deviceID: number;
+        };
     }
     type ClientError = any | {
         error: string;
@@ -101,14 +99,15 @@ declare namespace jabra {
     /**
      * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
      * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
-     * expression all the lister subscribes to all matching events.
+     * expression all lister subscribes to all matching events. If the argument is an array it recursively subscribes
+     * to all events specified in the array.
      */
-    function addEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
+    function addEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void;
     /**
      * Remove existing listener to specified event(s). The callback must correspond to the exact callback provided
      * to a previous addEventListener.
      */
-    function removeEventListener(nameSpec: string | RegExp, callback: EventCallback): void;
+    function removeEventListener(nameSpec: string | RegExp | Array<string | RegExp>, callback: EventCallback): void;
     /**
     * Activate ringer (if supported) on the Jabra Device
     */
@@ -138,20 +137,21 @@ declare namespace jabra {
     */
     function resume(): void;
     /**
-    * Get the current active Jabra Device.
+    * Get detailed information about the current active Jabra Device, including current status.
     */
-    function getActiveDevice(): Promise<string>;
+    function getActiveDevice(): Promise<DeviceInfo>;
     /**
-    * List all attached Jabra Devices as key-value map with
-    * ID as string and name of device as value.
-    *
-    * NB: This method signature has changed from 1.x where it was a string.
+    * List detailed information about all attached Jabra Devices, including current status.
     */
-    function getDevices(): Promise<object>;
+    function getDevices(): Promise<ReadonlyArray<DeviceInfo>>;
     /**
     * Select a new active device.
     */
-    function setActiveDevice(id: string): void;
+    function setActiveDeviceId(id: number | string): void;
+    /**
+    * Set busylight on active device (if supported)
+    */
+    function setBusyLight(busy: boolean | string): void;
     /**
     * Get version number information for all components.
     */
@@ -160,24 +160,12 @@ declare namespace jabra {
     * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
-    function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: DeviceInfo): Promise<boolean>;
+    function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: BrowserDeviceInfo): Promise<boolean>;
     /**
      * Checks if a Jabra Input device is in fact selected in a media stream.
      * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
      */
-    function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: DeviceInfo): boolean;
-    /**
-    * Drop-in replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
-    * to be used for the microphone.
-    *
-    * Like the orginal getUserMedia this method returns a promise that resolve to a media stream if successful.
-    * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
-    *
-    * See also getUserDeviceMediaExt that returns device information in addition to the stream! In most cases,
-    * this is an better alternative since the device information is needed for additional steps.
-    *
-    */
-    function getUserDeviceMedia(additionalConstraints: MediaStreamConstraints): Promise<MediaStream>;
+    function isDeviceSelectedForInput(mediaStream: MediaStream, deviceInfo: BrowserDeviceInfo): boolean;
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
@@ -190,7 +178,7 @@ declare namespace jabra {
     */
     function getUserDeviceMediaExt(additionalConstraints: MediaStreamConstraints): Promise<MediaStreamAndDevicePair>;
     /**
-     * Returns a promise resolving to all known ID for (first found) Jabra device valid for the current
+     * Returns a promise resolving to all known IDs for (first found) Jabra device valid for the current
      * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For
      * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device.
      * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
@@ -208,5 +196,5 @@ declare namespace jabra {
      * General non-chrome browser note:
      * 1) Returning output devices requires support for new Audio Output Devices API.
      */
-    function getDeviceInfo(): Promise<DeviceInfo>;
+    function getFirstDeviceInfo(): Promise<BrowserDeviceInfo>;
 }

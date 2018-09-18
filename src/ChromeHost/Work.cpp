@@ -25,20 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
+#include "work.h"
 
-#include "EventInterface.h"
-#include "HeadsetIntegrationService.h"
+std::atomic<unsigned long> Work::workCount = 0;
 
-class EventFlash : public EventInterface
-{
-public:
-  explicit EventFlash(HeadsetIntegrationService* headsetIntegrationService);
-  ~EventFlash();
-
-  void Execute(bool buttonInData) override;
-
-protected:
-  HeadsetIntegrationService* m_headsetIntegrationService;
-};
-
+std::ostream& operator<<(std::ostream& out, const Work& work) {
+    work.print(out);
+    return out;
+}

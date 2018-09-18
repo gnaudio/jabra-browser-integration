@@ -30,27 +30,36 @@ SOFTWARE.
   // and forward changes to page script using a message as well.
   var logLevel = 2;
 
-  chrome.storage.local.get('logLevel', function(items) {
-    logLevel = parseInt(items.logLevel || "2");
-    if (logLevel>=3) { // Log if Loglevel >= Info
-      console.log("Log level set to: " + logLevel);
-    }
-    chrome.storage.onChanged.addListener(function(changes, areaName) {
-      for (key in changes) {
-        var storageChange = changes[key];
-        if (key='logLevel' && areaName === 'local' ) {
-          logLevel = storageChange.newValue;
-          if (logLevel>=3) { // Log if Loglevel >= Info
-            console.log("Log level changed to: " + logLevel);
-          }         
-          window.postMessage({
-            direction: "jabra-headset-extension-from-content-script",
-            message: "Event: logLevel " + logLevel
-          }, "*");
+  // Sync log level if we have storage permission
+  try {
+    if (chrome.storage && chrome.storage.local && chrome.storage.onChanged) {
+      chrome.storage.local.get('logLevel', function(items) {
+        logLevel = parseInt(items.logLevel || "2");
+        if (logLevel>=3) { // Log if Loglevel >= Info
+          console.log("Log level set to: " + logLevel);
         }
-      }
-    });
-  });
+        chrome.storage.onChanged.addListener(function(changes, areaName) {
+          for (key in changes) {
+            var storageChange = changes[key];
+            if (key='logLevel' && areaName === 'local' ) {
+              logLevel = storageChange.newValue;
+              if (logLevel>=3) { // Log if Loglevel >= Info
+                console.log("Log level changed to: " + logLevel);
+              }         
+              window.postMessage({
+                direction: "jabra-headset-extension-from-content-script",
+                message: "Event: logLevel " + logLevel
+              }, "*");
+            }
+          }
+        });
+      });
+    } else {
+      // console.warn("Could not access storage to read/watch log level changes");
+    }
+  } catch (err) {
+    console.error("Error during log/level listner setup " + err);
+  }
 
   // From page script (API client)
   window.addEventListener("message", function (event) {
