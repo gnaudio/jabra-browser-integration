@@ -23,13 +23,23 @@ declare namespace jabra {
         deviceName: string;
         deviceConnection: number;
         errStatus: number;
-        isBTPaired: boolean;
+        isBTPaired?: boolean;
         isInFirmwareUpdateMode: boolean;
         parentInstanceId?: string;
         productID: number;
         serialNumber?: string;
         usbDevicePath?: string;
         variant: string;
+        dongleName?: string;
+        skypeCertified: boolean;
+        firmwareVersion?: string;
+        electricSerialNumbers?: ReadonlyArray<string>;
+        batteryLevelInPercent?: number;
+        batteryCharging?: boolean;
+        batteryLow?: boolean;
+        leftEarBudStatus?: boolean;
+        equalizerEnabled?: boolean;
+        busyLight?: boolean;
     }
     /**
      * Contains information about a jabra device.
@@ -47,13 +57,18 @@ declare namespace jabra {
         stream: MediaStream;
         deviceInfo: BrowserDeviceInfo;
     }
-    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "error" | "devlog";
+    /**
+     * All possible device events as discriminative  union.
+     */
+    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5" | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound" | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy" | "outOfRange" | "pseudoOffHook" | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm" | "jackConnection" | "qdConnection" | "headsetConnection" | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "error";
     /**
      * Event type for call backs.
      */
     interface Event {
         name: string;
-        arg?: string;
+        data: {
+            deviceID: number;
+        };
     }
     type ClientError = any | {
         error: string;
@@ -122,17 +137,21 @@ declare namespace jabra {
     */
     function resume(): void;
     /**
-    * Get the current active Jabra Device.
+    * Get detailed information about the current active Jabra Device, including current status.
     */
     function getActiveDevice(): Promise<DeviceInfo>;
     /**
-    * List all attached Jabra Devices in array of device information
+    * List detailed information about all attached Jabra Devices, including current status.
     */
     function getDevices(): Promise<ReadonlyArray<DeviceInfo>>;
     /**
     * Select a new active device.
     */
     function setActiveDeviceId(id: number | string): void;
+    /**
+    * Set busylight on active device (if supported)
+    */
+    function setBusyLight(busy: boolean | string): void;
     /**
     * Get version number information for all components.
     */

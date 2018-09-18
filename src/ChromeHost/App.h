@@ -41,10 +41,10 @@ class App
   void Start();
 
   protected:
-  static NativeMessagingTransport transport;
-  static HeadsetIntegrationService headsetService;
+  NativeMessagingTransport transport;
+  HeadsetIntegrationService headsetService;
 
-  static void OnTransportIcoming(const Request& request);
-  static void OnHeadsetIncoming(const Response& response);
+  void OnTransportIcoming(const Request& request);
+  void OnHeadsetIncoming(const Response& response);
 };
 

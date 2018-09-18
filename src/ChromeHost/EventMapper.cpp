@@ -25,20 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
-
-#include "EventInterface.h"
+#include "stdafx.h"
+#include "EventMapper.h"
 #include "HeadsetIntegrationService.h"
 
-class EventOnline : public EventInterface
-{
-public:
-  explicit EventOnline(HeadsetIntegrationService* headsetIntegrationService);
-  ~EventOnline();
+bool EventOffHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
+  return (service->GetRingerStatus(deviceId));
+}
 
-  void Execute(bool buttonInData) override;
-
-protected:
-  HeadsetIntegrationService* m_headsetIntegrationService;
-};
-
+bool EventOnHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
+  return (service->GetHookStatus(deviceId));
+}

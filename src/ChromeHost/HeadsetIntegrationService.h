@@ -33,10 +33,10 @@ SOFTWARE.
 #include <mutex>
 #include <thread>
 #include "CmdInterface.h"
-#include "EventInterface.h"
 #include "Request.h"
 #include "Response.h"
 #include "Work.h"
+#include "EventMapper.h"
 
 /**
  * Manages device handling incomming requests (from browser api)
@@ -47,17 +47,20 @@ SOFTWARE.
  * thread pulls the work and displatch it to the appropiate visit methods.
  * This means that code for actions and modifications is single-threaded.
  */
-class HeadsetIntegrationService : public WorkVisitor
+class HeadsetIntegrationService : public WorkProcessor
 {
   public:
   HeadsetIntegrationService();
   ~HeadsetIntegrationService();
 
-  void visit(const RequestWork& work) override;
-  void visit(const ButtonInDataTranslatedWork& work) override;
-  void visit(const DeviceAttachedWork& work) override;
-  void visit(const DeviceDeAttachedWork& work) override;
-  void visit(const DeviceDevLogWork& work) override;
+  void processRequest(const RequestWork& work) override;
+  void processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) override;
+  void processDeviceAttached(const DeviceAttachedWork& work) override;
+  void processDeviceDeAttached(const DeviceDeAttachedWork& work) override;
+  void processDevLog(const DeviceDevLogWork& work) override;
+  void processBusylight(const BusylightWork& work) override;
+  void processHearThroughSetting(const HearThroughSettingWork& work) override;
+  void processBatteryStatus(const BatteryStatusWork& work) override;
 
   void AddHandler(std::function<void(const Response&)> callback);
   void QueueRequest(const Request& request);
@@ -78,13 +81,15 @@ class HeadsetIntegrationService : public WorkVisitor
 
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
+
+  DynamicDeviceInfo getDynamicDeviceInfo(const unsigned short deviceId);
     
   protected:
   WorkQueue workQueue;
   std::thread workerThread;
   void workerThreadRunner();
 
-  std::map<Jabra_HidInput, EventInterface*> m_events;
+  std::map<ButtonHidInfo, EventMapper *> buttonEventMappings;
   std::vector<CmdInterface*> m_commands;
 
   std::map<unsigned short, bool> m_HookStatus; // Since the Jabra USB stack SDK does not hold state - do it here

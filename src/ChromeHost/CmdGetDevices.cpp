@@ -54,7 +54,7 @@ void CmdGetDevices::Execute(const Request& request)
   }
   else {
 	  for (std::vector<int>::size_type i = 0; i != devices.size(); i++) {
-		  setDeviceInfo(j[i], devices[i]);
+		  setDeviceInfo(j[i], devices[i], m_headsetIntegrationService->getDynamicDeviceInfo(devices[i].getDeviceID()));
 	  }
   }
 

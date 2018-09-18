@@ -38,20 +38,26 @@ class ButtonInDataTranslatedWork;
 class DeviceAttachedWork;
 class DeviceDeAttachedWork;
 class DeviceDevLogWork;
+class BusylightWork;
+class HearThroughSettingWork;
+class BatteryStatusWork;
 
 /**
  * A visitor interface that a class that process work should implement.
  * 
  * See GOF visitor pattern.
  */
-class WorkVisitor
+class WorkProcessor
 {
   public:
-  virtual void visit(const RequestWork& work) = 0;
-  virtual void visit(const ButtonInDataTranslatedWork& work) = 0;
-  virtual void visit(const DeviceAttachedWork& work) = 0;
-  virtual void visit(const DeviceDeAttachedWork& work) = 0;
-  virtual void visit(const DeviceDevLogWork& work) = 0;
+  virtual void processRequest(const RequestWork& work) = 0;
+  virtual void processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) = 0;
+  virtual void processDeviceAttached(const DeviceAttachedWork& work) = 0;
+  virtual void processDeviceDeAttached(const DeviceDeAttachedWork& work) = 0;
+  virtual void processDevLog(const DeviceDevLogWork& work) = 0;
+  virtual void processBusylight(const BusylightWork& work) = 0;
+  virtual void processHearThroughSetting(const HearThroughSettingWork& work) = 0;
+  virtual void processBatteryStatus(const BatteryStatusWork& work) = 0;
 };
 
 /**
@@ -65,7 +71,7 @@ class Work {
   public:
   unsigned long getWorkId() const { return workId; }
 
-  virtual void accept(WorkVisitor& visitor) const = 0;
+  virtual void accept(WorkProcessor& visitor) const = 0;
   virtual void print(std::ostream& where) const = 0;
 
   Work() : workId(++workCount) {}
@@ -87,8 +93,8 @@ class RequestWork : public Work {
 
   explicit RequestWork(const Request& request) : request(request) {}
 
-  void accept(WorkVisitor& visitor) const override {
-      visitor.visit(* this);
+  void accept(WorkProcessor& visitor) const override {
+      visitor.processRequest(* this);
   }
 
   virtual void print(std::ostream& os) const override {
@@ -109,17 +115,17 @@ class DeviceWork : public Work {
 
 class ButtonInDataTranslatedWork : public DeviceWork {
     public:
-    const Jabra_HidInput translatedInData;
-    const bool buttonInData;
+    const ButtonHidInfo data;
 
-    explicit ButtonInDataTranslatedWork(const unsigned short deviceID, const Jabra_HidInput translatedInData, const bool buttonInData) : DeviceWork(deviceID), translatedInData(translatedInData), buttonInData(buttonInData) {}
+    explicit ButtonInDataTranslatedWork(const unsigned short deviceID, const Jabra_HidInput translatedInData, const bool buttonInData)
+                                       : DeviceWork(deviceID), data(translatedInData, buttonInData) {}
 
-    void accept(WorkVisitor& visitor) const override {
-        visitor.visit(* this);
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processButtonInDataTranslated(* this);
     }
 
     void print(std::ostream& os) const override {
-      os << "ButtonInDataTranslatedWork[" << getWorkId() << "] " << deviceID << " ," << translatedInData << " , " << buttonInData;
+      os << "ButtonInDataTranslatedWork[" << getWorkId() << "] " << deviceID << " ," << data.translatedInData << " , " << data.buttonInData;
     }
 };
 
@@ -129,8 +135,8 @@ class DeviceAttachedWork : public DeviceWork {
 
     explicit DeviceAttachedWork(const BasicDeviceInfo& basicDeviceInfo) : DeviceWork(basicDeviceInfo.deviceID), basicDeviceInfo(basicDeviceInfo) {}
 
-    void accept(WorkVisitor& visitor) const override {
-        visitor.visit(* this);
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processDeviceAttached(* this);
     }
 
     void print(std::ostream& os) const override {
@@ -142,8 +148,8 @@ class DeviceDeAttachedWork : public DeviceWork {
     public:
     explicit DeviceDeAttachedWork(const unsigned short deviceID) : DeviceWork(deviceID) {}
 
-    void accept(WorkVisitor& visitor) const override {
-        visitor.visit(* this);
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processDeviceDeAttached(* this);
     }
 
     void print(std::ostream& os) const override {
@@ -157,11 +163,58 @@ class DeviceDevLogWork : public DeviceWork {
 
     explicit DeviceDevLogWork(const unsigned short deviceID, const std::string& eventStr) : DeviceWork(deviceID), eventStr(eventStr) {}
 
-    void accept(WorkVisitor& visitor) const override {
-        visitor.visit(* this);
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processDevLog(* this);
     }
 
     void print(std::ostream& os) const override {
       os << "DeviceDevLogWork[" << getWorkId() << "] " << eventStr;
     }
 };
+
+class BusylightWork : public DeviceWork {
+    public:
+    const bool busy;
+
+    explicit BusylightWork(const unsigned short deviceID, const bool busy) : DeviceWork(deviceID), busy(busy) {}
+
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processBusylight(* this);
+    }
+
+    void print(std::ostream& os) const override {
+      os << "BusylightWork[" << getWorkId() << "] " << busy;
+    }
+};
+
+class HearThroughSettingWork : public DeviceWork {
+    public:
+    const bool status;
+
+    explicit HearThroughSettingWork(const unsigned short deviceID, const bool status) : DeviceWork(deviceID), status(status) {}
+
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processHearThroughSetting(* this);
+    }
+
+    void print(std::ostream& os) const override {
+      os << "HearThroughSettingWork[" << getWorkId() << "] " << status;
+    }
+};
+
+class BatteryStatusWork : public DeviceWork {
+    public:
+    const BatteryCombinedStatusInfo status;
+
+    explicit BatteryStatusWork(unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) : DeviceWork(deviceID), status { true, levelInPercent, charging, batteryLow } {}
+
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processBatteryStatus(* this);
+    }
+
+    void print(std::ostream& os) const override {
+      os << "BatteryStatusWork[" << getWorkId() << "] level=" << status.levelInPercent << ", charging= " << status.charging << ", low= " << status.batteryLow;
+    }
+};
+
+

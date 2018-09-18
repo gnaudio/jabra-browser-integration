@@ -27,13 +27,19 @@ SOFTWARE.
 
 #pragma once
 
-#include <string>
+#include "CmdInterface.h"
+#include "HeadsetIntegrationService.h"
 
-class EventInterface
+class CmdSetBusyLight : public CmdInterface
 {
 public:
+  explicit CmdSetBusyLight(HeadsetIntegrationService* headsetIntegrationService);
+  ~CmdSetBusyLight();
 
-  virtual void Execute(bool buttonInData) = 0;
+  bool CanExecute(const Request& request) override;
+  void Execute(const Request& request) override;
 
+protected:
+  HeadsetIntegrationService* m_headsetIntegrationService;
 };
 

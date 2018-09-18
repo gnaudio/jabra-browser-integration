@@ -26,18 +26,32 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
-#include "EventMicMute.h"
+#include "CmdSetBusyLight.h"
 
-EventMicMute::EventMicMute(HeadsetIntegrationService* headsetIntegrationService)
+CmdSetBusyLight::CmdSetBusyLight(HeadsetIntegrationService* headsetIntegrationService)
 {
   m_headsetIntegrationService = headsetIntegrationService;
 }
 
-EventMicMute::~EventMicMute()
+CmdSetBusyLight::~CmdSetBusyLight()
 {
 }
 
-void EventMicMute::Execute(bool buttonInData)
+bool CmdSetBusyLight::CanExecute(const Request& request)
 {
-   m_headsetIntegrationService->Event(Context::device(), buttonInData ? "mute" : "unmute", {});
+  return (request.message == "setbusylight");
+}
+
+void CmdSetBusyLight::Execute(const Request& request)
+{
+  bool busy = request.args["busy"];
+
+  Jabra_ReturnCode retv;
+  if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
+	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
+  }
+
+  if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
+  	  m_headsetIntegrationService->Error(request, "Could not set busy light", { "error", retv });
+  }
 }

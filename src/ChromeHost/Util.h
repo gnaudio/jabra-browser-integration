@@ -10,7 +10,7 @@
 /**
  * Helper that converts device info into json - by coping into a specific json element.
  */
-void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src);
+void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc);
 
 /**
  * Thread safe FIFO-queue utility.

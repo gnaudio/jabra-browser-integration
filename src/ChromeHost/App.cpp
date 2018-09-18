@@ -26,15 +26,14 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
+#include <functional>
 #include "App.h"
 
-NativeMessagingTransport App::transport;
-HeadsetIntegrationService App::headsetService;
-
-App::App()
+App::App() : transport(), headsetService()
 {
-  transport.AddHandler(OnTransportIcoming);
-  headsetService.AddHandler(OnHeadsetIncoming);
+  transport.AddHandler(std::bind(&App::OnTransportIcoming, this, std::placeholders::_1));
+  headsetService.AddHandler(std::bind(&App::OnHeadsetIncoming, this, std::placeholders::_1));
+
   if (!headsetService.Start()) {
     // TODO: Should this be an error instead ?
     LOG_WARNING << "Headsets service initialization failed";

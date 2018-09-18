@@ -35,15 +35,16 @@ SOFTWARE.
 class Request : public Context {
   public:
   const std::string message;
+  const nlohmann::json args;
 
-  explicit Request(const std::string& message, const std::string& requestId, const std::string& apiClientId);
+  explicit Request(const std::string& message, const nlohmann::json& args, const std::string& requestId, const std::string& apiClientId);
 
   /**
    * Return an empty request
    **/
   static const Request& empty() {
 	  static Request instance(
-		  "", "", ""
+		  "", nlohmann::json(), "", ""
     );
 
 	  return instance;

@@ -68,14 +68,25 @@ namespace jabra {
         deviceName: string;
         deviceConnection: number;
         errStatus: number;
-        isBTPaired: boolean;
+        isBTPaired?: boolean;
         isInFirmwareUpdateMode: boolean;
         parentInstanceId?: string;
         productID: number;
         serialNumber?: string,
         usbDevicePath?: string;
         variant: string;
-/*
+        dongleName?: string;
+        skypeCertified: boolean;
+        firmwareVersion?: string;
+        electricSerialNumbers?: ReadonlyArray<string>;
+        batteryLevelInPercent?: number;
+        batteryCharging?: boolean;
+        batteryLow?: boolean;
+        leftEarBudStatus?: boolean;
+        equalizerEnabled?: boolean;
+        busyLight?: boolean;
+
+       /*
         browserGroupId?: string;
         browserAudioInputId?: string;
         browserAudioOutputId?: string;
@@ -101,9 +112,43 @@ namespace jabra {
         deviceInfo: BrowserDeviceInfo
     };
 
+    /**
+     * Names of command response events.
+     */
+    const commandEventsList = [
+        "devices",
+        "activedevice",
+        "getinstallinfo",
+        "Version"
+    ];
+
+    /**
+     * All possible device events as discriminative  union.
+     */
     export type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall"
-                            | "endcall" | "reject" | "flash" | "online" | "offline" | "error"
-                            | "devlog";
+                            | "endcall" | "reject" | "flash" | "online" | "offline" 
+                            | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5"
+                            | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound"
+                            | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy"
+                            | "outOfRange" | "pseudoOffHook" | "button1" | "button2"
+                            | "button3" | "volumeUp" | "volumeDown" | "fireAlarm"
+                            | "jackConnection" | "qdConnection" | "headsetConnection"
+                            | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "error";
+
+    /**
+     * All possible device events as array.
+     */
+    let eventNamesList: ReadonlyArray<EventName>
+                       = [  "mute", "unmute", "device attached", "device detached", "acceptcall",
+                            "endcall", "reject", "flash", "online", "offline",
+                            "redial", "key0", "key1", "key2", "key3", "key4", "key5",
+                            "key6", "key7", "key8", "key9", "keyStar", "keyPound",
+                            "keyClear", "Online", "speedDial", "voiceMail", "LineBusy",
+                            "outOfRange", "pseudoOffHook", "button1", "button2",
+                            "button3", "volumeUp", "volumeDown", "fireAlarm",
+                            "jackConnection", "qdConnection", "headsetConnection",
+                            "devlog", "busylight", "hearThrough", "batteryStatus", "error" ];
+
 
     /**
      * Internal helper that stores information about the promise to resolve/reject
@@ -119,7 +164,10 @@ namespace jabra {
      */
     export interface Event {
         name: string;
-        arg?: string;
+        data: {
+            deviceID: number;
+            /* variable */
+        };
     };
 
     export type ClientError = any | {
@@ -140,25 +188,7 @@ namespace jabra {
      * initially. Callbacks values are configured at runtime.
      */
     const eventListeners: Map<EventName, Array<EventCallback>> = new Map<EventName, Array<EventCallback>>();
-    eventListeners.set("mute", []);
-    eventListeners.set("unmute", []); 
-    eventListeners.set("device attached", []); 
-    eventListeners.set("device detached", []); 
-    eventListeners.set("acceptcall", []); 
-    eventListeners.set("endcall", []); 
-    eventListeners.set("reject", []); 
-    eventListeners.set("flash", []);
-    eventListeners.set("error", []);
-    eventListeners.set("online", []);
-    eventListeners.set("offline", []);
-    eventListeners.set("devlog", []);
-
-    const commandEventsList = [
-        "devices",
-        "activedevice",
-        "getinstallinfo",
-        "Version"
-    ];
+    eventNamesList.forEach((event: EventName) => eventListeners.set(event, []));
 
     /**
      * The log level curently used internally in this api facade. Initially this is set to show errors and 
@@ -359,12 +389,12 @@ namespace jabra {
 
             window.addEventListener("message", initState.eventCallback!);
 
-            sendCmd("logLevel", false);
+            sendCmd("logLevel", null, false);
 
             // Initial getversion and loglevel.
             setTimeout(
                 () => {
-                    sendCmdWithResult("getversion", false).then((result) => {
+                    sendCmdWithResult("getversion", null, false).then((result) => {
                         let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                         logger.trace("getversion returned successfully with : " + resultStr);
                     }).catch((error) => {
@@ -583,14 +613,14 @@ namespace jabra {
     };
 
     /**
-    * Get the current active Jabra Device.
+    * Get detailed information about the current active Jabra Device, including current status.
     */
     export function getActiveDevice(): Promise<DeviceInfo> {
         return sendCmdWithResult<DeviceInfo>("getactivedevice");
     };
 
     /**
-    * List all attached Jabra Devices in array of device information
+    * List detailed information about all attached Jabra Devices, including current status.
     */
     export function getDevices(): Promise<ReadonlyArray<DeviceInfo>> {
         return sendCmdWithResult<ReadonlyArray<DeviceInfo>>("getdevices");
@@ -600,7 +630,35 @@ namespace jabra {
     * Select a new active device.
     */
     export function setActiveDeviceId(id: number | string): void {
-        sendCmd("setactivedevice " + id.toString());
+        let idVal;
+
+        if ((typeof id === 'string') || ((id as any) instanceof String))  {
+            idVal = parseInt(id as string);
+        } else if (Number.isNaN(id)) {
+            idVal = id;
+        } else {
+            throw new Error("Illegal argument - number or string expected");
+        }
+        
+        // Use both new and old way of passing parameters for compatibility with <= v0.5.
+        sendCmd("setactivedevice " + id.toString(), { id: idVal } );
+    };
+
+    /**
+    * Set busylight on active device (if supported)
+    */
+    export function setBusyLight(busy: boolean | string): void {
+        let busyVal;
+
+        if ((typeof busy === 'string') || ((busy as any) instanceof String))  {
+            busyVal = (busy == 'true' || busy == '1');
+        } else if (typeof(busy) === "boolean") {
+            busyVal = busy;
+        } else {
+            throw new Error("Illegal argument - boolean or string expected");
+        }
+        
+        sendCmd("setbusylight", { busy: busyVal } );
     };
 
     /**
@@ -614,13 +672,14 @@ namespace jabra {
     * Internal helper that forwards a command to the browser extension
     * without expecting a response.
     */
-    function sendCmd(cmd: string, requireInitializedCheck: boolean = true): void {
+    function sendCmd(cmd: string, args: object | null = null, requireInitializedCheck: boolean = true): void {
         if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
             let requestId = (requestNumber++).toString();
 
             let msg = {
                 direction: "jabra-headset-extension-from-page-script",
                 message: cmd,
+                args: args || {},
                 requestId: requestId,
                 apiClientId: apiClientId,
                 version_jsapi: apiVersion
@@ -638,7 +697,7 @@ namespace jabra {
     * Internal helper that forwards a command to the browser extension
     * expecting a response (a promise).
     */
-    function sendCmdWithResult<T>(cmd: string, requireInitializedCheck: boolean = true): Promise<T> {
+    function sendCmdWithResult<T>(cmd: string, args: object | null = null, requireInitializedCheck: boolean = true): Promise<T> {
         if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
             let requestId = (requestNumber++).toString();
 
@@ -648,6 +707,7 @@ namespace jabra {
                 let msg = {
                     direction: "jabra-headset-extension-from-page-script",
                     message: cmd,
+                    args: args || {},
                     requestId: requestId,
                     apiClientId: apiClientId,
                     version_jsapi: apiVersion

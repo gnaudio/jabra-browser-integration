@@ -95,7 +95,7 @@ void configureLogging() {
   }
 
   // Setup plog:
-	plog::init(severity, logPath.c_str(), 10000, 10).addAppender(new ErrorAppender());
+	plog::init(severity, logPath.c_str(), 100000, 10).addAppender(new ErrorAppender());
 
   // Save log location for reference (if anything is logged).
   configuredLogPath = (severity!=plog::none) ? logPath : "";

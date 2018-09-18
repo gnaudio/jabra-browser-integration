@@ -50,30 +50,34 @@ var jabra;
     ;
     ;
     ;
-    ;
     /**
-     * Internal mapping from all known events to array of registered callbacks. All possible events are setup
-     * initially. Callbacks values are configured at runtime.
+     * Names of command response events.
      */
-    const eventListeners = new Map();
-    eventListeners.set("mute", []);
-    eventListeners.set("unmute", []);
-    eventListeners.set("device attached", []);
-    eventListeners.set("device detached", []);
-    eventListeners.set("acceptcall", []);
-    eventListeners.set("endcall", []);
-    eventListeners.set("reject", []);
-    eventListeners.set("flash", []);
-    eventListeners.set("error", []);
-    eventListeners.set("online", []);
-    eventListeners.set("offline", []);
-    eventListeners.set("devlog", []);
     const commandEventsList = [
         "devices",
         "activedevice",
         "getinstallinfo",
         "Version"
     ];
+    /**
+     * All possible device events as array.
+     */
+    let eventNamesList = ["mute", "unmute", "device attached", "device detached", "acceptcall",
+        "endcall", "reject", "flash", "online", "offline",
+        "redial", "key0", "key1", "key2", "key3", "key4", "key5",
+        "key6", "key7", "key8", "key9", "keyStar", "keyPound",
+        "keyClear", "Online", "speedDial", "voiceMail", "LineBusy",
+        "outOfRange", "pseudoOffHook", "button1", "button2",
+        "button3", "volumeUp", "volumeDown", "fireAlarm",
+        "jackConnection", "qdConnection", "headsetConnection",
+        "devlog", "busylight", "hearThrough", "batteryStatus", "error"];
+    ;
+    /**
+     * Internal mapping from all known events to array of registered callbacks. All possible events are setup
+     * initially. Callbacks values are configured at runtime.
+     */
+    const eventListeners = new Map();
+    eventNamesList.forEach((event) => eventListeners.set(event, []));
     /**
      * The log level curently used internally in this api facade. Initially this is set to show errors and
      * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
@@ -256,10 +260,10 @@ var jabra;
                 }
             };
             window.addEventListener("message", initState.eventCallback);
-            sendCmd("logLevel", false);
+            sendCmd("logLevel", null, false);
             // Initial getversion and loglevel.
             setTimeout(() => {
-                sendCmdWithResult("getversion", false).then((result) => {
+                sendCmdWithResult("getversion", null, false).then((result) => {
                     let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                     logger.trace("getversion returned successfully with : " + resultStr);
                 }).catch((error) => {
@@ -477,7 +481,7 @@ var jabra;
     jabra.resume = resume;
     ;
     /**
-    * Get the current active Jabra Device.
+    * Get detailed information about the current active Jabra Device, including current status.
     */
     function getActiveDevice() {
         return sendCmdWithResult("getactivedevice");
@@ -485,7 +489,7 @@ var jabra;
     jabra.getActiveDevice = getActiveDevice;
     ;
     /**
-    * List all attached Jabra Devices in array of device information
+    * List detailed information about all attached Jabra Devices, including current status.
     */
     function getDevices() {
         return sendCmdWithResult("getdevices");
@@ -496,9 +500,38 @@ var jabra;
     * Select a new active device.
     */
     function setActiveDeviceId(id) {
-        sendCmd("setactivedevice " + id.toString());
+        let idVal;
+        if ((typeof id === 'string') || (id instanceof String)) {
+            idVal = parseInt(id);
+        }
+        else if (Number.isNaN(id)) {
+            idVal = id;
+        }
+        else {
+            throw new Error("Illegal argument - number or string expected");
+        }
+        // Use both new and old way of passing parameters for compatibility with <= v0.5.
+        sendCmd("setactivedevice " + id.toString(), { id: idVal });
     }
     jabra.setActiveDeviceId = setActiveDeviceId;
+    ;
+    /**
+    * Set busylight on active device (if supported)
+    */
+    function setBusyLight(busy) {
+        let busyVal;
+        if ((typeof busy === 'string') || (busy instanceof String)) {
+            busyVal = (busy == 'true' || busy == '1');
+        }
+        else if (typeof (busy) === "boolean") {
+            busyVal = busy;
+        }
+        else {
+            throw new Error("Illegal argument - boolean or string expected");
+        }
+        sendCmd("setbusylight", { busy: busyVal });
+    }
+    jabra.setBusyLight = setBusyLight;
     ;
     /**
     * Get version number information for all components.
@@ -512,12 +545,13 @@ var jabra;
     * Internal helper that forwards a command to the browser extension
     * without expecting a response.
     */
-    function sendCmd(cmd, requireInitializedCheck = true) {
+    function sendCmd(cmd, args = null, requireInitializedCheck = true) {
         if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
             let requestId = (requestNumber++).toString();
             let msg = {
                 direction: "jabra-headset-extension-from-page-script",
                 message: cmd,
+                args: args || {},
                 requestId: requestId,
                 apiClientId: apiClientId,
                 version_jsapi: jabra.apiVersion
@@ -534,7 +568,7 @@ var jabra;
     * Internal helper that forwards a command to the browser extension
     * expecting a response (a promise).
     */
-    function sendCmdWithResult(cmd, requireInitializedCheck = true) {
+    function sendCmdWithResult(cmd, args = null, requireInitializedCheck = true) {
         if (!requireInitializedCheck || (requireInitializedCheck && initState.initialized)) {
             let requestId = (requestNumber++).toString();
             return new Promise((resolve, reject) => {
@@ -542,6 +576,7 @@ var jabra;
                 let msg = {
                     direction: "jabra-headset-extension-from-page-script",
                     message: cmd,
+                    args: args || {},
                     requestId: requestId,
                     apiClientId: apiClientId,
                     version_jsapi: jabra.apiVersion

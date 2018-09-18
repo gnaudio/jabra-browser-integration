@@ -27,14 +27,15 @@ SOFTWARE.
 
 #include "Request.h"
 
-Request::Request(const std::string& message, const std::string& requestId, const std::string& apiClientId)
-                : Context(requestId, apiClientId), message(message) {
+Request::Request(const std::string& message, const nlohmann::json& args, const std::string& requestId, const std::string& apiClientId)
+                : Context(requestId, apiClientId), args(args), message(message) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Request& r)
 {
-	os << "Response { ";
+	os << "Request { ";
 	os << "message: " << r.message;
+    os << ", args: " << r.args;
 	os << ", requestId: " << r.requestId;
 	os << ", apiClientId: " << r.apiClientId;
 	os << "}";

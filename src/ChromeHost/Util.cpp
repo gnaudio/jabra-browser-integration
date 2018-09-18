@@ -28,38 +28,83 @@ SOFTWARE.
 #include "Util.h"
 #include "Types.h"
 
-void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src) {
-	// Flatten nested structures:
-
+// Generate json from device info - flatten and filter out empty stuff.
+void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc) {
 	dest["deviceID"] = src.getDeviceID();
 	dest["deviceName"] = src.getDeviceName();
-    if (src.basicInfo.usbDevicePath.length() > 0) {
-      dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
-    }
-    if (src.basicInfo.parentInstanceId.length() > 0) {
-      dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
-    }
-    dest["productID"] = src.basicInfo.productID;
-    dest["errStatus"] = src.basicInfo.errStatus;
+
+  // if (src.basicInfo.usbDevicePath.length() > 0) {
+  //  dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
+  // }
+
+  // if (src.basicInfo.parentInstanceId.length() > 0) {
+  //  dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
+  // }
+
+  dest["productID"] = src.basicInfo.productID;
+
+  dest["errStatus"] = src.basicInfo.errStatus;
+
+  if (src.basicInfo.dongleName.length() > 0) {
+    dest["dongleName"] = src.basicInfo.dongleName;
+  }
+
+  if (src.basicInfo.variant.length() > 0) {
+    dest["variant"] = src.basicInfo.variant;
+  }
+
+  if (src.basicInfo.serialNumber.length() > 0) {
+    dest["serialNumber"] = src.basicInfo.serialNumber;
+  }
+
+  dest["isInFirmwareUpdateMode"] = src.basicInfo.isInFirmwareUpdateMode;
+  dest["deviceConnection"] = src.basicInfo.deviceconnection;
+  
+  if (src.basicInfo.deviceconnection == "BT") {
     dest["isBTPaired"] = src.basicInfo.isBTPaired;
-    if (src.basicInfo.dongleName.length() > 0) {
-      dest["dongleName"] = src.basicInfo.dongleName;
-    }
-    if (src.basicInfo.variant.length() > 0) {
-      dest["variant"] = src.basicInfo.variant;
-    }
-    if (src.basicInfo.serialNumber.length() > 0) {
-      dest["serialNumber"] = src.basicInfo.serialNumber;
-    }
-    dest["isInFirmwareUpdateMode"] = src.basicInfo.isInFirmwareUpdateMode;
-    dest["deviceConnection"] = src.basicInfo.deviceconnection;
+  }
 
+  if ( src.extendedInfo.firmwareVersion.length() > 0) {
+	  dest["firmwareVersion"] = src.extendedInfo.firmwareVersion;
+  }
+  
+  if (!src.extendedInfo.electricSerialNumbers.empty()) {
+	  dest["electricSerialNumbers"] = src.extendedInfo.electricSerialNumbers;
+  }
+  
+  dest["skypeCertified"] = src.extendedInfo.skypeCertified;
+  dest["deviceFeatures"] = src.extendedInfo.deviceFeatures;
 
-	dest["firmwareVersion"] = src.extendedInfo.firmwareVersion;
-	dest["serialNumber"] = src.extendedInfo.serialNumber;
-	dest["electricSerialNumbers"] = src.extendedInfo.electricSerialNumbers;
-	dest["battertyStatus"]["levelInPercent"] = src.extendedInfo.battertyStatus.levelInPercent;
-	dest["battertyStatus"]["charging"] = src.extendedInfo.battertyStatus.charging;
-	dest["battertyStatus"]["batteryLow"] = src.extendedInfo.battertyStatus.batteryLow;
-	dest["skypeCertified"] = src.extendedInfo.skypeCertified;
+  // Add dynamic data if any?
+  if (dynSrc.supported) {
+
+    if (dynSrc.battertyStatus.supported) {
+      // Nested battery objects seems to break Chrome 69 (OR maybe through unlikely nlohmann::json), course Chrome stops
+      // seeing outbounds messages after calling getDevices if commented code below is there :
+      //
+      //      dest["battertyStatus"]["levelInPercent"] = dynSrc.battertyStatus.levelInPercent;
+      //      dest["battertyStatus"]["charging"] = dynSrc.battertyStatus.charging;
+      //      dest["battertyStatus"]["batteryLow"] = dynSrc.battertyStatus.batteryLow;
+      // 
+      // Therefore we just inline battery stuff instead:
+
+      dest["batteryLevelInPercent"] = dynSrc.battertyStatus.levelInPercent;
+      dest["batteryCharging"] = dynSrc.battertyStatus.charging;
+      dest["batteryLow"] = dynSrc.battertyStatus.batteryLow;
+    }
+
+    if (dynSrc.leftEarBudStatus.supported) {
+      dest["leftEarBudStatus"] = dynSrc.leftEarBudStatus.status;
+    }
+
+    if (dynSrc.equalizerEnabled.supported) {
+      dest["equalizerEnabled"] = dynSrc.equalizerEnabled.status;
+    }
+
+    if (dynSrc.busyLight.supported) {
+      dest["busyLight"] = dynSrc.busyLight.status;
+    }
+
+  }
+
 }
