@@ -94,7 +94,7 @@ jabra.addEventListener("unmute", (event) => {
 ```
 
 # Typescript support (new notable BETA feature / documentation)
-Added typescript definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) of API for detailed documentation, static checking and better IDE support. Refer to this file for detailed documentation about the API, including exactly what each API method expect for parameters and what each method returns.
+Added [typescript](https://www.typescriptlang.org/) definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) of API for detailed documentation, static checking and better IDE support. Refer to this file for detailed documentation about the API, including exactly what each API method expect for parameters and what each method returns.
 
 You can use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools. 
 
