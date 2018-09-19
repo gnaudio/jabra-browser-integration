@@ -34,8 +34,12 @@ Response::Response(const Context& context, const std::string& message, const std
 std::ostream& operator<<(std::ostream& os, const Response& r)
 {  
 	os << "Response { ";
-	os << "message: " << r.message;
-	os << ", error: " << r.error;
+	if (r.message.length()>0) {
+		os << "message: " << r.message;
+	}
+	if (r.error.length()>0) {
+		os << ", error: " << r.error;
+	}
 	os << ", requestId: " << r.requestId;
 	os << ", apiClientId: " << r.apiClientId;
 	os << ", data: " << r.data;
