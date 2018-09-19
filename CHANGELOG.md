@@ -11,6 +11,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Removed requestEnum. Use of individual subscription event handlers (see above) abolish the need for this enumeration **(breaking change)**.
 * `getActiveDevice()` now return a JS object with detailed information rather than a simple number **(breaking change)**.
 * `getDevices()` now return a JS array of objects with detailed information rather than a simple string **(breaking change)**.
+* `setActiveDevice` renamed to `setActiveDeviceId` to reflect that it takes an ID as argument rather than a detailed object like `getActiveDevice()` returns.
 * `getUserDeviceMedia()` has been removed. Use `getUserDeviceMediaExt` instead.
 * Added `getInstallInfo()` that checks and details the current installation.    
 * Added shutdown method (for use in testing).
