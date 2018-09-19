@@ -41,5 +41,7 @@ public:
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;
+
+  unsigned short GetArgumentId(const Request& request);
 };
 

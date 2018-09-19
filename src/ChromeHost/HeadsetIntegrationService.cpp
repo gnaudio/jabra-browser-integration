@@ -333,7 +333,7 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
     if (mapper) {
       if (mapper->accept(work.deviceID, work.data)) {
        std::string outputEventName = mapper->getEventName();
-       Event(Context::device(), outputEventName, { { "deviceID", work.deviceID }, { "buttonInData", work.data.buttonInData }, { "translatedInData", work.data.translatedInData } });
+       Event(Context::device(), outputEventName, { { JSON_KEY_DEVICEID, work.deviceID }, { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData } });
       }
     } else {
       std::string inDatastring = std::to_string(work.data.translatedInData);
@@ -341,7 +341,7 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processButtonInDataTranslated");
-    Error(Context::device(), "button translation failed", { std::make_pair("exception", e.what()) });
+    Error(Context::device(), "button translation failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processButtonInDataTranslated";
 	  Error(Context::device(), "button translation failed", {});
@@ -384,10 +384,9 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
     });
 
-
     Jabra_ReturnCode errCode;
     if ((errCode = Jabra_EnableDevLog(deviceId, true)) != Return_Ok ) {
-	    LOG_ERROR << "Failed enabling dev log with code " << errCode;
+	    LOG_WARNING << "Failed enabling dev log with code " << errCode;
     }
 
 	  nlohmann::json j;
@@ -395,10 +394,10 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
     DynamicDeviceInfo dynDevicdeInfo = getDynamicDeviceInfo(deviceId);
 	  setDeviceInfo(j, deviceInfo, dynDevicdeInfo);
 
-    Event(Context::device(), "device attached", j);
+    Event(Context::device(), EVENT_DEVICE_ATTACHED, j);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDeviceAttached");
-	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
+	  Error(Context::device(), "Device attachment registration failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDeviceAttached: ";
 	  Error(Context::device(), "Device attachment registration failed", {});
@@ -421,7 +420,7 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
         nlohmann::json j;
         setDeviceInfo(j, (*it), DynamicDeviceInfo::empty());
 
-        Event(Context::device(), "device detached", j);
+        Event(Context::device(), EVENT_DEVICE_DEATTACHED, j);
 
         std::string backupDeviceName = (*it).getDeviceName();
         m_devices.erase(m_devices.begin() + index);
@@ -455,7 +454,7 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDeviceDeAttached");
-    Error(Context::device(), "Device removal registration failed", { std::make_pair("exception", e.what()) });
+    Error(Context::device(), "Device removal registration failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDeviceDeAttached";
 	  Error(Context::device(), "Device removal registration failed", {});
@@ -465,12 +464,12 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
 void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
  try {
     nlohmann::json eventData = nlohmann::json();
-    eventData["deviceID"] = work.deviceID;
-    eventData["event"] = nlohmann::json::parse(work.eventStr);
-    g_thisHeadsetIntegrationService->Event(Context::device(), "devlog", eventData);
+    eventData[JSON_KEY_DEVICEID] = work.deviceID;
+    eventData[JSON_KEY_DEVLOG_EVENT_DATA] = nlohmann::json::parse(work.eventStr);
+    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDevLog");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDevLog";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", {});
@@ -479,10 +478,10 @@ void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
 
 void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
  try {
-    Event(Context::device(), "busylight", { std::make_pair("value", work.busy), std::make_pair("deviceID", work.deviceID) });
+    Event(Context::device(), EVENT_BUSY_LIGHT, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.busy), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processBusylight");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processBusylight";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", {});
@@ -491,10 +490,10 @@ void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
 
 void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSettingWork& work) {
  try {
-    Event(Context::device(), "hearThrough", { std::make_pair("value", work.status), std::make_pair("deviceID", work.deviceID) });
+    Event(Context::device(), EVENT_HEARTHROUGH, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.status), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processHearThroughSetting";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", {});
@@ -503,15 +502,15 @@ void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSetti
 
 void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& work) {
  try {
-    Event(Context::device(), "batteryStatus", {
-      std::make_pair("batteryLevelInPercent", work.status.levelInPercent),
-      std::make_pair("batteryCharging", work.status.charging),
-      std::make_pair("batteryLow", work.status.batteryLow),            
-      std::make_pair("deviceID", work.deviceID) 
+    Event(Context::device(), EVENT_BATTERYSTATUS, {
+      std::make_pair(JSON_KEY_BATTERY_LEVEL_PCT, work.status.levelInPercent),
+      std::make_pair(JSON_KEY_BATTERY_CHARGING, work.status.charging),
+      std::make_pair(JSON_KEY_BATTERY_LOW, work.status.batteryLow),            
+      std::make_pair(JSON_KEY_DEVICEID, work.deviceID) 
     });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processHearThroughSetting";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", {});

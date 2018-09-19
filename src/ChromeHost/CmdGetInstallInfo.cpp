@@ -46,8 +46,8 @@ bool CmdGetInstallInfo::CanExecute(const Request& request)
 void CmdGetInstallInfo::Execute(const Request& request)
 {
   m_headsetIntegrationService->Event(request, "getinstallinfo", {
-    std::make_pair("version_chromehost", VERSION),
-    std::make_pair("version_nativesdk", getNativeSDKVersion()),
-    std::make_pair("chromehost_logpath", getLogFilePath())
+    std::make_pair(JSON_KEY_VERSION_CHROMEHOST, VERSION),
+    std::make_pair(JSON_KEY_VERSION_NATIVESDK, getNativeSDKVersion()),
+    std::make_pair(JSON_KEY_LOGPATH, getLogFilePath())
   });
 }

@@ -13,6 +13,7 @@
 #include "json.hpp"
 #include "SDK/JabraNativeHid.h"
 #include "SDK/JabraDeviceConfig.h"
+#include "Constants.h"
 #include "logger.h"
 #include "Context.h"
 #include "Types.h"

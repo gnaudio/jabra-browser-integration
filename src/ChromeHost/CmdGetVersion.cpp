@@ -49,8 +49,8 @@ void CmdGetVersion::Execute(const Request& request)
   // Changing this number will break <= 0.5 versions of chrome browser extension, so it can't
   // currently be used for anything useful.
   m_headsetIntegrationService->Event(request, "Version 0.5", {
-    std::make_pair("version", "0.5"), // Old fixed version.
-    std::make_pair("version_chromehost", VERSION), // Real version!
-    std::make_pair("version_nativesdk", getNativeSDKVersion())
+    std::make_pair(JSON_KEY_VERSION_LEGACY, "0.5"), // Old fixed version.
+    std::make_pair(JSON_KEY_VERSION_CHROMEHOST, VERSION), // Real version!
+    std::make_pair(JSON_KEY_VERSION_NATIVESDK, getNativeSDKVersion())
   });
 }

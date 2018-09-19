@@ -30,8 +30,8 @@ SOFTWARE.
 
 // Generate json from device info - flatten and filter out empty stuff.
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc) {
-	dest["deviceID"] = src.getDeviceID();
-	dest["deviceName"] = src.getDeviceName();
+	dest[JSON_KEY_DEVICEID] = src.getDeviceID();
+	dest[JSON_KEY_DEVICENAME] = src.getDeviceName();
 
   // if (src.basicInfo.usbDevicePath.length() > 0) {
   //  dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
@@ -88,9 +88,9 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
       // 
       // Therefore we just inline battery stuff instead:
 
-      dest["batteryLevelInPercent"] = dynSrc.battertyStatus.levelInPercent;
-      dest["batteryCharging"] = dynSrc.battertyStatus.charging;
-      dest["batteryLow"] = dynSrc.battertyStatus.batteryLow;
+      dest[JSON_KEY_BATTERY_LEVEL_PCT] = dynSrc.battertyStatus.levelInPercent;
+      dest[JSON_KEY_BATTERY_CHARGING] = dynSrc.battertyStatus.charging;
+      dest[JSON_KEY_BATTERY_LOW] = dynSrc.battertyStatus.batteryLow;
     }
 
     if (dynSrc.leftEarBudStatus.supported) {
