@@ -29,6 +29,8 @@ SOFTWARE.
 
 #include <string>
 #include <map>
+#include <vector>
+#include "json.hpp"
 #include "SDK/Common.h"
 
 struct ButtonHidInfo {
@@ -55,6 +57,20 @@ struct ButtonHidInfo {
     }
 };
 
+#define MAX_BUTTON_EVENTS 16
+
+struct GnpButtonEntry {
+	unsigned short buttonTypeKey;
+	unsigned short key;
+	std::string value;
+
+	friend std::ostream& operator<<(std::ostream& os, const GnpButtonEntry& v);  
+};
+
+void to_json(nlohmann::json& j, const GnpButtonEntry& e);
+
+typedef std::vector<GnpButtonEntry> GnpButtonInfo;
+
 /**
  * Just a triple of all battery status
  */
@@ -73,8 +89,8 @@ struct BatteryCombinedStatusInfo {
  * An optional boolean value
  */
 struct OptionalStatus {
- bool supported;
- bool status;
+  bool supported;
+  bool status;
 };
 
 /**
@@ -106,11 +122,12 @@ struct BasicDeviceInfo {
 		}
 	}
 
+	/*
 	static std::string toHexString(short v) {
 		std::stringstream sstream;
 		sstream << std::hex << v;
 		return sstream.str();
-	}
+	}*/
 
     public:
 	explicit BasicDeviceInfo(Jabra_DeviceInfo source) 

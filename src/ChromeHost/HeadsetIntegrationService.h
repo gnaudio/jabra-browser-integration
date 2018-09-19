@@ -61,6 +61,7 @@ class HeadsetIntegrationService : public WorkProcessor
   void processBusylight(const BusylightWork& work) override;
   void processHearThroughSetting(const HearThroughSettingWork& work) override;
   void processBatteryStatus(const BatteryStatusWork& work) override;
+  void processGnpButtons(const GNPButtonWork& work) override;
 
   void AddHandler(std::function<void(const Response&)> callback);
   void QueueRequest(const Request& request);
@@ -98,6 +99,7 @@ class HeadsetIntegrationService : public WorkProcessor
   std::function<void(const Response& txt)> m_callback;
   std::vector<DeviceInfo> m_devices;
   unsigned short m_currentDeviceId;
+  bool hasPostAttachRegistrations;
 
   ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);
 };
