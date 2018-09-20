@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // a dummy stream that we throw away), as required by getDeviceInfo because 
   // of browser security rules.
   navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(dummyStream) {
-    return jabra.getDeviceInfo().then(function(info) {
+    return jabra.getFirstDeviceInfo().then(function(info) {
         // Shutdown initial dummy stream (not sure it is really required but lets be nice).
         dummyStream.getTracks().forEach(function(track) {
             track.stop();
