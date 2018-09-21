@@ -4,7 +4,7 @@
 
 It is possible to mass deploy the required client side software, in order to remove any client side.
 
-1. Push the Windows installer file for the native chromehost (`JabraChromeHost*.msi`) to the clients using your compagny IT deployment tools, i.e. Microsoft System Center Configuration Manager, IBM Tivoli or Symantec Altiris 
+1. Push the Windows installer file for the native chromehost (`JabraChromeHost*.msi`) to the clients using your company IT deployment tools, i.e. Microsoft System Center Configuration Manager, IBM Tivoli or Symantec Altiris 
 
 2. Push a Registry key to the clients. This could be done by using Group Policy or Microsoft System Center Configuration Manager.
 

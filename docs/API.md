@@ -1,6 +1,6 @@
 ### The API (v 1.2 and earlier only)
 
-NB: The API documented here wll be changed in upcoming v2.0 release. See [here](BETA.md) for details.
+NB: The API documented here will be changed in upcoming v2.0 release. See [here](BETA.md) for details.
 
 The JavaScript library must be initialized using this function: 
 ```javascript

@@ -1,4 +1,4 @@
-![Banner](/docs/banner.png)
+![Banner](/docs/beta-banner.png)
 
 # BETA release Overview
 This page contains information about current public beta's of the Jabra Browser SDK, which customers can use to test and prepare for new versions in advance. 
