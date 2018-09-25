@@ -52,7 +52,7 @@ void CmdOffHook::Execute(const Request& request)
     return;
   }
 
-  Jabra_GetLock(deviceId);
+  // Jabra_GetLock(deviceId);
 
   // Stop ringer
   if (m_headsetIntegrationService->GetRingerStatus(deviceId))

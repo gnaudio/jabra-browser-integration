@@ -52,7 +52,7 @@ void CmdUnmute::Execute(const Request& request)
     return;
   }
 
-  Jabra_GetLock(deviceId);
+  // Jabra_GetLock(deviceId);
 
   Jabra_ReturnCode ret = Jabra_SetMute(deviceId, false);
   if (ret != Return_Ok)

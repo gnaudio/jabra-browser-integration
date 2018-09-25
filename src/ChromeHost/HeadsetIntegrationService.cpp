@@ -86,7 +86,7 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::Online, false }, new SimpleEventMapper("offline") },
 
     { { Jabra_HidInput::LineBusy, true }, new SimpleEventMapper("linebusy") },
-    { { Jabra_HidInput::LineBusy, false }, new SimpleEventMapper("linebusy") },
+    { { Jabra_HidInput::LineBusy, false }, new SimpleEventMapper("lineidle") },
 
     { { Jabra_HidInput::RejectCall, true }, new SimpleEventMapper("reject") },
     { { Jabra_HidInput::RejectCall, false }, new SimpleEventMapper("reject") },
@@ -140,10 +140,10 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::VoiceMail, false }, new SimpleEventMapper("voiceMail") },
 
     { { Jabra_HidInput::OutOfRange, true }, new SimpleEventMapper("outOfRange") },
-    { { Jabra_HidInput::OutOfRange, false }, new SimpleEventMapper("outOfRange") },
+    { { Jabra_HidInput::OutOfRange, false }, new SimpleEventMapper("intoRange") },
   
-    { { Jabra_HidInput::PseudoOffHook, true }, new SimpleEventMapper("pseudoOffHook") },
-    { { Jabra_HidInput::PseudoOffHook, false }, new SimpleEventMapper("pseudoOffHook") },
+    { { Jabra_HidInput::PseudoOffHook, true }, new SimpleEventMapper("pseudoAcceptcall") },
+    { { Jabra_HidInput::PseudoOffHook, false }, new SimpleEventMapper("pseudoEndcall") },
 
     { { Jabra_HidInput::Button1, true }, new SimpleEventMapper("button1") },
     { { Jabra_HidInput::Button1, false }, new SimpleEventMapper("button1") },
@@ -164,13 +164,13 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::FireAlarm, false }, new SimpleEventMapper("fireAlarm") },
 
     { { Jabra_HidInput::JackConnection, true }, new SimpleEventMapper("jackConnection") },
-    { { Jabra_HidInput::JackConnection, false }, new SimpleEventMapper("jackConnection") },
+    { { Jabra_HidInput::JackConnection, false }, new SimpleEventMapper("jackDisConnection") },
 
     { { Jabra_HidInput::QDConnection, true }, new SimpleEventMapper("qdConnection") },
-    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("qdConnection") },
+    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("qdDisconnection") },
 
-    { { Jabra_HidInput::QDConnection, true }, new SimpleEventMapper("headsetConnection") },
-    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("headsetConnection") }
+    { { Jabra_HidInput::HeadsetConnection, true }, new SimpleEventMapper("headsetConnection") },
+    { { Jabra_HidInput::HeadsetConnection, false }, new SimpleEventMapper("headsetDisConnection") }
   };
 
   // Finally start worker thread to dispatch incomming work to visitor methods.
@@ -238,10 +238,12 @@ bool HeadsetIntegrationService::Start()
     }
 
     // TODO: Check for return value ?
-    Jabra_ConnectToJabraApplication(
-      "D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
-      "Google Chrome Browser"
-    );
+	if (!Jabra_ConnectToJabraApplication(
+		"D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
+		"Google Chrome Browser"
+	)) {
+		LOG_ERROR << "Could not connect to Jabra application";
+	};
 
     Jabra_SetSoftphoneReady(true);
   } catch (const std::exception& e) {
@@ -322,8 +324,10 @@ void HeadsetIntegrationService::processRequest(const RequestWork& work) {
 void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) {
   try {
     // Only handle input data from current device
-    if (work.deviceID != GetCurrentDeviceId())
+    if (work.deviceID != GetCurrentDeviceId()) {
+      LOG(plog::info) << "Ignored button event from non-active device " << work.deviceID;
       return;
+    }
         
     IF_LOG(plog::info) {
       LOG(plog::info) << "Received button translated notification with data " << work.data.translatedInData << " for device " << work.deviceID;
@@ -331,12 +335,16 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
 
     const EventMapper * mapper = buttonEventMappings[work.data];
     if (mapper) {
+      const std::string& mapperName = mapper->getMapperName();
       if (mapper->accept(work.deviceID, work.data)) {
-       std::string outputEventName = mapper->getEventName();
+       const std::string& outputEventName = mapper->getEventName();
+       LOG_INFO << "Button translation accepted and mapped to " << outputEventName << " by " << mapperName << " mapper";
        Event(Context::device(), outputEventName, { { JSON_KEY_DEVICEID, work.deviceID }, { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData } });
+      } else {
+        LOG_INFO << "Button translation ignored as directed by " << mapperName << " mapper";
       }
     } else {
-      std::string inDatastring = std::to_string(work.data.translatedInData);
+      const std::string inDatastring = std::to_string(work.data.translatedInData);
 	    Error(Context::device(), "No mappings specified for button event " + inDatastring + " with buttonInData = " + std::to_string(work.data.buttonInData), {});
     }
   } catch (const std::exception& e) {
@@ -356,6 +364,26 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
       LOG(plog::debug) << "Received device " << deviceId << " attached notification";
     }
 
+    // Try to use GN protol if possible to make sure all events are passed:
+    Jabra_ReturnCode retv;
+    if (Jabra_IsGnHidStdHidSupported(deviceId)) {
+      if ((retv=Jabra_SetHidWorkingState(deviceId, GN_HID)) == Return_Ok) {
+        LOG_INFO << "GN protocol selected as working state on device";
+      } else {
+        LOG_ERROR << "Could not select GN protocol as working state on device";
+      }
+    } else {
+      Jabra_HidState state;
+      if ((retv=Jabra_GetHidWorkingState(deviceId, &state)) == Return_Ok) {
+        if (state != GN_HID) {
+          LOG_WARNING << "GN protocol not selected as working state on device";
+        }
+      } else {
+        LOG_ERROR << "Could not lookup used working state protocol on device";
+      }
+    }
+
+    // Lookup extra static device information and save it:
 	  DeviceInfo deviceInfo(work.basicDeviceInfo, getExtraDeviceInfo(deviceId));
     m_devices.push_back(deviceInfo);
     std::string deviceName = deviceInfo.getDeviceName();
@@ -364,6 +392,7 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
       LOG(plog::info) << "Attaching device " << deviceName << " with id " << deviceName;
     }
 
+    // Send out event with additional dynamic device information:
     {
       nlohmann::json j;
 
@@ -377,7 +406,7 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
 
     // If we have not already registered for device callbacks do it now:
     if (!hasPostAttachRegistrations) {
-       Jabra_RegisterDevLogCallback([](unsigned short deviceID, const char* eventStrRaw) {
+       Jabra_RegisterDevLogCallback([](unsigned short deviceID, char* eventStrRaw) {
         if (eventStrRaw) {
           std::string eventStr(eventStrRaw);
           Jabra_FreeString((char *)eventStrRaw);
@@ -425,7 +454,7 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
 
     Jabra_ReturnCode errCode;
     if ((errCode = Jabra_EnableDevLog(deviceId, true)) != Return_Ok ) {
-	    LOG_WARNING << "Failed enabling dev log with code " << errCode;
+	    LOG_WARNING << "Failed enabling dev log for device " << deviceId << " with code " << errCode;
     }
 
     IF_LOG(plog::info) {

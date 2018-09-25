@@ -33,13 +33,13 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
 	dest[JSON_KEY_DEVICEID] = src.getDeviceID();
 	dest[JSON_KEY_DEVICENAME] = src.getDeviceName();
 
-  // if (src.basicInfo.usbDevicePath.length() > 0) {
-  //  dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
-  // }
+  if (src.basicInfo.usbDevicePath.length() > 0) {
+   dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
+  }
 
-  // if (src.basicInfo.parentInstanceId.length() > 0) {
-  //  dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
-  // }
+  if (src.basicInfo.parentInstanceId.length() > 0) {
+   dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
+  }
 
   dest["productID"] = src.basicInfo.productID;
 

@@ -47,9 +47,9 @@ void CmdSetBusyLight::Execute(const Request& request)
   bool busy = request.args[SET_BUSYLIGHT_COMMAND_ARG_BUSY];
 
   Jabra_ReturnCode retv;
-  if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
-	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
-  }
+  // if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
+  //	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
+  // }
 
   if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
   	  m_headsetIntegrationService->Error(request, "Could not set busy light", { "error", retv });

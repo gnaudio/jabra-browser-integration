@@ -37,6 +37,7 @@
 #else
 #define LIBRARY_API __attribute__ ((visibility ("default")))
 #endif
+#include <stdbool.h>
 #elif __linux__
 #ifdef __cplusplus
 #define LIBRARY_API extern "C" __attribute__ ((visibility ("default")))
@@ -83,75 +84,22 @@ typedef struct _PairingList
 
 
 /* This enum is used for the return values from API*/
+#define DEFINE_CODE(a,b) a,
 typedef enum _ReturnCode
-{ 	// groups of 5 to make counting easier...
-	Return_Ok = 0,
-	Device_Unknown,
-	Device_Invalid,
-	Not_Supported,
-	Return_ParameterFail,
-
-    ProtectedSetting_Write,
-	No_Information,
-	NetworkRequest_Fail,
-	Device_WriteFail,
-    Device_ReadFails,
-
-	No_FactorySupported,
-	Device_Lock,
-	Device_NotLock,
-	System_Error,
-	Device_BadState,
-
-    FileWrite_Fail,
-    File_AlreadyExists,
-    File_Not_Accessible,
-    Firmware_UpToDate,
-    Firmware_Available,
-
-    Return_Async,
-    Invalid_Authorization,
-    FWU_Application_Not_Available,
-    Device_AlreadyConnected,
-    Device_NotConnected,
-
-    CannotClear_DeviceConnected,
-    Device_Rebooted,
-	Upload_AlreadyInProgress,
-	Download_AlreadyInProgress,
-
-	NUMBER_OF_JABRA_RETURNCODES   // do not move - this has to be last. Enables wrapper layers to detect if their number of internal return codes is the same as here
+{
+#include "returncodes.inc"
+    NUMBER_OF_JABRA_RETURNCODES
 } Jabra_ReturnCode;
+#undef DEFINE_CODE
 
-// Manifest File Download status
+
+#define DEFINE_CODE(a,b) a,
 typedef enum _ErrorStatus
-{ 	// groups of 5 to make counting easier...
-	NoError = 0,
-	SSLError,
-	CertError,
-	NetworkError,
-	DownloadError,
-
-	ParseError,
-	OtherError,
-	DeviceInfoError,
-	FileNotAccessible,
-	FileNotCompatible,
-
-	Device_NotFound,
-	Parameter_fail,
-	Authorization_failed,
-	FileNotAvailable,
-	ConfigParseError,
-
-	SetSettings_Fail,
-	Device_Reboot,
-	Device_ReadFail,
-	Device_NotReady,
-	FilePartiallyCompatible,
-
-	NUMBER_OF_JABRA_ERRORCODES   // do not move - this has to be last. Enables wrapper layers to detect if their number of internal error codes is the same as here
+{
+#include "errorcodes.inc"
+    NUMBER_OF_JABRA_ERRORCODES
 }Jabra_ErrorStatus;
+#undef DEFINE_CODE
 
 typedef enum _DeviceConnectionType
 {
@@ -327,24 +275,26 @@ typedef enum _UploadEventStatus
     Upload_Error,
 } Jabra_UploadEventStatus;
 
-typedef enum _DeviceFeature{
-	BusyLight = 1000,
-	FactoryReset = 1001,
-	PairingList = 1002,
-	RemoteMMI = 1003,
-	MusicEqualizer = 1004,
-	EarbudInterconnectionStatus = 1005,
-	StepRate = 1006,
-	HeartRate = 1007,
-	RRInterval = 1008,
+typedef enum _DeviceFeature {
+    BusyLight = 1000,
+    FactoryReset = 1001,
+    PairingList = 1002,
+    RemoteMMI = 1003,
+    MusicEqualizer = 1004,
+    EarbudInterconnectionStatus = 1005,
+    StepRate = 1006,
+    HeartRate = 1007,
+    RRInterval = 1008,
     RingtoneUpload = 1009,
     ImageUpload = 1010,
-	NeedsExplicitRebootAfterOta = 1011,
-	NeedsToBePutIncCradleToCompleteFwu = 1012,
+    NeedsExplicitRebootAfterOta = 1011,
+    NeedsToBePutIncCradleToCompleteFwu = 1012,
     RemoteMMIv2 = 1013,
     Logging = 1014,
-	PreferredSoftphoneListInDevice = 1015
-}DeviceFeature;
+    PreferredSoftphoneListInDevice = 1015,
+    VoiceAssistant = 1016,
+    PlayRingtone=1017
+} DeviceFeature;
 
 /* This structure represents the product registration info*/
 typedef struct _ProductRegistration {
@@ -387,7 +337,7 @@ typedef struct _Map_Int_String{
 
 /** Structure to use when setting the date and time of a device. */
 typedef struct _timedate_t {
-  /** Seconds, range is [0-60]. */
+  /** Seconds, range is [0-59]. */
   int sec;
   /** Minutes, range is [0-59]. */
   int min;
@@ -534,7 +484,6 @@ typedef struct _PanicListType
     Jabra_PanicListDevType * panicList; /* array with dynamic length 1..x */
 }Jabra_PanicListType;
 
-
 /****************************************************************************/
 /*                           EXPORTED FUNCTIONS                             */
 /****************************************************************************/
@@ -543,8 +492,7 @@ typedef struct _PanicListType
  *  @param[in]   : count : Number of characters to copy to version char pointer
  *  @param[Out]  : version : holds the SDK Version
  *  @return      : Return_Ok if get version is successful.
-				   Device_Unknown if deviceID is wrong.
-				   Return_ParameterFail if setting parameter is wrong.
+				   Return_ParameterFail if version is NULL or too small to contain result.
           Note   :version pointer to location where the SDK version is written. Must be allocated by caller.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_GetVersion(char* const version, int count);
@@ -555,7 +503,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetVersion(char* const version, int count);
  */
 LIBRARY_API void Jabra_SetAppID(const char* inAppID);
 
-/** Library initialization
+/** Library initialization - only intended to be called once (or at least symmetrically with Jabra_Uninitialize()).
  *  @param[in]   : FirstScanForDevicesDoneFunc: Callback method. Called when USB scan is done. Can be NULL if not used.
  *  @param[in]   : DeviceAttachedFunc: Callback method. Called when a device is attached. Can be NULL if not used.
  *  @param[in]   : DeviceRemovedFunc: Callback method. Called when a device is removed. Can be NULL if not used.
@@ -563,7 +511,7 @@ LIBRARY_API void Jabra_SetAppID(const char* inAppID);
  *  @param[in]   : ButtonInDataTranslatedFunc: Callback method. Called on new input data. High-level. Can be NULL if not used.
  *  @param[in]   : instance: Optional instance number. Can be 0 if not used.
  *  @return      : True if library initialization is successful.
-				   False if library initilaization is not successful.
+				   False if library initilaization is not successful. One reason could be that the library is already initialized.
     Note         : AppID must be set before the library initialization is called. If not the initialization fails.
  */
 LIBRARY_API bool Jabra_Initialize(void(*FirstScanForDevicesDoneFunc)(void),
@@ -576,7 +524,7 @@ LIBRARY_API bool Jabra_Initialize(void(*FirstScanForDevicesDoneFunc)(void),
 
 /** Library uninitialize
  *  @return      : True if library uninitialization is successful.
-				   False if library initialization is not successful.
+				   False if library initialization is not successful (for example if called when not initialized)
  */
 LIBRARY_API bool Jabra_Uninitialize(void);
 
@@ -673,14 +621,14 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetCurrentLanguageCode(unsigned short deviceI
  *  @return    : returns the path of the device image.
  *  Note       : As Memory is allocated through SDK, needs to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API const char *  Jabra_GetDeviceImagePath(unsigned short deviceID);
+LIBRARY_API char *  Jabra_GetDeviceImagePath(unsigned short deviceID);
 
 /** Gets  the device image thumbnail path.
  *  @param[in] : deviceID: id for a specific device.
  *  @return    : return the path of the device image thumbnail.
  *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API const char *  Jabra_GetDeviceImageThumbnailPath(unsigned short deviceID);
+LIBRARY_API char *  Jabra_GetDeviceImageThumbnailPath(unsigned short deviceID);
 
 /** Get battery status, if supported by device.
  *  @param[in] : Id for a specific device.
@@ -743,7 +691,6 @@ LIBRARY_API bool Jabra_IsSoftphoneInFocus(void);
  *  @param[in] : deviceID: id for a BT adapter
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 System_Error if there is some error during packet formation.
 				 Device_WriteFail if it fails to write to the device.
  */
@@ -753,7 +700,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetBTPairing(unsigned short deviceID);
  *  @param[in] : deviceID: id for the BT adapter.
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-                 Device_NotLock if device is not locked.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write to the device.
  */
@@ -763,7 +709,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_SearchNewDevices(unsigned short deviceID);
  *  @param[in] : deviceID: id for a BT adapter
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 System_Error if there is some error during packet formation.
 				 Device_WriteFail if it fails to write to the device.
 
@@ -775,7 +720,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_StopBTPairing(unsigned short deviceID);
  *  @param[in] : value: enable or disable for auto pairing.
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 System_Error if there is some error during packet formation.
 				 Device_WriteFail if it fails to write to the device.
  */
@@ -792,7 +736,6 @@ LIBRARY_API bool Jabra_GetAutoPairing(unsigned short deviceID);
  *  @param[in] : deviceID: id for a BT adapter
  *  @return    : Return_Ok if success.
                  Device_Unknown if deviceID is wrong.
-                 Device_NotLock if device is not locked.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write to the device.
  */
@@ -802,7 +745,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ClearPairingList(unsigned short deviceID);
  *  @param[in] : deviceID: id for a BT adapter
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 System_Error if there is some error during packet formation.
 				 Device_WriteFail if it fails to write to the device.
  */
@@ -813,7 +755,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ConnectBTDevice(unsigned short deviceID);
  *  @param[in] : device: pointer to structure Jabra_PairedDevice
  *  @return    : Return_Ok if success.
  *               Device_Unknown if deviceID is wrong.
-                 Device_NotLock if device is not locked.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write to the device.
  */
@@ -823,7 +764,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ConnectNewDevice(unsigned short deviceID, Jab
  *  @param[in] : deviceID: id for a BT adapter
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 System_Error if there is some error during packet formation.
 				 Device_WriteFail if it fails to write to the device.
  */
@@ -874,7 +814,6 @@ LIBRARY_API void Jabra_FreePairingList(Jabra_PairingList* deviceList);
  *  @param[in] : deviceID: Id for specific device
  *  @param[in] : device: pointer to structure Jabra_PairingList
  *  @return    : Return_Ok if success.
-                 Device_NotLock if device is not locked before starting of the operation.
                  Device_Unknown if deviceID is wrong.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write the value to the device.
@@ -886,7 +825,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ConnectPairedDevice(unsigned short deviceID, 
  *  @param[in] : deviceID: Id for specific device
  *  @param[in] : device: pointer to structure Jabra_PairingList
  *  @return    : Return_Ok if success.
-                 Device_NotLock if device is not locked before starting of the operation.
                  Device_Unknown if deviceID is wrong.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write the value to the device.
@@ -898,7 +836,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_DisConnectPairedDevice(unsigned short deviceI
  *  @param[in] : deviceID: Id for specific device.
  *  @param[in] : device: pointer to structure Jabra_PairingList.
  *  @return    : Return_Ok if success.
-                 Device_NotLock if device is not locked before starting of the operation.
                  Device_Unknown if deviceID is wrong.
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write the value to the device.
@@ -907,33 +844,16 @@ LIBRARY_API Jabra_ReturnCode Jabra_ClearPairedDevice(unsigned short deviceID, Ja
 
 /** Get error string from the error status.
  *  @param[in] : Status of the error from the Jabra Device
- *  @return    : error message for the error recieved from Device Events.
- *  Note       : The reciever of the string should release the it, by calling Jabra_FreeString API.
+ *  @return    : Corresponding text
  */
 
-LIBRARY_API char* Jabra_GetErrorString(Jabra_ErrorStatus errStatus);
+LIBRARY_API const char* Jabra_GetErrorString(Jabra_ErrorStatus errStatus);
 
-/** Get lock for a particular device.
- *  @param[in] : deviceID: id for a device
- *  @return    : Return_Ok if success.
-				 Device_Unknown if deviceID is wrong.
-				 Device_Lock if acquired by some other process.
+/** Get descritive string from the return code.
+ *  @param[in] : Return code
+ *  @return    : Corresponding text
  */
-LIBRARY_API Jabra_ReturnCode Jabra_GetLock(unsigned short deviceID);
-
-/** Release the lock for a particular device.
- *  @param[in] : deviceID: id for a device
- *  @return    : Return_Ok if success.
-				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if acquired by some other process.
- */
-LIBRARY_API Jabra_ReturnCode Jabra_ReleaseLock(unsigned short deviceID);
-
-/** Check if the device is locked or not.
- *  @param[in] : deviceID: id for a device.
- *  @return    : true if device is locked.
- */
-LIBRARY_API bool Jabra_IsLocked(unsigned short deviceID);
+LIBRARY_API const char* Jabra_GetReturnCodeString(Jabra_ReturnCode code);
 
 /** Checks if busylight is supported by the device.
 *  @param[in] : deviceID: id for a device.
@@ -953,7 +873,6 @@ LIBRARY_API bool Jabra_GetBusylightStatus(unsigned short deviceID);
 *  @param[in] : deviceID: id for a device.
 *  @param[in] : value: enable or disable busylight.
 *  @return    : Return_Ok if success.
-				Device_NotLock if device is not locked before starting of the operation.
 				Device_Unknown if deviceID is wrong.
 				System_Error if there is some error during packet formation.
 				Device_WriteFail if it fails to write the value to the device.
@@ -987,12 +906,11 @@ LIBRARY_API bool Jabra_GetLeftEarbudStatus(unsigned short deviceID);
 */
 LIBRARY_API Jabra_ReturnCode Jabra_RegisterLeftEarbudStatus(unsigned short deviceID, void(*LeftEarbudFunc)(unsigned short deviceID, bool busylightValue));
 
-/** Registration for HearThrough setting change event. Can only be called when a device is attached.
-*  @param[in]   : deviceID: ID for a device.
-*  @param[in]   : HearThroughSettingChangeFunc: Callback method. Called when HearThrough setting is changed on device. Can be NULL if not used.
-*  @return      : Return_Ok if success otherwise error code.
-*/
-LIBRARY_API Jabra_ReturnCode Jabra_RegisterHearThroughSettingChangeHandler(unsigned short deviceID, void(*HearThroughSettingChangeFunc)(unsigned short deviceID, bool enabled));
+/**
+ *  Registration for HearThrough setting change event.
+ *  @param[in] HearThroughSettingChangeFunc Callback method, called when HearThrough setting is changed on device. Can be NULL if not used.
+ */
+LIBRARY_API void Jabra_RegisterHearThroughSettingChangeHandler(void(*HearThroughSettingChangeFunc)(unsigned short deviceID, bool enabled));
 
 /** Checks if equalizer is supported by the device.
 *  @param[in] : deviceID: id for a device.
@@ -1021,7 +939,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_EnableEqualizer(unsigned short deviceID, bool
 *  @param[out] : nbands: Number of bands to read and the actually numbers read
 *  @return    : Return_Ok if success.
                 Not_Supported if equalizer is not supported
-                Device_NotLock if device is not locked before starting of the operation.
                 Device_Unknown if deviceID is wrong.
                 System_Error if there is some error during packet formation.
                 Device_WriteFail if it fails to write the value to the device.
@@ -1034,7 +951,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetEqualizerParameters(unsigned short deviceI
 *  @param[in] : nbands: Number of bands to set.
 *  @return    : Return_Ok if success.
                 Not_Supported if equalizer is not supported
-                Device_NotLock if device is not locked before starting of the operation.
                 Device_Unknown if deviceID is wrong.
                 System_Error if there is some error during packet formation.
                 Device_WriteFail if it fails to write the value to the device.
@@ -1054,7 +970,6 @@ LIBRARY_API bool Jabra_IsRemoteMMISupported(unsigned short deviceID);
 *  @param[in] : deviceID : id for a specific device.
 *  @param[in] : buttonEvent : button events to be set in device.
 *  @return    : Return_Ok if success.
-				Device_NotLock if device is not locked before starting of the operation.
 				Device_Unknown if deviceID is wrong.
 				Return_ParameterFail if setting parameter is wrong.
 				System_Error if there is some error during packet formation.
@@ -1067,7 +982,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetButtonFocus(unsigned short deviceID, Butto
 *  @param[in] : buttonEvent : button events to be released in device.
 *  @return    : Return_Ok if setting is successful.
 				Device_Unknown if deviceID is wrong.
-				Device_NotLock if device is not locked before starting of the operation.
 				Return_ParameterFail if setting parameter is wrong.
 				System_Error if there is some error during packet formation.
 				Device_WriteFail if it fails to write the value to the device.
@@ -1107,7 +1021,7 @@ LIBRARY_API bool Jabra_IsSettingProtectionEnabled(unsigned short deviceID);
  *  @return    : NPS URL or null pointer if it is not available
  *  Note       : As Memory is allocated through SDK for NPS Url, it needs to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API const char * Jabra_GetNpsUrlForApplication(const char * appName, const char * appVersion);
+LIBRARY_API char * Jabra_GetNpsUrlForApplication(const char * appName, const char * appVersion);
 
 /** Get the NPS URL.
 *  @param[in] : deviceID: id for a device.
@@ -1116,7 +1030,7 @@ LIBRARY_API const char * Jabra_GetNpsUrlForApplication(const char * appName, con
  *  @return    : NPS URL or null pointer if it is not available
  *  Note       : As Memory is allocated through SDK for NPS Url, it needs to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API const char * Jabra_GetNpsUrl(unsigned short deviceID, const char * appName, const char * appVersion);
+LIBRARY_API char * Jabra_GetNpsUrl(unsigned short deviceID, const char * appName, const char * appVersion);
 
 /** Register a product
  *  @param[in] : deviceID : id of device from which settings needs to be updated
@@ -1133,7 +1047,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ProductRegistration(unsigned short deviceID, 
  *  @param[in] : command: the command to execute.
  *  @return    : Return_Ok if setting is successful.
  Device_Unknown if deviceID is wrong.
- Device_NotLock if device is not locked.
  Device_WriteFail if it fails to write to the device.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_ExecuteAVRCPCommand(unsigned short deviceID, AVRCPCommand command);
@@ -1164,7 +1077,7 @@ LIBRARY_API void Jabra_ConfigureLogging(Jabra_Logging logFlag, bool flag);
  *  @return    : void
  *  Note       : As Memory is allocated through SDK for eventStr, needs to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API void Jabra_RegisterLoggingCallback(void(*LogDeviceEvent)(const char* eventStr));
+LIBRARY_API void Jabra_RegisterLoggingCallback(void(*LogDeviceEvent)(char* eventStr));
 
 /** to register callback for Logging
  *  @param[in] : deviceId : Device id
@@ -1185,7 +1098,7 @@ LIBRARY_API void Jabra_RegisterLoggingCallback(void(*LogDeviceEvent)(const char*
  *  @return    : void
  *  Note       : As Memory is allocated through SDK for eventStr, needs to be freed by calling Jabra_FreeString API.
  */
-LIBRARY_API void Jabra_RegisterDevLogCallback(void(*LogDeviceEvent)(unsigned short deviceID, const char* eventStr));
+LIBRARY_API void Jabra_RegisterDevLogCallback(void(*LogDeviceEvent)(unsigned short deviceID, char* eventStr));
 
 /** Enable/disable logging for a device
  *  @param[in] : deviceId : Device id
@@ -1205,7 +1118,6 @@ LIBRARY_API void Jabra_RegisterDevLogCallback(void(*LogDeviceEvent)(unsigned sho
                 }
  *  @return    : Return_Ok: Successfully updated firmware.
  *               or error code
- *  Note       : As Memory is allocated through SDK for eventStr, needs to be freed by calling Jabra_FreeString API.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_EnableDevLog(unsigned short deviceID, bool enable);
 
@@ -1278,7 +1190,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_DownloadFirmwareUpdater(unsigned short device
  *  @return      : Return_Ok: Successfully updated firmware.
  *                 Device_Unknown: If unable to get the device mutex.
  *                 Device_Invalid: If deviceID is wrong.
- *                 Device_NotLock: If device is not locked before starting of the operation.
  *                 File_Not_Accessible: If firmware file path is incorrect.
  *                 FWU_Application_Not_Available: If firmware updater folder/application is not found.
  *                 Return_ParameterFail: If file is incorrect.
@@ -1295,17 +1206,22 @@ LIBRARY_API Jabra_ReturnCode Jabra_UpdateFirmware(unsigned short deviceID, const
 */
 LIBRARY_API Jabra_ReturnCode Jabra_CancelFirmwareDownload(unsigned short deviceID);
 
+/**
+ * Type definition of function pointer to use for Jabra_RegisterFirmwareProgressCallBack.
+ */
+typedef void(*FirmwareProgress)(unsigned short deviceID, Jabra_FirmwareEventType type, Jabra_FirmwareEventStatus status, unsigned short percentage);
+
 /** Registration for firmware progress event.
-*  @param[in]   : firmwareProgress: Callback method. Called when firmwareProgress event is received from device. Can be NULL if not used.
+*  @param[in]   : callback: Callback method. Called when firmwareProgress event is received from device. Can be NULL if not used.
 *  @return      : void.
 */
-LIBRARY_API void Jabra_RegisterFirmwareProgressCallBack(void(*firmwareProgress)(unsigned short deviceID, Jabra_FirmwareEventType type, Jabra_FirmwareEventStatus status,unsigned short percentage));
-
+LIBRARY_API void Jabra_RegisterFirmwareProgressCallBack(FirmwareProgress const callback);
 
 /**
  Recreates the session, Input and Output streams for all devices which are connected to the phone and not to the app
  */
 LIBRARY_API void Jabra_Reconnect(void);
+
 /** Get the detailed error response for the last firmware update action performed(Check for firmware update/ Get the firmware info list/ download firmware).
 *  @param[in]   : deviceID: ID for the specific device.
 *  @return      : Jabra_FirmwareErrorInfo: structure pointer for the detailed error info.
@@ -1384,10 +1300,15 @@ LIBRARY_API bool Jabra_IsUploadRingtoneSupported(unsigned short deviceID);
 LIBRARY_API Jabra_ReturnCode Jabra_UploadRingtone(unsigned short deviceID, const char* fileName);
 
 /**
- * Registration for upload progress event.
- * @param[in] UploadProgress callback method, called during upload.
+ * Type definition of function pointer to use for Jabra_RegisterUploadProgress.
  */
-LIBRARY_API void Jabra_RegisterUploadProgress(void(*UploadProgress)(unsigned short deviceID, Jabra_UploadEventStatus status, unsigned short percentage));
+typedef void(*UploadProgress)(unsigned short deviceID, Jabra_UploadEventStatus status, unsigned short percentage);
+
+/**
+ * Registration for upload progress event.
+ * @param[in] callback callback method, called during upload.
+ */
+LIBRARY_API void Jabra_RegisterUploadProgress(UploadProgress const callback);
 
 /**
  * Checks if image upload is supported by the device.
@@ -1427,7 +1348,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetDateTime(unsigned short deviceID, const ti
 /**
  * Request info on supported device events.
  * @param[in] deviceID id for a specific device.
- * @return  event mask (0 if nothing supported, or on any error)
+ * @return event mask (0 if nothing supported, or on any error)
  */
 LIBRARY_API uint32_t Jabra_GetSupportedDeviceEvents(unsigned short deviceID);
 
@@ -1466,7 +1387,9 @@ LIBRARY_API Jabra_ReturnCode Jabra_UploadWavRingtone(unsigned short deviceID, co
  * RemoteMmiDefinition. The memory area must be deallocated/freed by calling Jabra_FreeRemoteMmiTypes().
  * @param[out] count number of items passed via @arg types.
  * @return Return_Ok list and count is valid.
+ *         Return_ParameterFail in case of an incorrect parameter.
  *         Not_Supported the device does not support remote MMI.
+ *         Device_Unknown the deviceID specified is not known.
  * @note RemoteMMIv2 only.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_GetRemoteMmiTypes(unsigned short deviceID, RemoteMmiDefinition** const types, int* count);
@@ -1498,7 +1421,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_IsRemoteMmiInFocus(unsigned short deviceID, R
  * @param[in] action action to get focus of.
  * @param[in] priority priority of focus.
  * @return Return_Ok focus has been gotten successfully.
- *         Device_NotLock the device is not locked, use Jabra_GetLock() to lock the device.
  *         Not_Supported the device does not support remote MMI.
  *         Device_Unknown the deviceID specified is not known.
  *         Device_WriteFail if it fails to write to the device.
@@ -1511,7 +1433,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetRemoteMmiFocus(unsigned short deviceID, Re
  * @param[in] deviceID ID for the specific device.
  * @param[in] type of remote MMI to release focus of.
  * @return Return_Ok focus has been release successfully.
- *         Device_NotLock the device is not locked, use Jabra_GetLock() to lock the device.
  *         Not_Supported the device does not support remote MMI.
  *         Device_Unknown the deviceID specified is not known.
  *         Device_WriteFail if it fails to write to the device.
@@ -1525,7 +1446,6 @@ LIBRARY_API Jabra_ReturnCode Jabra_ReleaseRemoteMmiFocus(unsigned short deviceID
  * @param[in] type of remote MMI to set action of.
  * @param[in] action to set.
  * @return Return_Ok action has been set successfully.
- *         Device_NotLock the device is not locked, use Jabra_GetLock() to lock the device.
  *         Not_Supported the device does not support remote MMI.
  *         Device_Unknown the deviceID specified is not known.
  *         Device_WriteFail if it fails to write to the device.
@@ -1589,4 +1509,13 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetTimestamp(unsigned short deviceID, uint32_
  */
 LIBRARY_API bool Jabra_PreloadDeviceInfo(const char* zipFileName);
 
+/** Play Ringtone in Device
+*  @param[in] : deviceID of the intended device
+*  @param[in] : volume Level to Play
+*  @param[in] : ringtone Type to Play
+*  @return Return_Ok if success.
+*          Device_Unknown if deviceID is wrong
+*          Not_Supported if device is not supporting or input parameters is wrong.
+*/
+LIBRARY_API Jabra_ReturnCode Jabra_PlayRingtone(unsigned short deviceID, const uint8_t level, const uint8_t type);
 #endif /* COMMON_H */

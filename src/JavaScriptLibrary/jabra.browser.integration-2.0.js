@@ -63,14 +63,15 @@ var jabra;
      * All possible device events as array.
      */
     let eventNamesList = ["mute", "unmute", "device attached", "device detached", "acceptcall",
-        "endcall", "reject", "flash", "online", "offline",
+        "endcall", "reject", "flash", "online", "offline", "linebusy", "lineidle",
         "redial", "key0", "key1", "key2", "key3", "key4", "key5",
         "key6", "key7", "key8", "key9", "keyStar", "keyPound",
         "keyClear", "Online", "speedDial", "voiceMail", "LineBusy",
-        "outOfRange", "pseudoOffHook", "button1", "button2",
-        "button3", "volumeUp", "volumeDown", "fireAlarm",
-        "jackConnection", "qdConnection", "headsetConnection",
-        "devlog", "busylight", "hearThrough", "batteryStatus", "error"];
+        "outOfRange", "intoRange", "pseudoAcceptcall", "pseudoEndcall",
+        "button1", "button2", "button3", "volumeUp", "volumeDown", "fireAlarm",
+        "jackConnection", "jackDisConnection", "qdConnection", "qdDisconnection",
+        "headsetConnection", "headsetDisConnection", "devlog", "busylight",
+        "hearThrough", "batteryStatus", "error"];
     ;
     /**
      * Internal mapping from all known events to array of registered callbacks. All possible events are setup

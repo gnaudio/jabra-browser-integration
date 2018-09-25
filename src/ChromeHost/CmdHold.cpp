@@ -52,7 +52,7 @@ void CmdHold::Execute(const Request& request)
     return;
   }
 
-  Jabra_GetLock(deviceId);
+  // Jabra_GetLock(deviceId);
 
   Jabra_ReturnCode ret = Jabra_SetHold(deviceId, true);
   if (ret != Return_Ok)

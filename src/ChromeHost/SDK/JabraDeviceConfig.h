@@ -74,20 +74,20 @@ typedef struct _ListKeyValue{
 
 /* This structure represents each setting info */
 typedef struct _SettingInfo{
-  /* Setting GUID*/
+  /* Setting GUID */
   char *guid;
 
-  /* Setting Name*/
+  /* Setting Name */
   char *name;
 
-  /* setting Help Text */
+  /* Setting Help Text */
   char *helpText;
 
   /* Current Device value for this setting */
   void *currValue;
 
   /* Number of values for this setting */
-  int  listSize;
+  int listSize;
 
   /* Structure for all key-value pairs for this setting */
   ListKeyValue *listKeyValue;
@@ -98,7 +98,7 @@ typedef struct _SettingInfo{
   /* This structure contains the validation rule */
   ValidationRule* validationRule;
 
-  /*If device restart is required for this setting */
+  /* If device restart is required for this setting */
   bool isDeviceRestart;
 
   /* Is setting protected */
@@ -107,7 +107,7 @@ typedef struct _SettingInfo{
   /* Is setting protection enabled */
   bool isSettingProtectionEnabled;
 
-  /*When wireless headset is connected to its base/dongle */
+  /* When wireless headset is connected to its base/dongle */
   bool isWirelessConnect;
 
   /* This represents what type of control for setting */
@@ -122,16 +122,16 @@ typedef struct _SettingInfo{
   /* This represents group help text of the setting */
   char *groupHelpText;
 
-  /*whether dependency setting is present or not*/
+  /* Whether dependency setting is present or not */
   bool isDepedentsetting;
 
-  /* default dependent value when setting is disabled */
+  /* Default dependent value when setting is disabled */
   void *dependentDefaultValue;
 
-  /*PCsetting or not*/
+  /* PC setting or not */
   bool isPCsetting;
 
-  /* child device setting or not */
+  /* Child device setting or not */
   bool isChildDeviceSetting;
 
 } SettingInfo;
@@ -273,7 +273,6 @@ LIBRARY_API DeviceSettings* Jabra_GetSettings(unsigned short deviceID);
  *  @param[in] : setting : Dynamic settings for the device.
  *  @return    : Return_Ok if setting is successful.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
          Return_ParameterFail if setting parameter is wrong.
          Device_Rebooted if the device rebooted after applying settings that required rebooting.
          Device_WriteFail if it fails to write to the device.
@@ -281,16 +280,17 @@ LIBRARY_API DeviceSettings* Jabra_GetSettings(unsigned short deviceID);
 LIBRARY_API Jabra_ReturnCode Jabra_SetSettings(unsigned short deviceID, DeviceSettings* setting);
 
 /** Restore factory settings to device.
+ *  Note that if used on a device connected via dongle (or directly via BT),
+ *  the pairing list in the device will be cleared,
+ *  and the connection to the device will be lost.
  *  @param[in] : deviceID: id for a specific device.
- *  @param[in] : bluetooth: flag to identify, whether called from BT pairing or not.
  *  @return    : Return_Ok if successful.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 No_FactorySupported if device does not support factory reset.
 				 Device_WriteFail if it fails to write to the device.
 				 ProtectedSetting_Write if a setting is write protected
  */
-LIBRARY_API Jabra_ReturnCode Jabra_FactoryReset(unsigned short deviceID, bool bluetooth);
+LIBRARY_API Jabra_ReturnCode Jabra_FactoryReset(unsigned short deviceID);
 
 /** Free DeviceSettings structure
  *  @param[in] : setting: DeviceSettings structure pointer, which needs to be freed.
@@ -304,51 +304,36 @@ LIBRARY_API void Jabra_FreeDeviceSettings(DeviceSettings* setting);
  */
 LIBRARY_API void Jabra_FreeString(char* strPtr);
 
-/** Saves the device settings to a local file.
- *  @param[in] : deviceID : id for a specific device
- *  @param[in] : filePath : path to local settings file
- *  @return    : Return_Ok if saving the setting to file is successful
- *               Device_Unknown if deviceID is wrong
- *               Return_ParameterFail if setting parameter is wrong
- *               FileWrite_Fail if accessing the file fails
- */
+/* Will be removed completely.
+ * @return Not_Supported
+ *  @deprecated This API is going to be deleted - currently it does nothing
+* */
 LIBRARY_API Jabra_ReturnCode Jabra_SaveSettingsToFile(unsigned short deviceID, const char* filePath);
 
 /** Loads the device settings from local file.
  *  @param[in] : deviceID : id for a specific device
  *  @param[in] : filePath : path to local settings file
  *  @param[in] : mode : mode to be used for updating the settings
- *  @return    : If success, returns valid data for DeviceSettings pointer and error status as NoError
- *               else, returns valid pointer but with proper error status updated.
- *               Parameter_fail, if parameters are incorrect
- *               FileNotAccessible, if unable to access the file
- *               Device_NotFound if device id passed is incorrect or device is not found
- *               FileNotCompatible if none of the GUIDs/Settings are matching with device
- *               ParseError if there are XML parsing issue of file
+ *  @return    : valid pointer but with error status OtherError.
  *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeDeviceSettings API.
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 LIBRARY_API DeviceSettings* Jabra_LoadSettingsFromFile(unsigned short deviceID, const char* filePath, SettingsLoadMode mode);
 
 /** Saves the device settings to cloud.
  *  @param[in] : deviceID : id for a specific device
  *  @param[in] : filePath : path to local settings file
- *  @return    : Return_Ok if saving the setting to file is successful
- *               Device_Unknown if deviceID is wrong
- *               Return_ParameterFail if setting parameter is wrong
- *               NetworkRequest_Fail if there is network issue
- *               File_AlreadyExists if file with same name already exists
+ *  @return    : Not_Supported
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SaveSettingsToCloud(unsigned short deviceID, const char* authorization, const char* configName);
 
 /** This method gets the list of configs for given authorisations.
  *  @param[in] : authorisation string for which the configs are needed
- *  @return    : If success, returns valid data for ConfigList pointer and error status as NoError
- *               else, returns valid pointer but with proper error status updated.
- *               NetworkError incase of network issue
- *               ParseError if data is downloaded but there are XML parse errors
- *               Parameter_fail if input parameters are incorrect
+ *  @return    : valid pointer but with error status OtherError.
  *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeConfigList API.
- */
+ *  @deprecated This API is going to be deleted - currently it does nothing
+*/
 LIBRARY_API ConfigList* Jabra_GetCloudListOfConfigs(const char* authorization);
 
 /** This method free the config list info.
@@ -360,6 +345,7 @@ LIBRARY_API void Jabra_FreeConfigList(ConfigList* pConfigList);
 /** This method free the invalid setting list info.
  *  @param[in] : pInvalidList pointer to invalid list to be cleared
  *  @return    : No return parameters(Void function)
+ *  @deprecated This API is going to be deleted
  */
 LIBRARY_API void Jabra_FreeInvalidList(InvalidList* pInvalidList);
 
@@ -368,13 +354,9 @@ LIBRARY_API void Jabra_FreeInvalidList(InvalidList* pInvalidList);
  *  @param[in] : authorization : authorization id
  *  @param[in] : configID : id of the config file that needs to be loaded
  *  @param[in] : mode : mode to be used for updating the settings
- *  @return    : If success, returns valid data for DeviceSettings pointer and error status as NoError
- *               else, returns valid pointer but with proper error status updated.
- *               Parameter_fail, if parameters are incorrect
- *               NetworkError incase of network issue
- *               Device_NotFound if device id passed is incorrect or device is not found
- *               FileNotCompatible if none of the GUIDs/Settings are matching with device
+ *  @return    : valid pointer but with error status OtherError.
  *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeDeviceSettings API.
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 LIBRARY_API DeviceSettings* Jabra_LoadSettingsFromCloud(unsigned short deviceID, const char* authorization, const char* configID, SettingsLoadMode mode);
 
@@ -383,19 +365,16 @@ LIBRARY_API DeviceSettings* Jabra_LoadSettingsFromCloud(unsigned short deviceID,
  *  @param[in] : authorization : authorization id
  *  @param[in] : configID : id of the config file that needs to be updated
  *  @param[in] : configName : Name of the config file to be used for update
- *  @return    : Return_Ok if saving the setting to file is successful
- *               Device_Unknown if deviceID is wrong
- *               NetworkRequest_Fail if there is network issue
- *               Return_ParameterFail if setting parameter is wrong
+ *  @return    : Not_Supported
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 LIBRARY_API Jabra_ReturnCode Jabra_UpdateSettingsOfCloud(unsigned short deviceID, const char* authorization, const char* configID, const char* configName);
 
 /** Deletes the settings file already present in cloud.
  *  @param[in] : authorization : authorization id
  *  @param[in] : configID : id of the config file that needs to be updated
- *  @return    : Return_Ok if saving the setting to file is successful
- *               NetworkRequest_Fail if there is network issue
- *               Return_ParameterFail if setting parameter is wrong
+ *  @return    : Not_Supported
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 LIBRARY_API Jabra_ReturnCode Jabra_DeleteSettingsOfCloud(const char* authorization, const char* configID);
 
@@ -417,15 +396,16 @@ LIBRARY_API void Jabra_FreeFailedSettings(FailedSettings* setting);
 
 /** Checks if supports factory reset.
  *  @param[in] : deviceID: id for a specific device.
- *  @param[in] : bluetooth: flag to identify, whether called from BT pairing or not.
  *  @return    : true if device supports factory reset.
 				 false if device does not support factory reset.
  */
-LIBRARY_API bool Jabra_IsFactoryResetSupported(unsigned short deviceID, bool bluetooth);
+LIBRARY_API bool Jabra_IsFactoryResetSupported(unsigned short deviceID);
 
-/** Get list of invlaid settings
+/** Get list of invalid settings
  *  @param[in] : deviceID
- *  @return    : InvalidListb.
+ *  @return    : InvalidList, with errorstatus OtherError
+
+ *  @deprecated This API is going to be deleted - currently it does nothing
  */
 
 LIBRARY_API InvalidList* Jabra_GetInvalidSettings(unsigned short deviceID);
