@@ -85,12 +85,10 @@ struct BatteryCombinedStatusInfo {
   }
 };
 
-/**
- * An optional boolean value
- */
-struct OptionalStatus {
+template <class T>
+struct Optional {
   bool supported;
-  bool status;
+  T value;
 };
 
 /**
@@ -225,16 +223,22 @@ struct DeviceInfo {
 struct DynamicDeviceInfo {
 	public:
 	bool supported;
+    Optional<unsigned short> connectedDeviceID;
+    Optional<unsigned short> aliasDeviceID;
 	BatteryCombinedStatusInfo battertyStatus;
-	OptionalStatus leftEarBudStatus;
-	OptionalStatus equalizerEnabled;
-	OptionalStatus busyLight;
+	Optional<bool> leftEarBudStatus;
+	Optional<bool> equalizerEnabled;
+	Optional<bool> busyLight;
 
-	explicit DynamicDeviceInfo(const BatteryCombinedStatusInfo& battertyStatus,
-							   const OptionalStatus& leftEarBudStatus,
-							   const OptionalStatus& equalizerEnabled,
-							   const OptionalStatus& busyLight)
+	explicit DynamicDeviceInfo(const Optional<unsigned short>& connectedDeviceID,
+	                           const Optional<unsigned short>& aliasDeviceID,
+	                           const BatteryCombinedStatusInfo& battertyStatus,
+							   const Optional<bool>& leftEarBudStatus,
+							   const Optional<bool>& equalizerEnabled,
+							   const Optional<bool>& busyLight)
 						      : supported(true),
+							    connectedDeviceID(connectedDeviceID),
+								aliasDeviceID(aliasDeviceID),
 							    battertyStatus(battertyStatus),
 							    leftEarBudStatus(leftEarBudStatus),
 								equalizerEnabled(equalizerEnabled),

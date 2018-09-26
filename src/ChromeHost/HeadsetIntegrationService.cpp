@@ -322,13 +322,7 @@ void HeadsetIntegrationService::processRequest(const RequestWork& work) {
 }
 
 void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) {
-  try {
-    // Only handle input data from current device
-    if (work.deviceID != GetCurrentDeviceId()) {
-      LOG(plog::info) << "Ignored button event from non-active device " << work.deviceID;
-      return;
-    }
-        
+  try {       
     IF_LOG(plog::info) {
       LOG(plog::info) << "Received button translated notification with data " << work.data.translatedInData << " for device " << work.deviceID;
     }
@@ -396,7 +390,7 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
     {
       nlohmann::json j;
 
-      DynamicDeviceInfo dynDevicdeInfo = getDynamicDeviceInfo(deviceId);
+      DynamicDeviceInfo dynDevicdeInfo = getDynamicDeviceInfo(deviceInfo);
       setDeviceInfo(j, deviceInfo, dynDevicdeInfo);
 
       // Send initial attach event before we register callbacks so we are 
@@ -633,8 +627,14 @@ bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
   return false;
 }
 
-const std::vector<DeviceInfo> HeadsetIntegrationService::GetDevices() {
-  return m_devices; // return copy.
+const std::vector<DeviceInfo>& HeadsetIntegrationService::GetDevices() {
+  return m_devices;
+}
+
+const std::vector<DeviceInfo> HeadsetIntegrationService::GetDevices(std::function<bool(const DeviceInfo&)> filter) {
+  std::vector<DeviceInfo> result;
+  std::copy_if (m_devices.begin(), m_devices.end(), std::back_inserter(result), filter);
+  return result;
 }
 
 void HeadsetIntegrationService::Error(const Context& context, const std::string& msg, const nlohmann::json& data)
@@ -725,8 +725,31 @@ ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned sho
                          deviceFeatures);
 }
 
-DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const unsigned short deviceId) 
+DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const DeviceInfo& device)
 { 
+  const unsigned short deviceId = device.getDeviceID();
+
+  // Look for connected devices (same USB path) such as the dongle for a headset or the reverse:
+  const std::vector<DeviceInfo> connectedDevices = GetDevices([device](const DeviceInfo& otherDevice) {
+    return (otherDevice.getDeviceID() != device.getDeviceID()) && (otherDevice.basicInfo.usbDevicePath == device.basicInfo.usbDevicePath);
+  });
+  
+  // Should have MAX 1 connected device so just get the first one:
+  Optional<unsigned short> connectedDevice = connectedDevices.empty()
+                                           ? (Optional<unsigned short>{ false, USHRT_MAX })
+                                           : (Optional<unsigned short>{ true, connectedDevices.front().getDeviceID() });
+
+  // Look for same devices connected twice (such as by USB and BT):
+  const std::vector<DeviceInfo> aliasDevices = GetDevices([device](const DeviceInfo& otherDevice) {
+    return (otherDevice.getDeviceID() != device.getDeviceID()) && (otherDevice.basicInfo.serialNumber == device.basicInfo.serialNumber);
+  });
+
+  // Should have MAX 1 alias device so just get the first one:
+  Optional<unsigned short> aliasDevice = aliasDevices.empty()
+                                       ? (Optional<unsigned short>{ false, USHRT_MAX })
+                                       : (Optional<unsigned short>{ true, aliasDevices.front().getDeviceID() });
+
+  // Lookup runtime dependent state from device:
   BatteryCombinedStatusInfo batteryStatus;
   if (Jabra_GetBatteryStatus(deviceId, &batteryStatus.levelInPercent, &batteryStatus.charging, &batteryStatus.batteryLow) == Return_Ok) {
     batteryStatus.supported = true;
@@ -734,24 +757,24 @@ DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const unsigned
     batteryStatus = BatteryCombinedStatusInfo::empty();
   }
 
-  OptionalStatus leftEarBudStatus;
+  Optional<bool> leftEarBudStatus;
   leftEarBudStatus.supported = Jabra_IsLeftEarbudStatusSupported(deviceId);
   if (leftEarBudStatus.supported) {
-    leftEarBudStatus.status= Jabra_GetLeftEarbudStatus(deviceId);
+    leftEarBudStatus.value= Jabra_GetLeftEarbudStatus(deviceId);
   }
 
-  OptionalStatus equalizerEnabled;
+  Optional<bool> equalizerEnabled;
   equalizerEnabled.supported = Jabra_IsEqualizerSupported(deviceId);
   if (equalizerEnabled.supported) {
-    equalizerEnabled.status = Jabra_IsEqualizerEnabled(deviceId);
+    equalizerEnabled.value = Jabra_IsEqualizerEnabled(deviceId);
   }
 
-  OptionalStatus busyLight;
+  Optional<bool> busyLight;
   busyLight.supported = Jabra_IsBusylightSupported(deviceId);
   if (busyLight.supported) {
-      busyLight.status = Jabra_GetBusylightStatus(deviceId);
+      busyLight.value = Jabra_GetBusylightStatus(deviceId);
   }
 
-  return DynamicDeviceInfo(batteryStatus, leftEarBudStatus, equalizerEnabled, busyLight);
+  return DynamicDeviceInfo(connectedDevice, aliasDevice, batteryStatus, leftEarBudStatus, equalizerEnabled, busyLight);
 }
 

@@ -72,7 +72,9 @@ class HeadsetIntegrationService : public WorkProcessor
   const DeviceInfo& GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
   bool SetCurrentDeviceId(unsigned short id);
-  const std::vector<DeviceInfo> GetDevices();
+
+  const std::vector<DeviceInfo>& GetDevices();
+  const std::vector<DeviceInfo> GetDevices(std::function<bool(const DeviceInfo&)> filter);
 
   void Error(const Context& context, const std::string& msg, const nlohmann::json& data);
   void Event(const Context& context, const std::string& msg, const nlohmann::json& data);
@@ -83,7 +85,7 @@ class HeadsetIntegrationService : public WorkProcessor
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
 
-  DynamicDeviceInfo getDynamicDeviceInfo(const unsigned short deviceId);
+  DynamicDeviceInfo getDynamicDeviceInfo(const DeviceInfo& device);
     
   protected:
   WorkQueue workQueue;
