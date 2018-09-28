@@ -49,7 +49,6 @@ var jabra;
     ;
     ;
     ;
-    ;
     /**
      * Names of command response events.
      */
@@ -60,7 +59,7 @@ var jabra;
         "Version"
     ];
     /**
-     * All possible device events as array.
+     * All possible device events as internal array.
      */
     let eventNamesList = ["mute", "unmute", "device attached", "device detached", "acceptcall",
         "endcall", "reject", "flash", "online", "offline", "linebusy", "lineidle",
@@ -128,10 +127,6 @@ var jabra;
     * A counter used to generate unique request ID's used to match commands and returning events.
     */
     let requestNumber = 1;
-    /**
-     * Cached information about current Jabra Device.
-     */
-    let jabraDeviceInfo = null;
     /**
      * Contains initialization information used by the init/shutdown methods.
      */
@@ -361,7 +356,6 @@ var jabra;
             initState.eventCallback = undefined;
             sendRequestResultMap.clear();
             requestNumber = 1;
-            jabraDeviceInfo = null;
             initState.initialized = false;
             // Unsubscribe all.
             eventListeners.forEach((value, key) => {
@@ -482,17 +476,76 @@ var jabra;
     jabra.resume = resume;
     ;
     /**
-    * Get detailed information about the current active Jabra Device, including current status.
+    * Internal helper to get detailed information about the current active Jabra Device
+    * from SDK, including current status but excluding media device information.
     */
-    function getActiveDevice() {
+    function _doGetActiveSDKDevice() {
         return sendCmdWithResult("getactivedevice");
+    }
+    ;
+    /**
+    * Internal helper to get detailed information about the all attached Jabra Devices
+    * from SDK, including current status but excluding media device information.
+    */
+    function _doGetSDKDevices() {
+        return sendCmdWithResult("getdevices");
+    }
+    ;
+    /**
+    * Get detailed information about the current active Jabra Device, including current status
+    * and optionally also including related browser media device information.
+    *
+    * Note that browser media device information requires mediaDevices.getUserMedia or
+    * getUserDeviceMediaExt to have been called so permissions are granted. Browser media information
+    * is useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
+    * setSinkId (when supported by the browser) to set output.
+    */
+    function getActiveDevice(includeBrowserMediaDeviceInfo = false) {
+        let includeBrowserMediaDeviceInfoVal;
+        if ((typeof includeBrowserMediaDeviceInfo === 'string') || (includeBrowserMediaDeviceInfo instanceof String)) {
+            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
+        }
+        else if (typeof (includeBrowserMediaDeviceInfo) === "boolean") {
+            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
+        }
+        else {
+            throw new Error("Illegal argument - boolean or string expected");
+        }
+        if (includeBrowserMediaDeviceInfoVal) {
+            return _doGetActiveSDKDevice_And_BrowserDevice();
+        }
+        else {
+            return _doGetActiveSDKDevice();
+        }
     }
     jabra.getActiveDevice = getActiveDevice;
     ;
     /**
     * List detailed information about all attached Jabra Devices, including current status.
+    * and optionally also including related browser media device information.
+    *
+    * Note that browser media device information requires mediaDevices.getUserMedia or
+    * getUserDeviceMediaExt to have been called so permissions are granted. Browser media information
+    * is useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
+    * setSinkId (when supported by the browser) to set output.
     */
-    function getDevices() {
+    function getDevices(includeBrowserMediaDeviceInfo = false) {
+        let includeBrowserMediaDeviceInfoVal;
+        if ((typeof includeBrowserMediaDeviceInfo === 'string') || (includeBrowserMediaDeviceInfo instanceof String)) {
+            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
+        }
+        else if (typeof (includeBrowserMediaDeviceInfo) === "boolean") {
+            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
+        }
+        else {
+            throw new Error("Illegal argument - boolean or string expected");
+        }
+        if (includeBrowserMediaDeviceInfoVal) {
+            return _doGetSDKDevices_And_BrowserDevice();
+        }
+        else {
+            return _doGetSDKDevices();
+        }
         return sendCmdWithResult("getdevices");
     }
     jabra.getDevices = getDevices;
@@ -505,7 +558,7 @@ var jabra;
         if ((typeof id === 'string') || (id instanceof String)) {
             idVal = parseInt(id);
         }
-        else if (Number.isNaN(id)) {
+        else if (typeof id == 'number') {
             idVal = id;
         }
         else {
@@ -602,8 +655,8 @@ var jabra;
         if (!(typeof (audioElement.setSinkId) === "function")) {
             return Promise.reject(new Error('Your browser does not support required Audio Output Devices API'));
         }
-        return audioElement.setSinkId(deviceInfo.audioOutputId).then(() => {
-            var success = audioElement.sinkId === deviceInfo.audioOutputId;
+        return audioElement.setSinkId(deviceInfo.browserAudioOutputId).then(() => {
+            var success = audioElement.sinkId === deviceInfo.browserAudioOutputId;
             return success;
         });
     }
@@ -621,7 +674,7 @@ var jabra;
         for (var i = 0, len = tracks.length; i < len; i++) {
             var track = tracks[i];
             var trackCap = track.getCapabilities();
-            if (trackCap.deviceId !== deviceInfo.audioInputId) {
+            if (trackCap.deviceId !== deviceInfo.browserAudioInputId) {
                 return false;
             }
         }
@@ -630,7 +683,7 @@ var jabra;
     jabra.isDeviceSelectedForInput = isDeviceSelectedForInput;
     ;
     /**
-    * Replacement for mediaDevices.getUserMedia that makes a best effort to select a Jabra audio device
+    * Replacement for mediaDevices.getUserMedia that makes a best effort to select the active Jabra audio device
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
     * resolve to a object containing both a stream and the device info for the selected device.
     *
@@ -671,47 +724,152 @@ var jabra;
         // If we have the input device id already we can do a direct call to getUserMedia, otherwise we have to do
         // an initial general call to getUserMedia just get access to looking up the input device and than a second
         // call to getUserMedia to make sure the Jabra input device is selected.
-        if (jabraDeviceInfo && jabraDeviceInfo.audioInputId) {
-            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: jabraDeviceInfo.audioInputId } }, additionalConstraints))
-                .then((stream) => {
-                return {
-                    stream: stream,
-                    deviceInfo: jabraDeviceInfo
-                };
-            });
-        }
-        else {
-            return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
-                return getFirstDeviceInfo().then((browserDeviceInfo) => {
-                    // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-                    dummyStream.getTracks().forEach((track) => {
-                        track.stop();
-                    });
-                    if (browserDeviceInfo && browserDeviceInfo.audioInputId) {
-                        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: browserDeviceInfo.audioInputId } }, additionalConstraints))
-                            .then((stream) => {
-                            return {
-                                stream: stream,
-                                deviceInfo: browserDeviceInfo
-                            };
-                        });
-                    }
-                    else {
-                        return Promise.reject(new Error('Could not find a Jabra device with a microphone'));
-                    }
+        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
+            return _doGetActiveSDKDevice_And_BrowserDevice().then((deviceInfo) => {
+                // Shutdown initial dummy stream (not sure it is really required but lets be nice).
+                dummyStream.getTracks().forEach((track) => {
+                    track.stop();
                 });
+                if (deviceInfo && deviceInfo.browserAudioInputId) {
+                    return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: deviceInfo.browserAudioInputId } }, additionalConstraints))
+                        .then((stream) => {
+                        return {
+                            stream: stream,
+                            deviceInfo: deviceInfo
+                        };
+                    });
+                }
+                else {
+                    return Promise.reject(new Error('Could not find a Jabra device with a microphone'));
+                }
             });
-        }
+        });
     }
     jabra.getUserDeviceMediaExt = getUserDeviceMediaExt;
     ;
     /**
-     * Returns a promise resolving to all known IDs for (first found) Jabra device valid for the current
-     * browser session (assuming mediaDevices.getUserMedia has been called so permissions are granted). For
-     * supported browsers, like Chrome this include IDs for both microphone and speaker on a single device.
-     * Useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
-     * setSinkId (when supported by the browser) to set output. Called internally by getUserDeviceMedia
-     * replacement for mediaDevices.getUserMedia.
+     * Internal helper for add media information properties to existing SDK device information.
+     */
+    function fillInMatchingMediaInfo(deviceInfo, mediaDevices) {
+        function findBestMatchIndex(sdkDeviceName, mediaDeviceNameCandidates) {
+            // Edit distance helper adapted from
+            // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
+            function editDistance(s1, s2) {
+                s1 = s1.toLowerCase();
+                s2 = s2.toLowerCase();
+                var costs = new Array();
+                for (var i = 0; i <= s1.length; i++) {
+                    var lastValue = i;
+                    for (var j = 0; j <= s2.length; j++) {
+                        if (i == 0)
+                            costs[j] = j;
+                        else {
+                            if (j > 0) {
+                                var newValue = costs[j - 1];
+                                if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                                    newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                costs[j - 1] = lastValue;
+                                lastValue = newValue;
+                            }
+                        }
+                    }
+                    if (i > 0)
+                        costs[s2.length] = lastValue;
+                }
+                return costs[s2.length];
+            }
+            // Levenshtein distance helper adapted from
+            // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
+            function levenshteinDistance(s1, s2) {
+                let longer = s1;
+                let shorter = s2;
+                if (s1.length < s2.length) {
+                    longer = s2;
+                    shorter = s1;
+                }
+                let longerLength = longer.length;
+                if (longerLength === 0) {
+                    return 1.0;
+                }
+                return (longerLength - editDistance(longer, shorter)) / longerLength;
+            }
+            if (mediaDeviceNameCandidates.length == 1) {
+                return 0;
+            }
+            else if (mediaDeviceNameCandidates.length > 0) {
+                let similarities = mediaDeviceNameCandidates.map(candidate => {
+                    if (candidate.includes("(" + sdkDeviceName + ")")) {
+                        return 1.0;
+                    }
+                    else {
+                        // Remove Standard/Default prefix from label in Chrome when comparing
+                        let prefixEnd = candidate.indexOf(' - ');
+                        let cleanedCandidate = (prefixEnd >= 0) ? candidate.substring(prefixEnd + 3) : candidate;
+                        return levenshteinDistance(sdkDeviceName, cleanedCandidate);
+                    }
+                });
+                let bestMatchIndex = similarities.reduce((prevIndexMax, value, i, a) => value > a[prevIndexMax] ? i : prevIndexMax, 0);
+                // console.log('lookup of best match for ' + sdkDeviceName + ' got index ' + bestMatchIndex);
+                // console.dir(mediaDeviceNameCandidates);
+                // console.dir(similarities);
+                return bestMatchIndex;
+            }
+            else {
+                return -1;
+            }
+        }
+        // Find matchin pair input or output device.
+        function findMatchingMediaDevice(groupId, kind, src) {
+            return src.find(md => md.groupId == groupId && md.kind == kind);
+        }
+        if (deviceInfo && deviceInfo.deviceName) {
+            let groupId = undefined;
+            let audioInputId = undefined;
+            let audioOutputId = undefined;
+            let label = undefined;
+            // Filter out non Jabra input/output devices:
+            let jabraMediaDevices = mediaDevices.filter(device => device.label
+                && device.label.toLowerCase().includes('jabra')
+                && (device.kind === 'audioinput' || device.kind === 'audiooutput'));
+            let someJabraDeviceIndex = findBestMatchIndex(deviceInfo.deviceName, jabraMediaDevices.map(md => md.label));
+            if (someJabraDeviceIndex >= 0) {
+                let foundDevice = jabraMediaDevices[someJabraDeviceIndex];
+                groupId = foundDevice.groupId;
+                label = foundDevice.label;
+                if (foundDevice.kind === 'audioinput') {
+                    audioInputId = foundDevice.deviceId;
+                    // Lookup matching output device:
+                    let outputDevice = findMatchingMediaDevice(groupId, 'audiooutput', jabraMediaDevices);
+                    if (outputDevice) {
+                        audioOutputId = outputDevice.deviceId;
+                    }
+                }
+                else if (foundDevice.kind === 'audiooutput') {
+                    audioOutputId = foundDevice.deviceId;
+                    // Lookup matching output input device:
+                    let inputDevice = findMatchingMediaDevice(groupId, 'audioinput', jabraMediaDevices);
+                    if (inputDevice) {
+                        audioInputId = inputDevice.deviceId;
+                    }
+                }
+            }
+            if (groupId) {
+                deviceInfo.browserGroupId = groupId;
+            }
+            if (label) {
+                deviceInfo.browserLabel = label;
+            }
+            if (audioInputId) {
+                deviceInfo.browserAudioInputId = audioInputId;
+            }
+            if (audioOutputId) {
+                deviceInfo.browserAudioOutputId = audioOutputId;
+            }
+        }
+    }
+    /**
+     * Internal helper that returns complete device information, including both SDK and browser media device
+     * information for all devices.
      *
      * Chrome note:
      * 1) Only works if hosted under https.
@@ -724,12 +882,7 @@ var jabra;
      * General non-chrome browser note:
      * 1) Returning output devices requires support for new Audio Output Devices API.
      */
-    function getFirstDeviceInfo() {
-        // Use cached value if already have found the devices.
-        // TODO: Check if this works if the device has been unplugged/re-attached since last call ?
-        if (jabraDeviceInfo) {
-            return Promise.resolve(jabraDeviceInfo);
-        }
+    function _doGetSDKDevices_And_BrowserDevice() {
         // Good error if using old browser:
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
             return Promise.reject(new Error('Your browser does not support required media api'));
@@ -742,53 +895,47 @@ var jabra;
         if (location.protocol !== 'https:') {
             return Promise.reject(new Error('Your browser needs https for lookup to work'));
         }
-        // Look for Jabra devices among all media devices. The list is in random order
-        // and not necessarily complete in all browsers.
-        return navigator.mediaDevices.enumerateDevices().then((devices) => {
-            var groupId = null;
-            var audioInputId = null;
-            var audioOutputId = null;
-            var label = null;
-            // Find matching input/output pair if exist (and supported by browser).
-            for (var i = 0; i !== devices.length; ++i) {
-                var device = devices[i];
-                // Label check requires user to have provided permission using getUserMedia.
-                if (device.label && device.label.includes('Jabra')) {
-                    // When we first find a Jabra device we fix on that device's groupId to
-                    // to make sure input and output match same device.
-                    if ((device.kind === 'audioinput' || device.kind === 'audiooutput') && !groupId) {
-                        groupId = device.groupId;
-                        // Retrieve label initially - Should be the same for both input and output anyway.
-                        label = device.label;
-                        // Remove Standard/Default prefix from label in Chrome.
-                        var prefixEnd = label.indexOf(' - ');
-                        if (prefixEnd >= 0) {
-                            label = label.substring(prefixEnd + 3);
-                        }
-                    }
-                    if (device.kind === 'audioinput' && device.groupId == groupId) {
-                        audioInputId = device.deviceId;
-                    }
-                    else if (device.kind === 'audiooutput' && device.groupId == groupId) {
-                        audioOutputId = device.deviceId;
-                    }
-                }
-            }
-            // Result is an ID combination for single device + device label.
-            var result = {
-                groupId: groupId,
-                audioInputId: audioInputId,
-                audioOutputId: audioOutputId,
-                label: label
-            };
-            // Cache result if at least partially sucessful.
-            if (result.audioInputId) {
-                jabraDeviceInfo = result;
-            }
-            return result;
+        return Promise.all([_doGetSDKDevices(), navigator.mediaDevices.enumerateDevices()]).then(([deviceInfos, mediaDevices]) => {
+            deviceInfos.forEach((deviceInfo) => {
+                fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+            });
+            return deviceInfos;
         });
     }
-    jabra.getFirstDeviceInfo = getFirstDeviceInfo;
+    /**
+     * Internal helper that returns complete device information, including both SDK and browser media device
+     * information for active device.
+     *
+     * Chrome note:
+     * 1) Only works if hosted under https.
+     *
+     * Firefox note:
+     * 1) Output devices not supported yet. See "https://bugzilla.mozilla.org/show_bug.cgi?id=934425"
+     * 2) The user must have provided permission to use the specific device to use it as a constraint.
+     * 3) GroupId not supported.
+     *
+     * General non-chrome browser note:
+     * 1) Returning output devices requires support for new Audio Output Devices API.
+     */
+    function _doGetActiveSDKDevice_And_BrowserDevice() {
+        // Good error if using old browser:
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            return Promise.reject(new Error('Your browser does not support required media api'));
+        }
+        // Init completed ?
+        if (!initState.initialized) {
+            return Promise.reject(new Error("Browser integration not initialized"));
+        }
+        // Browser security rules (for at least chrome) requires site to run under https for labels to be read.
+        if (location.protocol !== 'https:') {
+            return Promise.reject(new Error('Your browser needs https for lookup to work'));
+        }
+        // enumerateDevices requires user to have provided permission using getUserMedia for labels to be filled out.
+        return Promise.all([_doGetActiveSDKDevice(), navigator.mediaDevices.enumerateDevices()]).then(([deviceInfo, mediaDevices]) => {
+            fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+            return deviceInfo;
+        });
+    }
     ;
 })(jabra || (jabra = {}));
 ;

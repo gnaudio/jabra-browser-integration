@@ -16,7 +16,7 @@
 <section id="section">
   <div class="wrapper">
     <audio id="player" muted autoplay></audio>
-    <button id="unmuteButton">Start loopback playback</button>
+    <button id="startPlayback" disabled="true">Start loopback playback</button>
 
     <div id="inputStat"></div>
     <div id="outputStat"></div>
@@ -29,36 +29,6 @@
   </div>
 </footer>
 <script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
-<script type="text/javascript">
-  let inputStat = document.getElementById("inputStat");
-  let outputStat = document.getElementById("outputStat");
-  var player = document.getElementById('player');
-  var unmuteButton = document.getElementById('unmuteButton');
-  var deviceInfo = null;
-  var self = this;
-
-  unmuteButton.addEventListener('click', function() {
-    player.muted = false;
-    jabra.trySetDeviceOutput(player, self.deviceInfo).then(success => {
-      outputStat.innerText = success ? "Jabra output device '" + self.deviceInfo.label + "' successfully selected" : "Jabra output device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
-    }).catch(err => {
-      outputStat.innerText = err.name + ": " + err.message;
-    });
-  });
-  
-  jabra.init().then(() => jabra.getUserDeviceMediaExt({})).then((streamAndDeviceInfo) => {
-    var stream = streamAndDeviceInfo.stream;
-    var deviceInfo = streamAndDeviceInfo.deviceInfo;
-    self.deviceInfo = deviceInfo;
-    inputStat.innerText = jabra.isDeviceSelectedForInput(stream, self.deviceInfo) ? "Jabra input device '" + self.deviceInfo.label + "' sucessfully selected" : "Jabra input device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
-    player.srcObject = stream;
-  }).catch(err => {
-    if (err.name === "NotFoundError") {
-      inputStat.innerText = "Input device not accessible/found";
-    } else {
-      inputStat.innerText = err.name + ": " + err.message;
-    }
-  });
-</script>
+<script type="text/javascript" src="main.js"></script>
 </body>
 </html>
