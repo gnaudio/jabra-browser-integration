@@ -7,9 +7,7 @@ var startPlaybackButton = document.getElementById('startPlayback');
 var deviceInfo = null;
 var self = this;
 
-jabra.init().then(() => jabra.getUserDeviceMediaExt({})).then((streamAndDeviceInfo) => {
-  var stream = streamAndDeviceInfo.stream;
-  var deviceInfo = streamAndDeviceInfo.deviceInfo;
+jabra.init().then(() => jabra.getUserDeviceMediaExt({})).then(({stream, deviceInfo}) => {
   self.deviceInfo = deviceInfo;
   inputStat.innerText = jabra.isDeviceSelectedForInput(stream, self.deviceInfo) ? "Jabra input device '" + self.deviceInfo.browserLabel + "' successfully selected" : "Jabra input device '" + self.deviceInfo.browserLabel + "' could not be selected automatically in your browser - please do manually"
   player.srcObject = stream;
