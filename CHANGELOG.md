@@ -13,7 +13,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * `getDevices()` now return a JS array of objects with detailed information rather than a simple string **(breaking change)**.
 * `setActiveDevice` renamed to `setActiveDeviceId` to reflect that it takes an ID as argument rather than a detailed object like `getActiveDevice()` returns.
 * `getUserDeviceMedia()` has been removed. Use `getUserDeviceMediaExt` instead.
-* `getDeviceInfo()` has been renamed to `getFirstDeviceInfo()` to reflect that it only returns information about the first device found.
+* `getDeviceInfo()` has been deleted. Use ``getActiveDevice(true)` instead.
 * Added `getInstallInfo()` that checks and details the current installation.    
 * Added shutdown method (for use in testing).
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
