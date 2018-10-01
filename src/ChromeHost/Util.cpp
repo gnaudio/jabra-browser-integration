@@ -30,16 +30,19 @@ SOFTWARE.
 
 // Generate json from device info - flatten and filter out empty stuff.
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc) {
-	dest["deviceID"] = src.getDeviceID();
-	dest["deviceName"] = src.getDeviceName();
+	dest[JSON_KEY_DEVICEID] = src.getDeviceID();
+	dest[JSON_KEY_DEVICENAME] = src.getDeviceName();
 
-  // if (src.basicInfo.usbDevicePath.length() > 0) {
-  //  dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
-  // }
+  // Low-level USB stuff is only exposed when debugging mode is enabled.
+  #ifdef DEBUG_CHROMEHOST_INFO
+    if (src.basicInfo.usbDevicePath.length() > 0) {
+    dest["usbDevicePath"] = src.basicInfo.usbDevicePath;
+    }
 
-  // if (src.basicInfo.parentInstanceId.length() > 0) {
-  //  dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
-  // }
+    if (src.basicInfo.parentInstanceId.length() > 0) {
+    dest["parentInstanceId"] = src.basicInfo.parentInstanceId;
+    }
+  #endif
 
   dest["productID"] = src.basicInfo.productID;
 
@@ -77,6 +80,13 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
 
   // Add dynamic data if any?
   if (dynSrc.supported) {
+    if (dynSrc.connectedDeviceID.supported) {
+      dest["connectedDeviceID"] = dynSrc.connectedDeviceID.value;
+    }
+
+    if (dynSrc.aliasDeviceID.supported) {
+      dest["aliasDeviceID"] = dynSrc.aliasDeviceID.value;
+    }
 
     if (dynSrc.battertyStatus.supported) {
       // Nested battery objects seems to break Chrome 69 (OR maybe through unlikely nlohmann::json), course Chrome stops
@@ -88,21 +98,21 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
       // 
       // Therefore we just inline battery stuff instead:
 
-      dest["batteryLevelInPercent"] = dynSrc.battertyStatus.levelInPercent;
-      dest["batteryCharging"] = dynSrc.battertyStatus.charging;
-      dest["batteryLow"] = dynSrc.battertyStatus.batteryLow;
+      dest[JSON_KEY_BATTERY_LEVEL_PCT] = dynSrc.battertyStatus.levelInPercent;
+      dest[JSON_KEY_BATTERY_CHARGING] = dynSrc.battertyStatus.charging;
+      dest[JSON_KEY_BATTERY_LOW] = dynSrc.battertyStatus.batteryLow;
     }
 
     if (dynSrc.leftEarBudStatus.supported) {
-      dest["leftEarBudStatus"] = dynSrc.leftEarBudStatus.status;
+      dest["leftEarBudStatus"] = dynSrc.leftEarBudStatus.value;
     }
 
     if (dynSrc.equalizerEnabled.supported) {
-      dest["equalizerEnabled"] = dynSrc.equalizerEnabled.status;
+      dest["equalizerEnabled"] = dynSrc.equalizerEnabled.value;
     }
 
     if (dynSrc.busyLight.supported) {
-      dest["busyLight"] = dynSrc.busyLight.status;
+      dest["busyLight"] = dynSrc.busyLight.value;
     }
 
   }

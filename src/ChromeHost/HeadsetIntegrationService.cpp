@@ -53,7 +53,7 @@ static void logQueued(Work * work) {
 }
 
 HeadsetIntegrationService::HeadsetIntegrationService() 
-   : workQueue()
+   : workQueue(), hasPostAttachRegistrations(false)
 {
   g_thisHeadsetIntegrationService = this;
 
@@ -86,7 +86,7 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::Online, false }, new SimpleEventMapper("offline") },
 
     { { Jabra_HidInput::LineBusy, true }, new SimpleEventMapper("linebusy") },
-    { { Jabra_HidInput::LineBusy, false }, new SimpleEventMapper("linebusy") },
+    { { Jabra_HidInput::LineBusy, false }, new SimpleEventMapper("lineidle") },
 
     { { Jabra_HidInput::RejectCall, true }, new SimpleEventMapper("reject") },
     { { Jabra_HidInput::RejectCall, false }, new SimpleEventMapper("reject") },
@@ -140,10 +140,10 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::VoiceMail, false }, new SimpleEventMapper("voiceMail") },
 
     { { Jabra_HidInput::OutOfRange, true }, new SimpleEventMapper("outOfRange") },
-    { { Jabra_HidInput::OutOfRange, false }, new SimpleEventMapper("outOfRange") },
+    { { Jabra_HidInput::OutOfRange, false }, new SimpleEventMapper("intoRange") },
   
-    { { Jabra_HidInput::PseudoOffHook, true }, new SimpleEventMapper("pseudoOffHook") },
-    { { Jabra_HidInput::PseudoOffHook, false }, new SimpleEventMapper("pseudoOffHook") },
+    { { Jabra_HidInput::PseudoOffHook, true }, new SimpleEventMapper("pseudoAcceptcall") },
+    { { Jabra_HidInput::PseudoOffHook, false }, new SimpleEventMapper("pseudoEndcall") },
 
     { { Jabra_HidInput::Button1, true }, new SimpleEventMapper("button1") },
     { { Jabra_HidInput::Button1, false }, new SimpleEventMapper("button1") },
@@ -164,13 +164,13 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::FireAlarm, false }, new SimpleEventMapper("fireAlarm") },
 
     { { Jabra_HidInput::JackConnection, true }, new SimpleEventMapper("jackConnection") },
-    { { Jabra_HidInput::JackConnection, false }, new SimpleEventMapper("jackConnection") },
+    { { Jabra_HidInput::JackConnection, false }, new SimpleEventMapper("jackDisConnection") },
 
     { { Jabra_HidInput::QDConnection, true }, new SimpleEventMapper("qdConnection") },
-    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("qdConnection") },
+    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("qdDisconnection") },
 
-    { { Jabra_HidInput::QDConnection, true }, new SimpleEventMapper("headsetConnection") },
-    { { Jabra_HidInput::QDConnection, false }, new SimpleEventMapper("headsetConnection") }
+    { { Jabra_HidInput::HeadsetConnection, true }, new SimpleEventMapper("headsetConnection") },
+    { { Jabra_HidInput::HeadsetConnection, false }, new SimpleEventMapper("headsetDisConnection") }
   };
 
   // Finally start worker thread to dispatch incomming work to visitor methods.
@@ -238,10 +238,12 @@ bool HeadsetIntegrationService::Start()
     }
 
     // TODO: Check for return value ?
-    Jabra_ConnectToJabraApplication(
-      "D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
-      "Google Chrome Browser"
-    );
+	if (!Jabra_ConnectToJabraApplication(
+		"D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
+		"Google Chrome Browser"
+	)) {
+		LOG_ERROR << "Could not connect to Jabra application";
+	};
 
     Jabra_SetSoftphoneReady(true);
   } catch (const std::exception& e) {
@@ -320,28 +322,28 @@ void HeadsetIntegrationService::processRequest(const RequestWork& work) {
 }
 
 void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInDataTranslatedWork& work) {
-  try {
-    // Only handle input data from current device
-    if (work.deviceID != GetCurrentDeviceId())
-      return;
-        
+  try {       
     IF_LOG(plog::info) {
       LOG(plog::info) << "Received button translated notification with data " << work.data.translatedInData << " for device " << work.deviceID;
     }
 
     const EventMapper * mapper = buttonEventMappings[work.data];
     if (mapper) {
+      const std::string& mapperName = mapper->getMapperName();
       if (mapper->accept(work.deviceID, work.data)) {
-       std::string outputEventName = mapper->getEventName();
-       Event(Context::device(), outputEventName, { { "deviceID", work.deviceID }, { "buttonInData", work.data.buttonInData }, { "translatedInData", work.data.translatedInData } });
+       const std::string& outputEventName = mapper->getEventName();
+       LOG_INFO << "Button translation accepted and mapped to " << outputEventName << " by " << mapperName << " mapper";
+       Event(Context::device(), outputEventName, { { JSON_KEY_DEVICEID, work.deviceID }, { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData } });
+      } else {
+        LOG_INFO << "Button translation ignored as directed by " << mapperName << " mapper";
       }
     } else {
-      std::string inDatastring = std::to_string(work.data.translatedInData);
+      const std::string inDatastring = std::to_string(work.data.translatedInData);
 	    Error(Context::device(), "No mappings specified for button event " + inDatastring + " with buttonInData = " + std::to_string(work.data.buttonInData), {});
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processButtonInDataTranslated");
-    Error(Context::device(), "button translation failed", { std::make_pair("exception", e.what()) });
+    Error(Context::device(), "button translation failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processButtonInDataTranslated";
 	  Error(Context::device(), "button translation failed", {});
@@ -356,6 +358,26 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
       LOG(plog::debug) << "Received device " << deviceId << " attached notification";
     }
 
+    // Try to use GN protol if possible to make sure all events are passed:
+    Jabra_ReturnCode retv;
+    if (Jabra_IsGnHidStdHidSupported(deviceId)) {
+      if ((retv=Jabra_SetHidWorkingState(deviceId, GN_HID)) == Return_Ok) {
+        LOG_INFO << "GN protocol selected as working state on device";
+      } else {
+        LOG_ERROR << "Could not select GN protocol as working state on device";
+      }
+    } else {
+      Jabra_HidState state;
+      if ((retv=Jabra_GetHidWorkingState(deviceId, &state)) == Return_Ok) {
+        if (state != GN_HID) {
+          LOG_WARNING << "GN protocol not selected as working state on device";
+        }
+      } else {
+        LOG_ERROR << "Could not lookup used working state protocol on device";
+      }
+    }
+
+    // Lookup extra static device information and save it:
 	  DeviceInfo deviceInfo(work.basicDeviceInfo, getExtraDeviceInfo(deviceId));
     m_devices.push_back(deviceInfo);
     std::string deviceName = deviceInfo.getDeviceName();
@@ -364,41 +386,77 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
       LOG(plog::info) << "Attaching device " << deviceName << " with id " << deviceName;
     }
 
-    Jabra_RegisterDevLogCallback([](unsigned short deviceID, const char* eventStrRaw) {
-      if (eventStrRaw) {
-        std::string eventStr(eventStrRaw);
-        Jabra_FreeString((char *)eventStrRaw);
-        Work * const work = new DeviceDevLogWork(deviceID, eventStr);
-        logQueued(work);
+    // Send out event with additional dynamic device information:
+    {
+      nlohmann::json j;
+
+      DynamicDeviceInfo dynDevicdeInfo = getDynamicDeviceInfo(deviceInfo);
+      setDeviceInfo(j, deviceInfo, dynDevicdeInfo);
+
+      // Send initial attach event before we register callbacks so we are 
+      // sure we get attach event first:
+      Event(Context::device(), EVENT_DEVICE_ATTACHED, j);
+    }
+
+    // If we have not already registered for device callbacks do it now:
+    if (!hasPostAttachRegistrations) {
+       Jabra_RegisterDevLogCallback([](unsigned short deviceID, char* eventStrRaw) {
+        if (eventStrRaw) {
+          std::string eventStr(eventStrRaw);
+          Jabra_FreeString((char *)eventStrRaw);
+          Work * const work = new DeviceDevLogWork(deviceID, eventStr);
+          logQueued(work);
+          g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+        }
+      });
+
+      Jabra_RegisterBusylightEvent([](unsigned short deviceID, const bool busy) {
+        Work * const work = new BusylightWork(deviceID, busy);
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-      }
-    });
+      });
 
-    Jabra_RegisterBusylightEvent([](unsigned short deviceID, const bool busy) {
-       Work * const work = new BusylightWork(deviceID, busy);
-       g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-    });
+      Jabra_RegisterBatteryStatusUpdateCallback([](unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) {
+          Work * const work = new BatteryStatusWork(deviceID, levelInPercent, charging, batteryLow);
+          g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+      });
 
-    Jabra_RegisterBatteryStatusUpdateCallback([](unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) {
-        Work * const work = new BatteryStatusWork(deviceID, levelInPercent, charging, batteryLow);
+      Jabra_RegisterForGNPButtonEvent([](unsigned short deviceID, ButtonEvent *buttonEvent) {
+        std::vector<GnpButtonEntry> buttonInfos;
+        
+        for (int i=0; i<buttonEvent->buttonEventCount; ++i) {
+          const unsigned short buttonTypeKey = buttonEvent->buttonEventInfo[i].buttonTypeKey;
+          const ButtonEventInfo src = buttonEvent->buttonEventInfo[i];
+          for (int j=0; j<src.buttonEventTypeSize; ++j) {
+            GnpButtonEntry e = { buttonTypeKey, src.buttonEventType[j].key, std::string(src.buttonEventType[j].value) };
+            buttonInfos.push_back(e);
+          }
+        }
+
+        Jabra_FreeButtonEvents(buttonEvent);
+
+        Work * const work = new GNPButtonWork(deviceID, buttonInfos);
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-    });
+      });
 
+      /*
+      Jabra_RegisterRemoteMmiCallback([](unsigned short deviceID, RemoteMmiType type, RemoteMmiInput action) {
+
+      });*/
+
+      hasPostAttachRegistrations = true; // No need to do this again for next attached device.
+    }
 
     Jabra_ReturnCode errCode;
     if ((errCode = Jabra_EnableDevLog(deviceId, true)) != Return_Ok ) {
-	    LOG_ERROR << "Failed enabling dev log with code " << errCode;
+	    LOG_WARNING << "Failed enabling dev log for device " << deviceId << " with code " << errCode;
     }
 
-	  nlohmann::json j;
-
-    DynamicDeviceInfo dynDevicdeInfo = getDynamicDeviceInfo(deviceId);
-	  setDeviceInfo(j, deviceInfo, dynDevicdeInfo);
-
-    Event(Context::device(), "device attached", j);
+    IF_LOG(plog::info) {
+      LOG(plog::info) << "Completed attaching device " << deviceName << " with id " << deviceName;
+    }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDeviceAttached");
-	  Error(Context::device(), "Device attachment registration failed", { std::make_pair("exception", e.what()) });
+	  Error(Context::device(), "Device attachment registration failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDeviceAttached: ";
 	  Error(Context::device(), "Device attachment registration failed", {});
@@ -421,7 +479,7 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
         nlohmann::json j;
         setDeviceInfo(j, (*it), DynamicDeviceInfo::empty());
 
-        Event(Context::device(), "device detached", j);
+        Event(Context::device(), EVENT_DEVICE_DEATTACHED, j);
 
         std::string backupDeviceName = (*it).getDeviceName();
         m_devices.erase(m_devices.begin() + index);
@@ -455,7 +513,7 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
     }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDeviceDeAttached");
-    Error(Context::device(), "Device removal registration failed", { std::make_pair("exception", e.what()) });
+    Error(Context::device(), "Device removal registration failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDeviceDeAttached";
 	  Error(Context::device(), "Device removal registration failed", {});
@@ -465,24 +523,24 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
 void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
  try {
     nlohmann::json eventData = nlohmann::json();
-    eventData["deviceID"] = work.deviceID;
-    eventData["event"] = nlohmann::json::parse(work.eventStr);
-    g_thisHeadsetIntegrationService->Event(Context::device(), "devlog", eventData);
+    eventData[JSON_KEY_DEVICEID] = work.deviceID;
+    eventData[JSON_KEY_EVENT_JSON_VALUE] = nlohmann::json::parse(work.eventStr);
+    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDevLog");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "processDevLog failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processDevLog";
-	  g_thisHeadsetIntegrationService->Error(Context::device(), "parsing devlog failed", {});
+	  g_thisHeadsetIntegrationService->Error(Context::device(), "processDevLog failed", {});
   }
 }
 
 void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
  try {
-    Event(Context::device(), "busylight", { std::make_pair("value", work.busy), std::make_pair("deviceID", work.deviceID) });
+    Event(Context::device(), EVENT_BUSY_LIGHT, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.busy), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processBusylight");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processBusylight";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", {});
@@ -491,10 +549,10 @@ void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
 
 void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSettingWork& work) {
  try {
-    Event(Context::device(), "hearThrough", { std::make_pair("value", work.status), std::make_pair("deviceID", work.deviceID) });
+    Event(Context::device(), EVENT_HEARTHROUGH, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.status), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processHearThroughSetting";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", {});
@@ -503,19 +561,34 @@ void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSetti
 
 void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& work) {
  try {
-    Event(Context::device(), "batteryStatus", {
-      std::make_pair("batteryLevelInPercent", work.status.levelInPercent),
-      std::make_pair("batteryCharging", work.status.charging),
-      std::make_pair("batteryLow", work.status.batteryLow),            
-      std::make_pair("deviceID", work.deviceID) 
+    Event(Context::device(), EVENT_BATTERYSTATUS, {
+      std::make_pair(JSON_KEY_BATTERY_LEVEL_PCT, work.status.levelInPercent),
+      std::make_pair(JSON_KEY_BATTERY_CHARGING, work.status.charging),
+      std::make_pair(JSON_KEY_BATTERY_LOW, work.status.batteryLow),            
+      std::make_pair(JSON_KEY_DEVICEID, work.deviceID) 
     });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
-    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair("exception", e.what()) });
+    g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
  } catch (...) {
 	  LOG_ERROR << "Unknown error in processHearThroughSetting";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", {});
  }
+}
+
+void HeadsetIntegrationService::processGnpButtons(const GNPButtonWork& work) {
+ try {
+    nlohmann::json eventData = nlohmann::json();
+    eventData[JSON_KEY_DEVICEID] = work.deviceID;
+    eventData[JSON_KEY_EVENT_JSON_VALUE] = work.buttonEntries;
+    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
+  } catch (const std::exception& e) {
+    log_exception(plog::Severity::error, e, "in processGnpButtons");
+    g_thisHeadsetIntegrationService->Error(Context::device(), "processGnpButtons failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
+  } catch (...) {
+	  LOG_ERROR << "Unknown error in processGnpButtons";
+	  g_thisHeadsetIntegrationService->Error(Context::device(), "processGnpButtons failed", {});
+  }
 }
 
 const DeviceInfo& HeadsetIntegrationService::GetCurrentDevice() {
@@ -554,8 +627,14 @@ bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
   return false;
 }
 
-const std::vector<DeviceInfo> HeadsetIntegrationService::GetDevices() {
-  return m_devices; // return copy.
+const std::vector<DeviceInfo>& HeadsetIntegrationService::GetDevices() {
+  return m_devices;
+}
+
+const std::vector<DeviceInfo> HeadsetIntegrationService::GetDevices(std::function<bool(const DeviceInfo&)> filter) {
+  std::vector<DeviceInfo> result;
+  std::copy_if (m_devices.begin(), m_devices.end(), std::back_inserter(result), filter);
+  return result;
 }
 
 void HeadsetIntegrationService::Error(const Context& context, const std::string& msg, const nlohmann::json& data)
@@ -646,8 +725,31 @@ ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned sho
                          deviceFeatures);
 }
 
-DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const unsigned short deviceId) 
+DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const DeviceInfo& device)
 { 
+  const unsigned short deviceId = device.getDeviceID();
+
+  // Look for connected devices (same USB path) such as the dongle for a headset or the reverse:
+  const std::vector<DeviceInfo> connectedDevices = GetDevices([device](const DeviceInfo& otherDevice) {
+    return (otherDevice.getDeviceID() != device.getDeviceID()) && (otherDevice.basicInfo.usbDevicePath == device.basicInfo.usbDevicePath);
+  });
+  
+  // Should have MAX 1 connected device so just get the first one:
+  Optional<unsigned short> connectedDevice = connectedDevices.empty()
+                                           ? (Optional<unsigned short>{ false, USHRT_MAX })
+                                           : (Optional<unsigned short>{ true, connectedDevices.front().getDeviceID() });
+
+  // Look for same devices connected twice (such as by USB and BT):
+  const std::vector<DeviceInfo> aliasDevices = GetDevices([device](const DeviceInfo& otherDevice) {
+    return (otherDevice.getDeviceID() != device.getDeviceID()) && (otherDevice.basicInfo.serialNumber == device.basicInfo.serialNumber);
+  });
+
+  // Should have MAX 1 alias device so just get the first one:
+  Optional<unsigned short> aliasDevice = aliasDevices.empty()
+                                       ? (Optional<unsigned short>{ false, USHRT_MAX })
+                                       : (Optional<unsigned short>{ true, aliasDevices.front().getDeviceID() });
+
+  // Lookup runtime dependent state from device:
   BatteryCombinedStatusInfo batteryStatus;
   if (Jabra_GetBatteryStatus(deviceId, &batteryStatus.levelInPercent, &batteryStatus.charging, &batteryStatus.batteryLow) == Return_Ok) {
     batteryStatus.supported = true;
@@ -655,24 +757,24 @@ DynamicDeviceInfo HeadsetIntegrationService::getDynamicDeviceInfo(const unsigned
     batteryStatus = BatteryCombinedStatusInfo::empty();
   }
 
-  OptionalStatus leftEarBudStatus;
+  Optional<bool> leftEarBudStatus;
   leftEarBudStatus.supported = Jabra_IsLeftEarbudStatusSupported(deviceId);
   if (leftEarBudStatus.supported) {
-    leftEarBudStatus.status= Jabra_GetLeftEarbudStatus(deviceId);
+    leftEarBudStatus.value= Jabra_GetLeftEarbudStatus(deviceId);
   }
 
-  OptionalStatus equalizerEnabled;
+  Optional<bool> equalizerEnabled;
   equalizerEnabled.supported = Jabra_IsEqualizerSupported(deviceId);
   if (equalizerEnabled.supported) {
-    equalizerEnabled.status = Jabra_IsEqualizerEnabled(deviceId);
+    equalizerEnabled.value = Jabra_IsEqualizerEnabled(deviceId);
   }
 
-  OptionalStatus busyLight;
+  Optional<bool> busyLight;
   busyLight.supported = Jabra_IsBusylightSupported(deviceId);
   if (busyLight.supported) {
-      busyLight.status = Jabra_GetBusylightStatus(deviceId);
+      busyLight.value = Jabra_GetBusylightStatus(deviceId);
   }
 
-  return DynamicDeviceInfo(batteryStatus, leftEarBudStatus, equalizerEnabled, busyLight);
+  return DynamicDeviceInfo(connectedDevice, aliasDevice, batteryStatus, leftEarBudStatus, equalizerEnabled, busyLight);
 }
 

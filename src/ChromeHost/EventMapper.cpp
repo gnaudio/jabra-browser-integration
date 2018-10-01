@@ -29,6 +29,10 @@ SOFTWARE.
 #include "EventMapper.h"
 #include "HeadsetIntegrationService.h"
 
+const std::string SimpleEventMapper::mapperName = "SimpleEventMapper";
+const std::string EventOffHookMapper::mapperName = "EventOffHookMapper";
+const std::string EventOnHookMapper::mapperName = "EventOnHookMapper";
+
 bool EventOffHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
   return (service->GetRingerStatus(deviceId));
 }

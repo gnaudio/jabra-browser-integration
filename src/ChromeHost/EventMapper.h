@@ -35,6 +35,7 @@ class HeadsetIntegrationService;
 
 class EventMapper {
  public:
+ virtual const std::string& getMapperName() const = 0;
  virtual const std::string& getEventName() const = 0;
  virtual bool accept(const unsigned short deviceId, const ButtonHidInfo&) const = 0;
 };
@@ -43,12 +44,17 @@ class SimpleEventMapper : public EventMapper
 {
   private:
   const std::string eventName;
+  const static std::string mapperName;
 
   public:
   SimpleEventMapper(const std::string& eventName) : eventName(eventName) {}
 
   const std::string& getEventName() const override {
-      return eventName;
+    return eventName;
+  }
+
+  const std::string& getMapperName() const override {
+    return mapperName;
   }
 
   bool accept(const unsigned short deviceId, const ButtonHidInfo&) const override {
@@ -59,10 +65,15 @@ class SimpleEventMapper : public EventMapper
 class EventOffHookMapper : public SimpleEventMapper
 {
   private:
+  const static std::string mapperName;
   HeadsetIntegrationService * const service; 
 
   public:
   EventOffHookMapper(const std::string& eventName, HeadsetIntegrationService * const service) : SimpleEventMapper(eventName), service(service) {}
+
+  const std::string& getMapperName() const override {
+    return mapperName;
+  }
 
   bool accept(const unsigned short deviceId, const ButtonHidInfo&) const override;
 };
@@ -70,10 +81,15 @@ class EventOffHookMapper : public SimpleEventMapper
 class EventOnHookMapper : public SimpleEventMapper
 {
   private:
+  const static std::string mapperName;
   HeadsetIntegrationService * const service; 
 
   public:
   EventOnHookMapper(const std::string& eventName, HeadsetIntegrationService * const service) : SimpleEventMapper(eventName), service(service) {}
+
+  const std::string& getMapperName() const override {
+    return mapperName;
+  }
 
   bool accept(const unsigned short deviceId, const ButtonHidInfo&) const override;
 };

@@ -52,7 +52,7 @@ void CmdOffHook::Execute(const Request& request)
     return;
   }
 
-  Jabra_GetLock(deviceId);
+  // Jabra_GetLock(deviceId);
 
   // Stop ringer
   if (m_headsetIntegrationService->GetRingerStatus(deviceId))
@@ -64,7 +64,10 @@ void CmdOffHook::Execute(const Request& request)
   Jabra_ReturnCode ret = Jabra_SetOffHook(deviceId, true);
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error(request, "Unable to offhook", { std::make_pair("errorcode", std::to_string(ret)) });
+    m_headsetIntegrationService->Error(request, "Unable to offhook", { 
+      std::make_pair(JSON_KEY_JABRA_ERRORCODE, std::to_string(ret)),
+      std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId))
+    });
     return;
   }
 

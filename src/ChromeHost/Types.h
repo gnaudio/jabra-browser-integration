@@ -29,6 +29,8 @@ SOFTWARE.
 
 #include <string>
 #include <map>
+#include <vector>
+#include "json.hpp"
 #include "SDK/Common.h"
 
 struct ButtonHidInfo {
@@ -55,6 +57,20 @@ struct ButtonHidInfo {
     }
 };
 
+#define MAX_BUTTON_EVENTS 16
+
+struct GnpButtonEntry {
+	unsigned short buttonTypeKey;
+	unsigned short key;
+	std::string value;
+
+	friend std::ostream& operator<<(std::ostream& os, const GnpButtonEntry& v);  
+};
+
+void to_json(nlohmann::json& j, const GnpButtonEntry& e);
+
+typedef std::vector<GnpButtonEntry> GnpButtonInfo;
+
 /**
  * Just a triple of all battery status
  */
@@ -69,12 +85,10 @@ struct BatteryCombinedStatusInfo {
   }
 };
 
-/**
- * An optional boolean value
- */
-struct OptionalStatus {
- bool supported;
- bool status;
+template <class T>
+struct Optional {
+  bool supported;
+  T value;
 };
 
 /**
@@ -106,11 +120,12 @@ struct BasicDeviceInfo {
 		}
 	}
 
+	/*
 	static std::string toHexString(short v) {
 		std::stringstream sstream;
 		sstream << std::hex << v;
 		return sstream.str();
-	}
+	}*/
 
     public:
 	explicit BasicDeviceInfo(Jabra_DeviceInfo source) 
@@ -208,16 +223,22 @@ struct DeviceInfo {
 struct DynamicDeviceInfo {
 	public:
 	bool supported;
+    Optional<unsigned short> connectedDeviceID;
+    Optional<unsigned short> aliasDeviceID;
 	BatteryCombinedStatusInfo battertyStatus;
-	OptionalStatus leftEarBudStatus;
-	OptionalStatus equalizerEnabled;
-	OptionalStatus busyLight;
+	Optional<bool> leftEarBudStatus;
+	Optional<bool> equalizerEnabled;
+	Optional<bool> busyLight;
 
-	explicit DynamicDeviceInfo(const BatteryCombinedStatusInfo& battertyStatus,
-							   const OptionalStatus& leftEarBudStatus,
-							   const OptionalStatus& equalizerEnabled,
-							   const OptionalStatus& busyLight)
+	explicit DynamicDeviceInfo(const Optional<unsigned short>& connectedDeviceID,
+	                           const Optional<unsigned short>& aliasDeviceID,
+	                           const BatteryCombinedStatusInfo& battertyStatus,
+							   const Optional<bool>& leftEarBudStatus,
+							   const Optional<bool>& equalizerEnabled,
+							   const Optional<bool>& busyLight)
 						      : supported(true),
+							    connectedDeviceID(connectedDeviceID),
+								aliasDeviceID(aliasDeviceID),
 							    battertyStatus(battertyStatus),
 							    leftEarBudStatus(leftEarBudStatus),
 								equalizerEnabled(equalizerEnabled),

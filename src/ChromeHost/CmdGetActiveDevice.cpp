@@ -54,7 +54,7 @@ void CmdGetActiveDevice::Execute(const Request& request)
   {
 	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
   } else {
-	  setDeviceInfo(j, deviceInfo, m_headsetIntegrationService->getDynamicDeviceInfo(deviceInfo.getDeviceID()));
+	  setDeviceInfo(j, deviceInfo, m_headsetIntegrationService->getDynamicDeviceInfo(deviceInfo));
     m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
   }
 }

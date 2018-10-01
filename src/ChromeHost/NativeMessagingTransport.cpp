@@ -136,7 +136,7 @@ void NativeMessagingTransport::Start()
       nlohmann::json args = j["args"];
 
       Request req(message.get<std::string>(),
-                  args,
+                  (args==nullptr || args.is_null()) ? nlohmann::json::object() : args,
                   requestId.is_string() ? requestId.get<std::string>() : "",
                   apiClientId.is_string() ? apiClientId.get<std::string>() : "");
 

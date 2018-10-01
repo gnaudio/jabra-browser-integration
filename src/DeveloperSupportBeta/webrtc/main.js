@@ -4,14 +4,14 @@ var inputStat = document.getElementById("inputStat");
 var outputStat = document.getElementById("outputStat");
 var localVideo = document.getElementById('localVideo');
 
-function webrtcSetup(jabraDeviceInfo) {
+function webrtcSetup(deviceInfo) {
   // grab the room from the URL
   var room = location.search && location.search.split('?')[1];
 
   // Ask browser to use our jabra input device if it exists.
-  var mediaConstraints = (jabraDeviceInfo && jabraDeviceInfo.audioInputId) ? {
+  var mediaConstraints = (deviceInfo && deviceInfo.browserAudioInputId) ? {
     audio: {
-      deviceId: jabraDeviceInfo.audioInputId
+      deviceId: deviceInfo.browserAudioInputId
     },
     video: true
   } : {
@@ -53,13 +53,13 @@ function webrtcSetup(jabraDeviceInfo) {
     var button = document.querySelector('form>button');
     if (button) button.removeAttribute('disabled');
 
-    if (jabraDeviceInfo && (jabraDeviceInfo.audioInputId || jabraDeviceInfo.audioOutputId)) {
-      inputStat.innerText = jabra.isDeviceSelectedForInput(stream, jabraDeviceInfo) ? "Jabra input device '" + jabraDeviceInfo.label + "' sucessfully selected" : "Input device selection problem: Jabra input device " + jabraDeviceInfo.label + " could not be selected automatically in your browser - please do manually";
+    if (deviceInfo && (deviceInfo.browserAudioInputId || deviceInfo.browserAudioOutputId)) {
+      inputStat.innerText = jabra.isDeviceSelectedForInput(stream, deviceInfo) ? "Jabra input device '" + deviceInfo.browserLabel + "' sucessfully selected" : "Input device selection problem: Jabra input device " + deviceInfo.browserLabel + " could not be selected automatically in your browser - please do manually";
       
-      jabra.trySetDeviceOutput(localVideo, jabraDeviceInfo).then(success => {
-        outputStat.innerText = success ? "Jabra output device '" + jabraDeviceInfo.label + "' sucessfully selected" : "Output device selection problem: Jabra output device " + jabraDeviceInfo.label + " could not be selected automatically in your browser - please do manually"
+      jabra.trySetDeviceOutput(localVideo, deviceInfo).then(success => {
+        outputStat.innerText = success ? "Jabra output device '" + deviceInfo.browserLabel + "' sucessfully selected" : "Output device selection problem: Jabra output device " + deviceInfo.browserLabel + " could not be selected automatically in your browser - please do manually"
       }).catch(function (err) {
-        outputStat.innerText = "Output device selection problem for " + jabraDeviceInfo.label + ": " + err.name + ": " + err.message;
+        outputStat.innerText = "Output device selection problem for " + deviceInfo.browserLabel + ": " + err.name + ": " + err.message;
       })
     } else {
       inputStat.innerText = "No Jabra device found";
@@ -228,81 +228,90 @@ document.addEventListener('DOMContentLoaded', function () {
   if (location.protocol != 'https:') {
     location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
   }
-
+ 
   var webrtc = null;
-    
+      
   //Set mute/unmute icon and inform other peers about mute state...
   function SetMute(mute) {
-    if (mute) {
-      $('#mute').removeClass('unmuted').addClass('muted');
-      webrtc.sendDirectlyToAll('jabra', 'peer_muted', { mute: true });
+    if (webrtc) {
+      if (mute) {
+        $('#mute').removeClass('unmuted').addClass('muted');
+        webrtc.sendDirectlyToAll('jabra', 'peer_muted', { mute: true });
+      } else {
+        $('#mute').removeClass('muted').addClass('unmuted');
+        webrtc.sendDirectlyToAll('jabra', 'peer_muted', { mute: false });
+      }
     } else {
-      $('#mute').removeClass('muted').addClass('unmuted');
-      webrtc.sendDirectlyToAll('jabra', 'peer_muted', { mute: false });
+      console.error("Webrtc not initialized");
     }
   };
 
-  // Use the Jabra library
-  jabra.init().catch( (msg) => {
-      // Add nodes to show the message
-      var div = document.createElement("div");
-      var att = document.createAttribute("class");
-      att.value = "wrapper";
-      div.setAttributeNode(att);
-      div.innerHTML = msg;
-      var br = document.createElement("br");
-      var list = document.getElementById("subTitles");
-      list.insertBefore(br, list.childNodes[0]);
-      list.insertBefore(div, list.childNodes[0]);
-  });
-
-  jabra.addEventListener("mute", (event) => {
-    SetMute(true);
-    jabra.mute();
-  });
-
-  jabra.addEventListener("unmute", (event) => {
-    SetMute(false);
-    jabra.unmute();
-  });
-
-  jabra.addEventListener("endcall", (event) => {
-    webrtc.leaveRoom();
-    jabra.onHook();
-    setTimeout(function () {
-      location.href = window.location.origin + window.location.pathname;
-    }, 1 * 1000);
-  });
-
-  $('#mute').click(function () {
-    if ($('#mute').hasClass('muted')) {
-      SetMute(false);
-      jabra.unmute();
-    } else {
+  // First initialize the Jabra library so we can call into the API.
+  jabra.init().then(() => {
+    jabra.addEventListener("mute", (event) => {
       SetMute(true);
       jabra.mute();
-    }
-  });
-  
-  // First find the jabra input device, then use this to initialize webrtc.
-  // Note this involves asking for access to user media in advance (producing
-  // a dummy stream that we throw away), as required by getDeviceInfo because 
-  // of browser security rules.
-  navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(dummyStream) {
-    return jabra.getFirstDeviceInfo().then(function(info) {
-        // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-        dummyStream.getTracks().forEach(function(track) {
-            track.stop();
-        });
-
-        // Now that we have the IDs of our jabra device, startup webrtc
-        webrtc = self.webrtcSetup(info);
     });
-  }).catch(function(err) {
-    if (err.name === "NotFoundError") {
-      inputStat.innerText = "Input device not accessible/found";
-    } else {
-      inputStat.innerText = "Input device selection problem: " + err.name + ": " + err.message;
-    }
+  
+    jabra.addEventListener("unmute", (event) => {
+      SetMute(false);
+      jabra.unmute();
+    });
+  
+    jabra.addEventListener("endcall", (event) => {
+      if (webrtc) {
+        webrtc.leaveRoom();
+      } else {
+        console.error("Webrtc not initialized");
+      }
+      jabra.onHook();
+      setTimeout(function () {
+        location.href = window.location.origin + window.location.pathname;
+      }, 1 * 1000);
+    });
+  
+    $('#mute').click(function () {
+      if ($('#mute').hasClass('muted')) {
+        SetMute(false);
+        jabra.unmute();
+      } else {
+        SetMute(true);
+        jabra.mute();
+      }
+    });
+   
+    // First find the jabra input device, then use this to initialize webrtc.
+    // Note this involves asking for access to user media in advance (producing
+    // a dummy stream that we throw away), as required by getDeviceInfo because 
+    // of browser security rules.
+    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((dummyStream) => {
+      // Important to call getActiveDevice with true argument to get browser media information:
+      return jabra.getActiveDevice(true).then((deviceInfo) => {
+          // Shutdown initial dummy stream (not sure it is really required but lets be nice).
+          dummyStream.getTracks().forEach((track) => {
+              track.stop();
+          });
+  
+          // Now that we have the IDs of our jabra device, startup webrtc
+          webrtc = self.webrtcSetup(deviceInfo);
+      });
+    }).catch((err) => {
+      if (err.name === "NotFoundError") {
+        inputStat.innerText = "Input device not accessible/found";
+      } else {
+        inputStat.innerText = "Input device selection problem: " + err.name + ": " + err.message;
+      }
+    });
+  }).catch( (msg) => {
+    // Add nodes to show the message
+    var div = document.createElement("div");
+    var att = document.createAttribute("class");
+    att.value = "wrapper";
+    div.setAttributeNode(att);
+    div.innerHTML = msg;
+    var br = document.createElement("br");
+    var list = document.getElementById("subTitles");
+    list.insertBefore(br, list.childNodes[0]);
+    list.insertBefore(div, list.childNodes[0]);
   });
 }, false);

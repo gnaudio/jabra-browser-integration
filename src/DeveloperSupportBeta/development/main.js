@@ -74,8 +74,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   document.getElementById('getactivedevice').onclick = function () {
     jabra.getActiveDevice().then(
-      function (id) {
-        alert(id);
+      function (device) {
+        alert(JSON.stringify(device));
       }
     );
   }
@@ -87,13 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   }
   document.getElementById('setactivedevice0').onclick = function () {
-    jabra.setActiveDevice(0);
+    jabra.setActiveDeviceId(0);
   }
   document.getElementById('setactivedevice1').onclick = function () {
-    jabra.setActiveDevice(1);
+    jabra.setActiveDeviceId(1);
   }
   document.getElementById('setactivedevice2').onclick = function () {
-    jabra.setActiveDevice(2);
+    jabra.setActiveDeviceId(2);
   }
 
 }, false);

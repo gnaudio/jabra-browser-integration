@@ -12,6 +12,19 @@
  */
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc);
 
+template <class T>
+std::ostream& operator <<(std::ostream& os, const std::vector<T>& v) 
+{
+    os << "[";
+    for (typename std::vector<T>::const_iterator i = v.begin(); i != v.end(); ++i)
+    {
+        os << " " << *i;
+    }
+    os << "]";
+
+    return os;
+}
+
 /**
  * Thread safe FIFO-queue utility.
  */

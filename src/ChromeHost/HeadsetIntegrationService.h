@@ -61,6 +61,7 @@ class HeadsetIntegrationService : public WorkProcessor
   void processBusylight(const BusylightWork& work) override;
   void processHearThroughSetting(const HearThroughSettingWork& work) override;
   void processBatteryStatus(const BatteryStatusWork& work) override;
+  void processGnpButtons(const GNPButtonWork& work) override;
 
   void AddHandler(std::function<void(const Response&)> callback);
   void QueueRequest(const Request& request);
@@ -71,7 +72,9 @@ class HeadsetIntegrationService : public WorkProcessor
   const DeviceInfo& GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
   bool SetCurrentDeviceId(unsigned short id);
-  const std::vector<DeviceInfo> GetDevices();
+
+  const std::vector<DeviceInfo>& GetDevices();
+  const std::vector<DeviceInfo> GetDevices(std::function<bool(const DeviceInfo&)> filter);
 
   void Error(const Context& context, const std::string& msg, const nlohmann::json& data);
   void Event(const Context& context, const std::string& msg, const nlohmann::json& data);
@@ -82,7 +85,7 @@ class HeadsetIntegrationService : public WorkProcessor
   void SetRingerStatus(unsigned short id, bool ringer);
   bool GetRingerStatus(unsigned short id);
 
-  DynamicDeviceInfo getDynamicDeviceInfo(const unsigned short deviceId);
+  DynamicDeviceInfo getDynamicDeviceInfo(const DeviceInfo& device);
     
   protected:
   WorkQueue workQueue;
@@ -98,6 +101,7 @@ class HeadsetIntegrationService : public WorkProcessor
   std::function<void(const Response& txt)> m_callback;
   std::vector<DeviceInfo> m_devices;
   unsigned short m_currentDeviceId;
+  bool hasPostAttachRegistrations;
 
   ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);
 };

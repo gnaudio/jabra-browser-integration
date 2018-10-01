@@ -25,19 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "stdafx.h"
-#include "EventLineBusy.h"
+#include "Types.h"
 
-EventLineBusy::EventLineBusy(HeadsetIntegrationService* headsetIntegrationService)
-{
-  m_headsetIntegrationService = headsetIntegrationService;
+std::ostream& operator<<(std::ostream& os, const GnpButtonEntry& v) {
+ os << "buttonTypeKey = " << v.buttonTypeKey
+    << ", key = " << v.key
+    << ", value = " << v.value;
+
+ return os;
 }
 
-EventLineBusy::~EventLineBusy()
-{
-}
-
-void EventLineBusy::Execute(bool buttonInData)
-{ 
-  m_headsetIntegrationService->Event(Context::device(), buttonInData ? "online" : "offline", {});
+void to_json(nlohmann::json& j, const GnpButtonEntry& e) {
+    j = nlohmann::json{{"buttonTypeKey", e.buttonTypeKey}, {"key", e.key}, {"value", e.value}};
 }

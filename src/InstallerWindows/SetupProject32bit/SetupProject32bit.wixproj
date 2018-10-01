@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>38de0d40-b977-4c31-8baa-c667dad05d99</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>JabraChromeHost2.0beta2</OutputName>
+    <OutputName>JabraChromeHost2.0beta3</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">

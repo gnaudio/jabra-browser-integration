@@ -41,6 +41,7 @@ class DeviceDevLogWork;
 class BusylightWork;
 class HearThroughSettingWork;
 class BatteryStatusWork;
+class GNPButtonWork;
 
 /**
  * A visitor interface that a class that process work should implement.
@@ -58,6 +59,7 @@ class WorkProcessor
   virtual void processBusylight(const BusylightWork& work) = 0;
   virtual void processHearThroughSetting(const HearThroughSettingWork& work) = 0;
   virtual void processBatteryStatus(const BatteryStatusWork& work) = 0;
+  virtual void processGnpButtons(const GNPButtonWork& work) = 0;
 };
 
 /**
@@ -206,7 +208,7 @@ class BatteryStatusWork : public DeviceWork {
     public:
     const BatteryCombinedStatusInfo status;
 
-    explicit BatteryStatusWork(unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) : DeviceWork(deviceID), status { true, levelInPercent, charging, batteryLow } {}
+    explicit BatteryStatusWork(const unsigned short deviceID, const int levelInPercent, const bool charging, const bool batteryLow) : DeviceWork(deviceID), status { true, levelInPercent, charging, batteryLow } {}
 
     void accept(WorkProcessor& visitor) const override {
         visitor.processBatteryStatus(* this);
@@ -216,5 +218,21 @@ class BatteryStatusWork : public DeviceWork {
       os << "BatteryStatusWork[" << getWorkId() << "] level=" << status.levelInPercent << ", charging= " << status.charging << ", low= " << status.batteryLow;
     }
 };
+
+class GNPButtonWork : public DeviceWork {
+    public:
+    const std::vector<GnpButtonEntry> buttonEntries;
+
+    explicit GNPButtonWork(const unsigned short deviceID, const std::vector<GnpButtonEntry>& buttonEntries) : DeviceWork(deviceID), buttonEntries(buttonEntries) {}
+
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processGnpButtons(* this);
+    }
+
+    void print(std::ostream& os) const override {
+      os << "GNPButtonWork[" << getWorkId() << "] buttonEntries=" << buttonEntries;
+    }
+};
+
 
 
