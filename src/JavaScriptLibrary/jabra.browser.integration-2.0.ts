@@ -108,10 +108,28 @@ namespace jabra {
          */
         usbDevicePath?: string;
 
-
+        /**
+         * Browser media device information group (browser session specific).
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserGroupId?: string;
+
+        /**
+         * The browser's unique identifier for the input (e.g. microphone) part of the Jabra device (page orgin specific).
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserAudioInputId?: string;
+
+         /**
+         * The browser's unique identifier for an output (e.g. speaker) part of the Jabra device (page orgin specific).
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserAudioOutputId?: string;
+
+         /**
+         * The browser's textual descriptor of the device.
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserLabel?: string;
     };
 
@@ -843,7 +861,7 @@ namespace jabra {
     * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check 
     * if the browser did in fact choose a Jabra device for the microphone.
     */
-    export function getUserDeviceMediaExt(additionalConstraints: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair> {
+    export function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair> {
         // Good error if using old browser:
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             return Promise.reject(new Error('Your browser does not support required media api'));
@@ -860,30 +878,31 @@ namespace jabra {
         }
 
         /**
-         * Utility method that combines constraints with ours taking precendence (shallow). 
+         * Utility method that combines constraints with ours taking precendence (deep). 
          */
-        function mergeConstraints(ours: { [index: string]: any }, theirs?: { [index: string]: any }): MediaStreamConstraints {
-            if (!theirs) {
+        function mergeConstraints(ours: MediaStreamConstraints, theirs?: MediaStreamConstraints): MediaStreamConstraints {
+            if (theirs !== null && theirs !== undefined && typeof ours === 'object') {
+                let result: { [index: string]: any } = {};
+                for (var attrname in theirs) { result[attrname] = (theirs as any)[attrname]; }
+                for (var attrname in ours) { result[attrname] = mergeConstraints((ours as any)[attrname], (theirs as any)[attrname]); } // Ours takes precedence.
+                return result;
+            } else {
                 return ours;
             }
-            var result: { [index: string]: any } = {};
-            for (var attrname in theirs) { result[attrname] = theirs[attrname]; }
-            for (var attrname in ours) { result[attrname] = ours[attrname]; } // Ours takes precedence.
-            return result;
         }
 
         // If we have the input device id already we can do a direct call to getUserMedia, otherwise we have to do
         // an initial general call to getUserMedia just get access to looking up the input device and than a second
         // call to getUserMedia to make sure the Jabra input device is selected.
-        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
+        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true }, constraints)).then((dummyStream) => {
             return _doGetActiveSDKDevice_And_BrowserDevice().then((deviceInfo) => {
                 // Shutdown initial dummy stream (not sure it is really required but lets be nice).
                 dummyStream.getTracks().forEach((track) => {
                     track.stop();
                 });
 
-                if (deviceInfo && deviceInfo.browserAudioInputId) {
-                    return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: deviceInfo.browserAudioInputId } }, additionalConstraints))
+                if (deviceInfo && deviceInfo.browserAudioInputId) {                   
+                    return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: deviceInfo.browserAudioInputId } }, constraints))
                         .then((stream) => {
                             return {
                                 stream: stream,
@@ -962,11 +981,6 @@ namespace jabra {
                     }
                 });
                 let bestMatchIndex = similarities.reduce((prevIndexMax, value, i, a) => value > a[prevIndexMax] ? i : prevIndexMax, 0);
-
-                // console.log('lookup of best match for ' + sdkDeviceName + ' got index ' + bestMatchIndex);
-                // console.dir(mediaDeviceNameCandidates);
-                // console.dir(similarities);
-
                 return bestMatchIndex;
             } else {
                 return -1;
