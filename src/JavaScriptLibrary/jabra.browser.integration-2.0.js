@@ -33,7 +33,7 @@ var jabra;
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    jabra.apiVersion = "2.0.beta2";
+    jabra.apiVersion = "2.0.beta3";
     /**
      * Is the current version a beta ?
      */
@@ -692,7 +692,7 @@ var jabra;
     * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
-    function getUserDeviceMediaExt(additionalConstraints) {
+    function getUserDeviceMediaExt(constraints) {
         // Good error if using old browser:
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             return Promise.reject(new Error('Your browser does not support required media api'));
@@ -706,32 +706,34 @@ var jabra;
             logger.warn("This function needs to run under https for best UX experience (persisted permissions)");
         }
         /**
-         * Utility method that combines constraints with ours taking precendence (shallow).
+         * Utility method that combines constraints with ours taking precendence (deep).
          */
         function mergeConstraints(ours, theirs) {
-            if (!theirs) {
+            if (theirs !== null && theirs !== undefined && typeof ours === 'object') {
+                let result = {};
+                for (var attrname in theirs) {
+                    result[attrname] = theirs[attrname];
+                }
+                for (var attrname in ours) {
+                    result[attrname] = mergeConstraints(ours[attrname], theirs[attrname]);
+                } // Ours takes precedence.
+                return result;
+            }
+            else {
                 return ours;
             }
-            var result = {};
-            for (var attrname in theirs) {
-                result[attrname] = theirs[attrname];
-            }
-            for (var attrname in ours) {
-                result[attrname] = ours[attrname];
-            } // Ours takes precedence.
-            return result;
         }
         // If we have the input device id already we can do a direct call to getUserMedia, otherwise we have to do
         // an initial general call to getUserMedia just get access to looking up the input device and than a second
         // call to getUserMedia to make sure the Jabra input device is selected.
-        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true, additionalConstraints })).then((dummyStream) => {
+        return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true }, constraints)).then((dummyStream) => {
             return _doGetActiveSDKDevice_And_BrowserDevice().then((deviceInfo) => {
                 // Shutdown initial dummy stream (not sure it is really required but lets be nice).
                 dummyStream.getTracks().forEach((track) => {
                     track.stop();
                 });
                 if (deviceInfo && deviceInfo.browserAudioInputId) {
-                    return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: deviceInfo.browserAudioInputId } }, additionalConstraints))
+                    return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: { deviceId: deviceInfo.browserAudioInputId } }, constraints))
                         .then((stream) => {
                         return {
                             stream: stream,
@@ -809,9 +811,6 @@ var jabra;
                     }
                 });
                 let bestMatchIndex = similarities.reduce((prevIndexMax, value, i, a) => value > a[prevIndexMax] ? i : prevIndexMax, 0);
-                // console.log('lookup of best match for ' + sdkDeviceName + ' got index ' + bestMatchIndex);
-                // console.dir(mediaDeviceNameCandidates);
-                // console.dir(similarities);
                 return bestMatchIndex;
             }
             else {

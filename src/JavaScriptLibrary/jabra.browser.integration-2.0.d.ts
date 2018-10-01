@@ -5,7 +5,7 @@ declare namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    const apiVersion = "2.0.beta2";
+    const apiVersion = "2.0.beta3";
     /**
      * Contains information about installed components.
      */
@@ -58,9 +58,25 @@ declare namespace jabra {
          * Only available in debug versions.
          */
         usbDevicePath?: string;
+        /**
+         * Browser media device information group (browser session specific).
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserGroupId?: string;
+        /**
+         * The browser's unique identifier for the input (e.g. microphone) part of the Jabra device (page orgin specific).
+         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+         */
         browserAudioInputId?: string;
+        /**
+        * The browser's unique identifier for an output (e.g. speaker) part of the Jabra device (page orgin specific).
+        * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+        */
         browserAudioOutputId?: string;
+        /**
+        * The browser's textual descriptor of the device.
+        * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
+        */
         browserLabel?: string;
     }
     /**
@@ -207,5 +223,5 @@ declare namespace jabra {
     * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
-    function getUserDeviceMediaExt(additionalConstraints: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;
+    function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;
 }

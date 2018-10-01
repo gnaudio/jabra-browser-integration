@@ -17,7 +17,8 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * Added `getInstallInfo()` that checks and details the current installation.    
 * Added shutdown method (for use in testing).
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
-* Added more events including offline, online.
+* Better support for multiple devices.
+* Added >30 more events.
 * Added logging to API, browser extension and chromehost executable.
 * Added API test example, updated existing examples for new API version.
 * All internals are now hidden away so they can't be accessed by accident.
