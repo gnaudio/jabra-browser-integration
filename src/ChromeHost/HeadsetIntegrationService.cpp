@@ -43,7 +43,10 @@ SOFTWARE.
 #include "CmdGetVersion.h"
 #include "CmdGetInstallInfo.h"
 #include "CmdSetBusyLight.h"
+#include "CmdSetRemoteMmiLightAction.h"
+#include "CmdSetMmiFocus.h"
 #include "EventMapper.h"
+
 
 HeadsetIntegrationService* g_thisHeadsetIntegrationService;
 
@@ -72,7 +75,9 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     new CmdSetActiveDevice(this),
     new CmdGetVersion(this),
     new CmdGetInstallInfo(this),
-    new CmdSetBusyLight(this)
+    new CmdSetBusyLight(this),
+    new CmdSetMmiFocus(this),
+    new CmdSetRemoteMmiLightAction(this)
   };
 
   buttonEventMappings = { // Note this is for button events only - there are other events not mentioned here:
@@ -237,13 +242,60 @@ bool HeadsetIntegrationService::Start()
       return false;
     }
 
+    Jabra_RegisterDevLogCallback([](unsigned short deviceID, char* eventStrRaw) {
+      if (eventStrRaw) {
+        std::string eventStr(eventStrRaw);
+        Jabra_FreeString((char *)eventStrRaw);
+        Work * const work = new DeviceDevLogWork(deviceID, eventStr);
+        logQueued(work);
+        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+      }
+    });
+
+    Jabra_RegisterBusylightEvent([](unsigned short deviceID, const bool busy) {
+      Work * const work = new BusylightWork(deviceID, busy);
+      logQueued(work);      
+      g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+    });
+
+    Jabra_RegisterBatteryStatusUpdateCallback([](unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) {
+      Work * const work = new BatteryStatusWork(deviceID, levelInPercent, charging, batteryLow);
+      logQueued(work);
+      g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+    });
+
+    Jabra_RegisterForGNPButtonEvent([](unsigned short deviceID, ButtonEvent *buttonEvent) {
+      std::vector<GnpButtonEntry> buttonInfos;
+      
+      for (int i=0; i<buttonEvent->buttonEventCount; ++i) {
+        const unsigned short buttonTypeKey = buttonEvent->buttonEventInfo[i].buttonTypeKey;
+        const ButtonEventInfo src = buttonEvent->buttonEventInfo[i];
+        for (int j=0; j<src.buttonEventTypeSize; ++j) {
+          GnpButtonEntry e = { buttonTypeKey, src.buttonEventType[j].key, std::string(src.buttonEventType[j].value) };
+          buttonInfos.push_back(e);
+        }
+      }
+
+      Jabra_FreeButtonEvents(buttonEvent);
+
+      Work * const work = new GNPButtonWork(deviceID, buttonInfos);
+      logQueued(work);
+      g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+    });
+    
+    Jabra_RegisterRemoteMmiCallback([](unsigned short deviceID, RemoteMmiType type, RemoteMmiInput action) {
+      Work * const work = new RemoteMmiWork(deviceID, type, action);
+      logQueued(work);
+      g_thisHeadsetIntegrationService->workQueue.enqueue(work);
+    });
+
     // TODO: Check for return value ?
-	if (!Jabra_ConnectToJabraApplication(
-		"D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
-		"Google Chrome Browser"
-	)) {
-		LOG_ERROR << "Could not connect to Jabra application";
-	};
+	  if (!Jabra_ConnectToJabraApplication(
+		 "D6B42896-E65B-4EC1-A037-27C65E8CFDE1",
+		 "Google Chrome Browser"
+	  )) {
+	 	 LOG_ERROR << "Could not connect to Jabra application";
+	  };
 
     Jabra_SetSoftphoneReady(true);
   } catch (const std::exception& e) {
@@ -316,8 +368,18 @@ void HeadsetIntegrationService::processRequest(const RequestWork& work) {
 	  Error(work.request, "Unknown cmd " + work.request.message, {});
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in SendCmd with message " + work.request.message);
+
+    // TODO: Fill out with correct JSON_KEY_COMMAND so client side promises can be resolved.
+    Error(work.request, "Error processing command " + work.request.message, {
+       { JSON_KEY_EXCEPTION, e.what() }
+    });    
   } catch (...) {
 	  LOG_ERROR << "Unknown error in SendCmd with message " + work.request.message;
+
+    // TODO: Fill out with correct JSON_KEY_COMMAND so client side promises can be resolved.
+    Error(work.request, "Error processing command " + work.request.message, {
+       { JSON_KEY_EXCEPTION, "unknown exception"  }
+    });
   }
 }
 
@@ -400,48 +462,7 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
 
     // If we have not already registered for device callbacks do it now:
     if (!hasPostAttachRegistrations) {
-       Jabra_RegisterDevLogCallback([](unsigned short deviceID, char* eventStrRaw) {
-        if (eventStrRaw) {
-          std::string eventStr(eventStrRaw);
-          Jabra_FreeString((char *)eventStrRaw);
-          Work * const work = new DeviceDevLogWork(deviceID, eventStr);
-          logQueued(work);
-          g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-        }
-      });
 
-      Jabra_RegisterBusylightEvent([](unsigned short deviceID, const bool busy) {
-        Work * const work = new BusylightWork(deviceID, busy);
-        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-      });
-
-      Jabra_RegisterBatteryStatusUpdateCallback([](unsigned short deviceID, int levelInPercent, bool charging, bool batteryLow) {
-          Work * const work = new BatteryStatusWork(deviceID, levelInPercent, charging, batteryLow);
-          g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-      });
-
-      Jabra_RegisterForGNPButtonEvent([](unsigned short deviceID, ButtonEvent *buttonEvent) {
-        std::vector<GnpButtonEntry> buttonInfos;
-        
-        for (int i=0; i<buttonEvent->buttonEventCount; ++i) {
-          const unsigned short buttonTypeKey = buttonEvent->buttonEventInfo[i].buttonTypeKey;
-          const ButtonEventInfo src = buttonEvent->buttonEventInfo[i];
-          for (int j=0; j<src.buttonEventTypeSize; ++j) {
-            GnpButtonEntry e = { buttonTypeKey, src.buttonEventType[j].key, std::string(src.buttonEventType[j].value) };
-            buttonInfos.push_back(e);
-          }
-        }
-
-        Jabra_FreeButtonEvents(buttonEvent);
-
-        Work * const work = new GNPButtonWork(deviceID, buttonInfos);
-        g_thisHeadsetIntegrationService->workQueue.enqueue(work);
-      });
-
-      /*
-      Jabra_RegisterRemoteMmiCallback([](unsigned short deviceID, RemoteMmiType type, RemoteMmiInput action) {
-
-      });*/
 
       hasPostAttachRegistrations = true; // No need to do this again for next attached device.
     }
@@ -578,16 +599,33 @@ void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& wo
 
 void HeadsetIntegrationService::processGnpButtons(const GNPButtonWork& work) {
  try {
+    // TODO: Revaluate - What should be done here and what should be returned really ?
     nlohmann::json eventData = nlohmann::json();
     eventData[JSON_KEY_DEVICEID] = work.deviceID;
-    eventData[JSON_KEY_EVENT_JSON_VALUE] = work.buttonEntries;
-    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
+    eventData[JSON_KEY_EVENT_JSON_VALUE] = work.buttonEntries; // TODO: Properly this needs to be mapped first to work or make sense?
+    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_GNPBUTTON, eventData);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processGnpButtons");
     g_thisHeadsetIntegrationService->Error(Context::device(), "processGnpButtons failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
   } catch (...) {
 	  LOG_ERROR << "Unknown error in processGnpButtons";
 	  g_thisHeadsetIntegrationService->Error(Context::device(), "processGnpButtons failed", {});
+  }
+}
+
+void HeadsetIntegrationService::processRemoteMmiWork(const RemoteMmiWork& work) {
+  try {
+    Event(Context::device(), EVENT_MMI, {          
+      std::make_pair(JSON_KEY_DEVICEID, work.deviceID),
+      std::make_pair(JSON_KEY_TYPE, work.type),
+      std::make_pair(JSON_KEY_ACTION, work.action),
+    });
+  } catch (const std::exception& e) {
+    log_exception(plog::Severity::error, e, "in processRemoteMmiWork");
+    g_thisHeadsetIntegrationService->Error(Context::device(), "processRemoteMmiWork failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
+  } catch (...) {
+	  LOG_ERROR << "Unknown error in processRemoteMmiWork";
+	  g_thisHeadsetIntegrationService->Error(Context::device(), "processRemoteMmiWork failed", {});
   }
 }
 

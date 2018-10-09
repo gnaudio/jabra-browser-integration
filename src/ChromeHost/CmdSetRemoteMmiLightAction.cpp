@@ -26,37 +26,54 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
-#include "CmdSetBusyLight.h"
+#include "CmdSetRemoteMmiLightAction.h"
 
-CmdSetBusyLight::CmdSetBusyLight(HeadsetIntegrationService* headsetIntegrationService)
+static const char * const command = "setremotemmilightaction";
+
+CmdSetRemoteMmiLightAction::CmdSetRemoteMmiLightAction(HeadsetIntegrationService* headsetIntegrationService)
 {
   m_headsetIntegrationService = headsetIntegrationService;
 }
 
-CmdSetBusyLight::~CmdSetBusyLight()
+CmdSetRemoteMmiLightAction::~CmdSetRemoteMmiLightAction()
 {
 }
 
-bool CmdSetBusyLight::CanExecute(const Request& request)
+bool CmdSetRemoteMmiLightAction::CanExecute(const Request& request)
 {
-  return (request.message == "setbusylight");
+  return (request.message == command);
 }
 
-void CmdSetBusyLight::Execute(const Request& request)
+void CmdSetRemoteMmiLightAction::Execute(const Request& request)
 {
-  bool busy = defaultValue(request.args, SET_BUSYLIGHT_COMMAND_ARG_BUSY, true);
+  RemoteMmiType type = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_TYPE, MMI_TYPE_ALL);
+  RemoteMmiSequence effect = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT, MMI_LED_SEQUENCE_OFF);
+  nlohmann::json colorArray = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_COLOR, nlohmann::json::array());
+
+  uint8_t red = 0;
+  uint8_t green = 0;
+  uint8_t blue = 0;
+  
+  if (colorArray.is_array() && colorArray.size()) {
+    uint8_t red = colorArray[0];
+    uint8_t green = colorArray[1];
+    uint8_t blue = colorArray[2];
+  }
+
+  RemoteMmiActionOutput output = {
+    red,
+    green,
+    blue,
+    effect
+  };
 
   Jabra_ReturnCode retv;
-  // if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
-  //	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
-  // }
-
-  if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
-  	  m_headsetIntegrationService->Error(request, "setbusylight", { 
+  if ((retv=Jabra_SetRemoteMmiAction(m_headsetIntegrationService->GetCurrentDeviceId(), type, output)) != Return_Ok) {
+      m_headsetIntegrationService->Error(request, command, { 
         { JSON_KEY_JABRA_ERRORCODE, retv},
         { JSON_KEY_COMMAND, request.message }
-     });
+      });
   } else {
-      m_headsetIntegrationService->Event(request, "setbusylight", {});
+      m_headsetIntegrationService->Event(request, command, {});
   }
 }

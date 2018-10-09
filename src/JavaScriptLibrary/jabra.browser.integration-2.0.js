@@ -56,7 +56,11 @@ var jabra;
         "devices",
         "activedevice",
         "getinstallinfo",
-        "Version"
+        "Version",
+        "setmmifocus",
+        "setactivedevice2",
+        "setbusylight",
+        "setremotemmilightaction"
     ];
     /**
      * All possible device events as internal array.
@@ -70,7 +74,15 @@ var jabra;
         "button1", "button2", "button3", "volumeUp", "volumeDown", "fireAlarm",
         "jackConnection", "jackDisConnection", "qdConnection", "qdDisconnection",
         "headsetConnection", "headsetDisConnection", "devlog", "busylight",
-        "hearThrough", "batteryStatus", "error"];
+        "hearThrough", "batteryStatus", "gnpButton", "mmi", "error"];
+    class CommandError extends Error {
+        constructor(command, data) {
+            super("Command " + command + " failed with details: " + JSON.stringify(data));
+            this.data = data;
+            this.name = 'CommandError';
+        }
+    }
+    ;
     ;
     /**
      * Internal mapping from all known events to array of registered callbacks. All possible events are setup
@@ -78,6 +90,70 @@ var jabra;
      */
     const eventListeners = new Map();
     eventNamesList.forEach((event) => eventListeners.set(event, []));
+    /**
+     * Device feature codes.
+     */
+    let DeviceFeature;
+    (function (DeviceFeature) {
+        DeviceFeature[DeviceFeature["BusyLight"] = 1000] = "BusyLight";
+        DeviceFeature[DeviceFeature["FactoryReset"] = 1001] = "FactoryReset";
+        DeviceFeature[DeviceFeature["PairingList"] = 1002] = "PairingList";
+        DeviceFeature[DeviceFeature["RemoteMMI"] = 1003] = "RemoteMMI";
+        DeviceFeature[DeviceFeature["MusicEqualizer"] = 1004] = "MusicEqualizer";
+        DeviceFeature[DeviceFeature["EarbudInterconnectionStatus"] = 1005] = "EarbudInterconnectionStatus";
+        DeviceFeature[DeviceFeature["StepRate"] = 1006] = "StepRate";
+        DeviceFeature[DeviceFeature["HeartRate"] = 1007] = "HeartRate";
+        DeviceFeature[DeviceFeature["RRInterval"] = 1008] = "RRInterval";
+        DeviceFeature[DeviceFeature["RingtoneUpload"] = 1009] = "RingtoneUpload";
+        DeviceFeature[DeviceFeature["ImageUpload"] = 1010] = "ImageUpload";
+        DeviceFeature[DeviceFeature["NeedsExplicitRebootAfterOta"] = 1011] = "NeedsExplicitRebootAfterOta";
+        DeviceFeature[DeviceFeature["NeedsToBePutIncCradleToCompleteFwu"] = 1012] = "NeedsToBePutIncCradleToCompleteFwu";
+        DeviceFeature[DeviceFeature["RemoteMMIv2"] = 1013] = "RemoteMMIv2";
+        DeviceFeature[DeviceFeature["Logging"] = 1014] = "Logging";
+        DeviceFeature[DeviceFeature["PreferredSoftphoneListInDevice"] = 1015] = "PreferredSoftphoneListInDevice";
+        DeviceFeature[DeviceFeature["VoiceAssistant"] = 1016] = "VoiceAssistant";
+        DeviceFeature[DeviceFeature["PlayRingtone"] = 1017] = "PlayRingtone";
+    })(DeviceFeature || (DeviceFeature = {}));
+    ;
+    /**
+     * A specification of a button for MMI capturing.
+     */
+    let RemoteMmiType;
+    (function (RemoteMmiType) {
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_MFB"] = 0] = "MMI_TYPE_MFB";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_VOLUP"] = 1] = "MMI_TYPE_VOLUP";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_VOLDOWN"] = 2] = "MMI_TYPE_VOLDOWN";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_VCB"] = 3] = "MMI_TYPE_VCB";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_APP"] = 4] = "MMI_TYPE_APP";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_TR_FORW"] = 5] = "MMI_TYPE_TR_FORW";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_TR_BACK"] = 6] = "MMI_TYPE_TR_BACK";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_PLAY"] = 7] = "MMI_TYPE_PLAY";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_MUTE"] = 8] = "MMI_TYPE_MUTE";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_HOOK_OFF"] = 9] = "MMI_TYPE_HOOK_OFF";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_HOOK_ON"] = 10] = "MMI_TYPE_HOOK_ON";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_BLUETOOTH"] = 11] = "MMI_TYPE_BLUETOOTH";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_JABRA"] = 12] = "MMI_TYPE_JABRA";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_BATTERY"] = 13] = "MMI_TYPE_BATTERY";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_PROG"] = 14] = "MMI_TYPE_PROG";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_LINK"] = 15] = "MMI_TYPE_LINK";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_ANC"] = 16] = "MMI_TYPE_ANC";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_LISTEN_IN"] = 17] = "MMI_TYPE_LISTEN_IN";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT3"] = 18] = "MMI_TYPE_DOT3";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT4"] = 19] = "MMI_TYPE_DOT4";
+        RemoteMmiType[RemoteMmiType["MMI_TYPE_ALL"] = 255] = "MMI_TYPE_ALL";
+    })(RemoteMmiType || (RemoteMmiType = {}));
+    ;
+    /**
+     * A MMI efffect specification for light on, off or blinking in different tempo.
+     */
+    let RemoteMmiSequence;
+    (function (RemoteMmiSequence) {
+        RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_OFF"] = 0] = "MMI_LED_SEQUENCE_OFF";
+        RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_ON"] = 1] = "MMI_LED_SEQUENCE_ON";
+        RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_SLOW"] = 2] = "MMI_LED_SEQUENCE_SLOW";
+        RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_FAST"] = 3] = "MMI_LED_SEQUENCE_FAST";
+    })(RemoteMmiSequence || (RemoteMmiSequence = {}));
+    ;
     /**
      * The log level curently used internally in this api facade. Initially this is set to show errors and
      * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
@@ -241,7 +317,8 @@ var jabra;
                             // Reject target promise if there is one - otherwise send a general error.
                             let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
-                                resultTarget.reject(new Error(normalizedError));
+                                let cmd = event.data.data ? event.data.data.command : undefined;
+                                resultTarget.reject(new CommandError(cmd || (normalizedError + " ??"), event.data.data));
                             }
                             else {
                                 let clientError = JSON.parse(JSON.stringify(event.data));
@@ -476,6 +553,45 @@ var jabra;
     jabra.resume = resume;
     ;
     /**
+    * Capture/release buttons for customization (if supported). This turns off default behavior and enables mmi events to
+    * be received instead. It also allows for mmi actions to be applied like changing lights with setRemoteMmiLightAction.
+    *
+    * @param type The button that should be captured/released.
+    * @param capture True if button should be captured, false if it should be released.
+    *
+    * @returns A promise that is resolved once operation completes.
+    */
+    function setMmiFocus(type, capture) {
+        let typeVal = numberOrString(type);
+        let captureVal = booleanOrString(capture);
+        return sendCmdWithResult("setmmifocus", {
+            type: typeVal,
+            capture: captureVal
+        });
+    }
+    jabra.setMmiFocus = setMmiFocus;
+    /**
+    * Change light/color on a previously captured button.
+    * Nb. This requires the button to be previously captured though setMMiFocus.
+    *
+    * @param type The button that should be captured/released.
+    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param effect What effect to apply to the button.
+    *
+    * @returns A promise that is resolved once operation completes.
+    */
+    function setRemoteMmiLightAction(type, color, effect) {
+        let typeVal = numberOrString(type);
+        let colorVal = colorOrString(color);
+        let effectVal = numberOrString(effect);
+        return sendCmdWithResult("setremotemmilightaction", {
+            type: typeVal,
+            color: colorVal,
+            effect: effectVal
+        });
+    }
+    jabra.setRemoteMmiLightAction = setRemoteMmiLightAction;
+    /**
     * Internal helper to get detailed information about the current active Jabra Device
     * from SDK, including current status but excluding media device information.
     */
@@ -501,16 +617,7 @@ var jabra;
     * setSinkId (when supported by the browser) to set output.
     */
     function getActiveDevice(includeBrowserMediaDeviceInfo = false) {
-        let includeBrowserMediaDeviceInfoVal;
-        if ((typeof includeBrowserMediaDeviceInfo === 'string') || (includeBrowserMediaDeviceInfo instanceof String)) {
-            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
-        }
-        else if (typeof (includeBrowserMediaDeviceInfo) === "boolean") {
-            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
-        }
-        else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
+        let includeBrowserMediaDeviceInfoVal = booleanOrString(includeBrowserMediaDeviceInfo);
         if (includeBrowserMediaDeviceInfoVal) {
             return _doGetActiveSDKDevice_And_BrowserDevice();
         }
@@ -530,16 +637,7 @@ var jabra;
     * setSinkId (when supported by the browser) to set output.
     */
     function getDevices(includeBrowserMediaDeviceInfo = false) {
-        let includeBrowserMediaDeviceInfoVal;
-        if ((typeof includeBrowserMediaDeviceInfo === 'string') || (includeBrowserMediaDeviceInfo instanceof String)) {
-            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
-        }
-        else if (typeof (includeBrowserMediaDeviceInfo) === "boolean") {
-            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
-        }
-        else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
+        let includeBrowserMediaDeviceInfoVal = booleanOrString(includeBrowserMediaDeviceInfo);
         if (includeBrowserMediaDeviceInfoVal) {
             return _doGetSDKDevices_And_BrowserDevice();
         }
@@ -551,39 +649,39 @@ var jabra;
     jabra.getDevices = getDevices;
     ;
     /**
-    * Select a new active device.
+    * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
+    * Used internally by test tool - do not use otherwise.
+    *
+    * @deprecated Use setActiveDeviceId instead.
     */
-    function setActiveDeviceId(id) {
-        let idVal;
-        if ((typeof id === 'string') || (id instanceof String)) {
-            idVal = parseInt(id);
-        }
-        else if (typeof id == 'number') {
-            idVal = id;
-        }
-        else {
-            throw new Error("Illegal argument - number or string expected");
-        }
+    function _setActiveDeviceId_deprecated(id) {
+        let idVal = numberOrString(id);
         // Use both new and old way of passing parameters for compatibility with <= v0.5.
         sendCmd("setactivedevice " + id.toString(), { id: idVal });
+    }
+    jabra._setActiveDeviceId_deprecated = _setActiveDeviceId_deprecated;
+    ;
+    /**
+    * Select a new active device returning once selection is completed.
+    *
+    * @param id The id number of the new active device.
+    * @returns A promise that is resolved once selection completes.
+    *
+    */
+    function setActiveDeviceId(id) {
+        let idVal = numberOrString(id);
+        return sendCmdWithResult("setactivedevice2", { id: idVal });
     }
     jabra.setActiveDeviceId = setActiveDeviceId;
     ;
     /**
     * Set busylight on active device (if supported)
+    *
+    * @param busy True if busy light should be set, false if it should be cleared.
     */
     function setBusyLight(busy) {
-        let busyVal;
-        if ((typeof busy === 'string') || (busy instanceof String)) {
-            busyVal = (busy == 'true' || busy == '1');
-        }
-        else if (typeof (busy) === "boolean") {
-            busyVal = busy;
-        }
-        else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
-        sendCmd("setbusylight", { busy: busyVal });
+        let busyVal = booleanOrString(busy);
+        return sendCmdWithResult("setbusylight", { busy: busyVal });
     }
     jabra.setBusyLight = setBusyLight;
     ;
@@ -935,6 +1033,56 @@ var jabra;
             return deviceInfo;
         });
     }
+    ;
+    /**
+    * Helper that pass boolean values through and parses strings to booleans.
+    */
+    function booleanOrString(arg) {
+        if (arg !== "" && ((typeof arg === 'string') || (arg instanceof String))) {
+            return (arg === 'true' || arg === '1');
+        }
+        else if (typeof (arg) === "boolean") {
+            return arg;
+        }
+        else {
+            throw new Error("Illegal argument - boolean or string expected");
+        }
+    }
+    /**
+     * Helper that pass numbers through and parses strings to numbers.
+     */
+    function numberOrString(arg) {
+        if (arg !== "" && ((typeof arg === 'string') || (arg instanceof String))) {
+            return parseInt(arg);
+        }
+        else if (typeof arg == 'number') {
+            return arg;
+        }
+        else {
+            throw new Error("Illegal argument - number or string expected");
+        }
+    }
+    jabra.numberOrString = numberOrString;
+    ;
+    /**
+     * Helper that pass color array through and parses strings (as hex number) to color array.
+     */
+    function colorOrString(arg) {
+        if (arg !== "" && ((typeof arg === 'string') || (arg instanceof String))) {
+            let combinedValue = parseInt(arg, 16);
+            return [(combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255];
+        }
+        else if (Array.isArray(arg)) {
+            if (arg.length != 3) {
+                throw new Error("Illegal argument - wrong dimension of color array (3 expected)");
+            }
+            return arg;
+        }
+        else {
+            throw new Error("Illegal argument - number or string expected");
+        }
+    }
+    jabra.colorOrString = colorOrString;
     ;
 })(jabra || (jabra = {}));
 ;

@@ -170,7 +170,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // Change active device
   changeActiveDeviceBtn.onclick = () => {
     let id = deviceSelector.value;
-    jabra.setActiveDeviceId(id);
+
+    // Using old deprecated version so it works with previous chromehost.
+    jabra._setActiveDeviceId_deprecated(id);
   };
 
   // Call into user selected API method.

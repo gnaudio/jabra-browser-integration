@@ -8,6 +8,23 @@
 #include <stdexcept>
 
 /**
+* Helper to safely access a propery that may be null/unset in a json object.
+*/
+template<typename T> T defaultValue(nlohmann::json obj, const typename nlohmann::json::object_t::key_type& key, const T& default_value) {
+  if (obj.is_null()) {
+    return default_value;
+  }
+
+  nlohmann::json v = obj[key];
+
+  if (v.is_null()) {
+    return default_value;
+  }
+
+  return v;
+}
+
+/**
  * Helper that converts device info into json - by coping into a specific json element.
  */
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc);

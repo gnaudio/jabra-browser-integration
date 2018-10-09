@@ -25,38 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "stdafx.h"
-#include "CmdSetBusyLight.h"
+#pragma once
 
-CmdSetBusyLight::CmdSetBusyLight(HeadsetIntegrationService* headsetIntegrationService)
+#include "CmdInterface.h"
+#include "HeadsetIntegrationService.h"
+
+class CmdSetRemoteMmiLightAction : public CmdInterface
 {
-  m_headsetIntegrationService = headsetIntegrationService;
-}
+public:
+  explicit CmdSetRemoteMmiLightAction(HeadsetIntegrationService* headsetIntegrationService);
+  ~CmdSetRemoteMmiLightAction();
 
-CmdSetBusyLight::~CmdSetBusyLight()
-{
-}
+  bool CanExecute(const Request& request) override;
+  void Execute(const Request& request) override;
 
-bool CmdSetBusyLight::CanExecute(const Request& request)
-{
-  return (request.message == "setbusylight");
-}
+protected:
+  HeadsetIntegrationService* m_headsetIntegrationService;
+};
 
-void CmdSetBusyLight::Execute(const Request& request)
-{
-  bool busy = defaultValue(request.args, SET_BUSYLIGHT_COMMAND_ARG_BUSY, true);
-
-  Jabra_ReturnCode retv;
-  // if ((retv = Jabra_GetLock(m_headsetIntegrationService->GetCurrentDeviceId()))) {
-  //	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
-  // }
-
-  if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
-  	  m_headsetIntegrationService->Error(request, "setbusylight", { 
-        { JSON_KEY_JABRA_ERRORCODE, retv},
-        { JSON_KEY_COMMAND, request.message }
-     });
-  } else {
-      m_headsetIntegrationService->Event(request, "setbusylight", {});
-  }
-}

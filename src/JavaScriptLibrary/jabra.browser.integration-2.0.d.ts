@@ -25,6 +25,7 @@ declare namespace jabra {
         deviceID: number;
         deviceName: string;
         deviceConnection: number;
+        deviceFeatures: ReadonlyArray<DeviceFeature>;
         errStatus: number;
         isBTPaired?: boolean;
         isInFirmwareUpdateMode: boolean;
@@ -89,7 +90,7 @@ declare namespace jabra {
     /**
      * All possible device events as discriminative  union.
      */
-    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "linebusy" | "lineidle" | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5" | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound" | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy" | "outOfRange" | "intoRange" | "pseudoAcceptcall" | "pseudoEndcall" | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm" | "jackConnection" | "jackDisConnection" | "qdConnection" | "qdDisconnection" | "headsetConnection" | "headsetDisConnection" | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "error";
+    type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "linebusy" | "lineidle" | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5" | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound" | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy" | "outOfRange" | "intoRange" | "pseudoAcceptcall" | "pseudoEndcall" | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm" | "jackConnection" | "jackDisConnection" | "qdConnection" | "qdDisconnection" | "headsetConnection" | "headsetDisConnection" | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "gnpButton" | "mmi" | "error";
     /**
      * Event type for call backs.
      */
@@ -115,6 +116,68 @@ declare namespace jabra {
      * Type for event callback functions..
      */
     type EventCallback = (event: Event) => void;
+    /**
+     * Device feature codes.
+     */
+    enum DeviceFeature {
+        BusyLight = 1000,
+        FactoryReset = 1001,
+        PairingList = 1002,
+        RemoteMMI = 1003,
+        MusicEqualizer = 1004,
+        EarbudInterconnectionStatus = 1005,
+        StepRate = 1006,
+        HeartRate = 1007,
+        RRInterval = 1008,
+        RingtoneUpload = 1009,
+        ImageUpload = 1010,
+        NeedsExplicitRebootAfterOta = 1011,
+        NeedsToBePutIncCradleToCompleteFwu = 1012,
+        RemoteMMIv2 = 1013,
+        Logging = 1014,
+        PreferredSoftphoneListInDevice = 1015,
+        VoiceAssistant = 1016,
+        PlayRingtone = 1017
+    }
+    /**
+     * A specification of a button for MMI capturing.
+     */
+    enum RemoteMmiType {
+        MMI_TYPE_MFB = 0,
+        MMI_TYPE_VOLUP = 1,
+        MMI_TYPE_VOLDOWN = 2,
+        MMI_TYPE_VCB = 3,
+        MMI_TYPE_APP = 4,
+        MMI_TYPE_TR_FORW = 5,
+        MMI_TYPE_TR_BACK = 6,
+        MMI_TYPE_PLAY = 7,
+        MMI_TYPE_MUTE = 8,
+        MMI_TYPE_HOOK_OFF = 9,
+        MMI_TYPE_HOOK_ON = 10,
+        MMI_TYPE_BLUETOOTH = 11,
+        MMI_TYPE_JABRA = 12,
+        MMI_TYPE_BATTERY = 13,
+        MMI_TYPE_PROG = 14,
+        MMI_TYPE_LINK = 15,
+        MMI_TYPE_ANC = 16,
+        MMI_TYPE_LISTEN_IN = 17,
+        MMI_TYPE_DOT3 = 18,
+        MMI_TYPE_DOT4 = 19,
+        MMI_TYPE_ALL = 255
+    }
+    /**
+     * A MMI efffect specification for light on, off or blinking in different tempo.
+     */
+    enum RemoteMmiSequence {
+        MMI_LED_SEQUENCE_OFF = 0,
+        MMI_LED_SEQUENCE_ON = 1,
+        MMI_LED_SEQUENCE_SLOW = 2,
+        MMI_LED_SEQUENCE_FAST = 3
+    }
+    /**
+     * A 3 x 8 bit set of RGB colors. Numbers can be between 0-255.
+     */
+    type ColorType = [number, number, number];
     /**
      * The log level curently used internally in this api facade. Initially this is set to show errors and
      * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
@@ -172,6 +235,27 @@ declare namespace jabra {
     */
     function resume(): void;
     /**
+    * Capture/release buttons for customization (if supported). This turns off default behavior and enables mmi events to
+    * be received instead. It also allows for mmi actions to be applied like changing lights with setRemoteMmiLightAction.
+    *
+    * @param type The button that should be captured/released.
+    * @param capture True if button should be captured, false if it should be released.
+    *
+    * @returns A promise that is resolved once operation completes.
+    */
+    function setMmiFocus(type: RemoteMmiType | string, capture: boolean | string): Promise<void>;
+    /**
+    * Change light/color on a previously captured button.
+    * Nb. This requires the button to be previously captured though setMMiFocus.
+    *
+    * @param type The button that should be captured/released.
+    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param effect What effect to apply to the button.
+    *
+    * @returns A promise that is resolved once operation completes.
+    */
+    function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string, effect: RemoteMmiSequence | string): Promise<void>;
+    /**
     * Get detailed information about the current active Jabra Device, including current status
     * and optionally also including related browser media device information.
     *
@@ -192,13 +276,26 @@ declare namespace jabra {
     */
     function getDevices(includeBrowserMediaDeviceInfo?: boolean | string): Promise<ReadonlyArray<DeviceInfo>>;
     /**
-    * Select a new active device.
+    * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
+    * Used internally by test tool - do not use otherwise.
+    *
+    * @deprecated Use setActiveDeviceId instead.
     */
-    function setActiveDeviceId(id: number | string): void;
+    function _setActiveDeviceId_deprecated(id: number | string): void;
+    /**
+    * Select a new active device returning once selection is completed.
+    *
+    * @param id The id number of the new active device.
+    * @returns A promise that is resolved once selection completes.
+    *
+    */
+    function setActiveDeviceId(id: number | string): Promise<void>;
     /**
     * Set busylight on active device (if supported)
+    *
+    * @param busy True if busy light should be set, false if it should be cleared.
     */
-    function setBusyLight(busy: boolean | string): void;
+    function setBusyLight(busy: boolean | string): Promise<void>;
     /**
     * Get version number information for all components.
     */
@@ -224,4 +321,12 @@ declare namespace jabra {
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;
+    /**
+     * Helper that pass numbers through and parses strings to numbers.
+     */
+    function numberOrString(arg: number | string): number;
+    /**
+     * Helper that pass color array through and parses strings (as hex number) to color array.
+     */
+    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number>;
 }

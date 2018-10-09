@@ -87,13 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   }
   document.getElementById('setactivedevice0').onclick = function () {
-    jabra.setActiveDeviceId(0);
+    jabra.setActiveDeviceId(0).then(() => alert("Device 0 selected"));
   }
   document.getElementById('setactivedevice1').onclick = function () {
-    jabra.setActiveDeviceId(1);
+    jabra.setActiveDeviceId(1).then(() => alert("Device 1 selected"));
   }
   document.getElementById('setactivedevice2').onclick = function () {
-    jabra.setActiveDeviceId(2);
+    jabra.setActiveDeviceId(2).then(() => alert("Device 2 selected"));
   }
 
 }, false);
