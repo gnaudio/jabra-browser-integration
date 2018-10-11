@@ -12,9 +12,9 @@ const commandTxtHelp = {
   isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
   getUserDeviceMediaExt: ["", "constraints?: MediaStreamConstraints (JSON)"],
 
-  init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with events/errors!!"],
+  init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with most events/errors!!"],
   shutdown: ["De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API."],
-  addEventListener: ["Must be called for events/errors to be shown in this app. 2nd eventListener argument setup internally. Call with /.*/ argument to pass all events)", 
+  addEventListener: ["Must be called for events/errors to be shown in this app. 2nd eventListener argument setup internally. Call with /.*/ argument to pass all events/errors)", 
                      "nameSpec: string | RegExp | Array<string | RegExp>"],
   removeEventListener: ["2nd eventListener argument setup internally. Call with /.*/ argument to remove all events)", 
                         "nameSpec: string | RegExp | Array<string | RegExp>"]
