@@ -126,3 +126,28 @@ button:active {
   width:100%;
   max-width:100%;
 }
+
+.param {
+  margin-bottom: 0 !important;
+}
+
+.paramReq {
+  margin-bottom: 0 !important;
+  border-color: red;
+}
+.paramOpt {
+  margin-bottom: 0 !important;
+  border-color: yellow;
+}
+
+.paramHint {
+  font-size: small;
+  font-style: italic;
+  color: darkgray
+}
+
+.methodHelp {
+  font-size: small;
+  font-style: italic;
+}
+
