@@ -610,7 +610,7 @@ namespace jabra {
     * De-initialize the api after use. Not normally used as api will normally
     * stay in use thoughout an application - mostly of interest for testing.
     */
-    export function shutdown() {
+    export function shutdown(): Promise<void> {
         if (initState.initialized) {
             window.removeEventListener("message", initState.eventCallback!);
             initState.eventCallback = undefined;
@@ -622,10 +622,10 @@ namespace jabra {
             eventListeners.forEach((value, key) => {
                 value = [];
             });
-            return true;
+            return Promise.resolve();
         }
 
-        return false;
+        return Promise.reject(new Error("Browser integration not initialized"));
     };
 
     /**
@@ -1239,7 +1239,7 @@ namespace jabra {
     /**
      * Helper that pass numbers through and parses strings to numbers.
      */
-    export function numberOrString(arg: number | string): number {
+    function numberOrString(arg: number | string): number {
         if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String))) {
             return parseInt(arg as string);
         } else if (typeof arg == 'number') {
@@ -1252,7 +1252,7 @@ namespace jabra {
     /**
      * Helper that pass color array through and parses strings (as hex number) to color array.
      */
-    export function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number> {
+    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number> {
         if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String)))  {
             let combinedValue = parseInt(arg as string, 16);
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];

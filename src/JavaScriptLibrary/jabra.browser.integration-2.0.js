@@ -438,9 +438,9 @@ var jabra;
             eventListeners.forEach((value, key) => {
                 value = [];
             });
-            return true;
+            return Promise.resolve();
         }
-        return false;
+        return Promise.reject(new Error("Browser integration not initialized"));
     }
     jabra.shutdown = shutdown;
     ;
@@ -1062,7 +1062,6 @@ var jabra;
             throw new Error("Illegal argument - number or string expected");
         }
     }
-    jabra.numberOrString = numberOrString;
     ;
     /**
      * Helper that pass color array through and parses strings (as hex number) to color array.
@@ -1082,7 +1081,6 @@ var jabra;
             throw new Error("Illegal argument - number or string expected");
         }
     }
-    jabra.colorOrString = colorOrString;
     ;
 })(jabra || (jabra = {}));
 ;

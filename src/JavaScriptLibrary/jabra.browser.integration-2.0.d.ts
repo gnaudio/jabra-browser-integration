@@ -193,7 +193,7 @@ declare namespace jabra {
     * De-initialize the api after use. Not normally used as api will normally
     * stay in use thoughout an application - mostly of interest for testing.
     */
-    function shutdown(): boolean;
+    function shutdown(): Promise<void>;
     /**
      * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
      * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular
@@ -321,12 +321,4 @@ declare namespace jabra {
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;
-    /**
-     * Helper that pass numbers through and parses strings to numbers.
-     */
-    function numberOrString(arg: number | string): number;
-    /**
-     * Helper that pass color array through and parses strings (as hex number) to color array.
-     */
-    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number>;
 }
