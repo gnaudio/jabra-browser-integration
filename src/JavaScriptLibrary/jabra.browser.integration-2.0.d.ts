@@ -281,7 +281,7 @@ declare namespace jabra {
     *
     * @deprecated Use setActiveDeviceId instead.
     */
-    function _setActiveDeviceId_deprecated(id: number | string): void;
+    function _setActiveDeviceId(id: number | string): void;
     /**
     * Select a new active device returning once selection is completed.
     *

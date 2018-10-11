@@ -825,7 +825,7 @@ namespace jabra {
     * 
     * @deprecated Use setActiveDeviceId instead.
     */
-    export function _setActiveDeviceId_deprecated(id: number | string): void {
+    export function _setActiveDeviceId(id: number | string): void {
         let idVal =  numberOrString(id);
         
         // Use both new and old way of passing parameters for compatibility with <= v0.5.

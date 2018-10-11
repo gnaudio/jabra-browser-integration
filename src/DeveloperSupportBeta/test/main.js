@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let id = deviceSelector.value;
 
     // Using old deprecated version so it works with previous chromehost.
-    jabra._setActiveDeviceId_deprecated(id);
+    commandEffect("_setActiveDeviceId", jabra._setActiveDeviceId(id)).then(() => {});
   };
 
   // Update hints for API call:

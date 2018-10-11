@@ -654,12 +654,12 @@ var jabra;
     *
     * @deprecated Use setActiveDeviceId instead.
     */
-    function _setActiveDeviceId_deprecated(id) {
+    function _setActiveDeviceId(id) {
         let idVal = numberOrString(id);
         // Use both new and old way of passing parameters for compatibility with <= v0.5.
         sendCmd("setactivedevice " + id.toString(), { id: idVal });
     }
-    jabra._setActiveDeviceId_deprecated = _setActiveDeviceId_deprecated;
+    jabra._setActiveDeviceId = _setActiveDeviceId;
     ;
     /**
     * Select a new active device returning once selection is completed.
