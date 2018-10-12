@@ -72,6 +72,7 @@ class HeadsetIntegrationService : public WorkProcessor
 
   const DeviceInfo& GetCurrentDevice();
   unsigned short GetCurrentDeviceId();
+  bool HasCurrentDeviceId();
   bool SetCurrentDeviceId(unsigned short id);
 
   const std::vector<DeviceInfo>& GetDevices();

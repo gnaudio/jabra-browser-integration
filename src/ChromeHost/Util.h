@@ -29,6 +29,9 @@ template<typename T> T defaultValue(nlohmann::json obj, const typename nlohmann:
  */
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc);
 
+/**
+ * Helper for printing vectors
+ */
 template <class T>
 std::ostream& operator <<(std::ostream& os, const std::vector<T>& v) 
 {

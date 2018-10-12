@@ -48,12 +48,11 @@ void CmdGetActiveDevice::Execute(const Request& request)
 {
   const DeviceInfo& deviceInfo = m_headsetIntegrationService->GetCurrentDevice();
 
-  nlohmann::json j;
-
   if (deviceInfo.isEmpty())
   {
-	  m_headsetIntegrationService->Event(request, "activedevice -1", j);
+	  m_headsetIntegrationService->Event(request, "activedevice -1", nlohmann::json::value_t::object);
   } else {
+    nlohmann::json j;
 	  setDeviceInfo(j, deviceInfo, m_headsetIntegrationService->getDynamicDeviceInfo(deviceInfo));
     m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
   }

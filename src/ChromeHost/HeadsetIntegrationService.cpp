@@ -60,7 +60,7 @@ HeadsetIntegrationService::HeadsetIntegrationService()
 {
   g_thisHeadsetIntegrationService = this;
 
-  m_currentDeviceId = 0;
+  m_currentDeviceId = USHRT_MAX; // Not selected
 
   m_commands = {
     new CmdOffHook(this),
@@ -472,6 +472,11 @@ void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& 
 	    LOG_WARNING << "Failed enabling dev log for device " << deviceId << " with code " << errCode;
     }
 
+    // If we have no active device, select the first one attached.
+    if (!HasCurrentDeviceId()) {
+      SetCurrentDeviceId(deviceId);
+    }
+
     IF_LOG(plog::info) {
       LOG(plog::info) << "Completed attaching device " << deviceName << " with id " << deviceName;
     }
@@ -525,7 +530,7 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
     {
       if (m_devices.size() == 0) 
       {
-        SetCurrentDeviceId(0);
+        SetCurrentDeviceId(USHRT_MAX);
       }
       else
       {
@@ -642,14 +647,24 @@ const DeviceInfo& HeadsetIntegrationService::GetCurrentDevice() {
 
 unsigned short HeadsetIntegrationService::GetCurrentDeviceId()
 {
-  if (m_devices.size() == 0)
-    return USHRT_MAX;
+  // Log error if invariant failed.
+  LOG_ERROR_IF(m_devices.size() == 0 && m_currentDeviceId != USHRT_MAX) << "Assert failed - m_currentDeviceId should be set to max if no devices exist but it is set to " << m_currentDeviceId;
 
-  return m_currentDeviceId;
+  return m_currentDeviceId; // USHRT_MAX if there is none
+}
+
+bool HeadsetIntegrationService::HasCurrentDeviceId()
+{
+  return m_currentDeviceId != USHRT_MAX;
 }
 
 bool HeadsetIntegrationService::SetCurrentDeviceId(unsigned short id)
 {
+  if (id == USHRT_MAX) {
+    m_currentDeviceId = USHRT_MAX; // unselect
+    return true;
+  }
+
   bool found = false;
   for (const DeviceInfo& device : m_devices) {
     if (device.getDeviceID() == id) {
