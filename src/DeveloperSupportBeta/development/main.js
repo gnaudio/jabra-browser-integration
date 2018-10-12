@@ -2,10 +2,15 @@
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
+  const deviceSelector = document.getElementById('deviceSelector');
+  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn');
 
   // Use the Jabra library
   jabra.init().then(() => {
     toastr.info("Jabra library initialized successfully");
+
+    // Setup device list initially.
+    setupDevices();
   }).catch((msg) => {
     // Add nodes to show the error message
     var div = document.createElement("div");
@@ -72,28 +77,35 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('resume').onclick = function () {
     jabra.resume();
   }
-  document.getElementById('getactivedevice').onclick = function () {
-    jabra.getActiveDevice().then(
-      function (device) {
-        alert(JSON.stringify(device));
-      }
+
+  // Refresh device list automatically when devices are inserted/removed:
+  jabra.addEventListener(["device attached", "device detached"] , (event) => {
+    setupDevices();
+  });
+
+  // Helper to update device list.
+  function setupDevices() {
+    while (deviceSelector.options.length > 0) {
+      deviceSelector.remove(0);
+    }
+
+    jabra.getDevices().then((devices) =>
+      devices.forEach(device => {
+        var opt = document.createElement('option');
+        opt.value = device.deviceID;
+        opt.innerHTML = device.deviceName;
+        deviceSelector.appendChild(opt);
+      })
     );
   }
-  document.getElementById('getdevices').onclick = function () {
-    jabra.getDevices().then(
-      function(devices) {
-        alert(JSON.stringify(devices));
-      }
-    );
-  }
-  document.getElementById('setactivedevice0').onclick = function () {
-    jabra.setActiveDeviceId(0).then(() => alert("Device 0 selected")).catch(() => alert("No such device"));
-  }
-  document.getElementById('setactivedevice1').onclick = function () {
-    jabra.setActiveDeviceId(1).then(() => alert("Device 1 selected")).catch(() => alert("No such device"));
-  }
-  document.getElementById('setactivedevice2').onclick = function () {
-    jabra.setActiveDeviceId(2).then(() => alert("Device 2 selected")).catch(() => alert("No such device"));
-  }
+
+  // Change active device when user asks:
+  changeActiveDeviceBtn.onclick = () => {
+    let id = deviceSelector.value;
+
+    jabra.setActiveDeviceId(id).then(() => {
+      toastr.info("Active device set to " + deviceSelector.options[deviceSelector.selectedIndex].text + " (id # " + id + ")");
+    });
+  };
 
 }, false);

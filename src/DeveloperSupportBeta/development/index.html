@@ -31,12 +31,10 @@
     <button id="hold" type="button">jabra.hold();</button>
     <button id="resume" type="button">jabra.resume();</button>
     <h4>Device management (optional, only required for multi-device handling):</h4>
-    <button id="getactivedevice" type="button">jabra.getActiveDevice();</button>
-    <button id="getdevices" type="button">jabra.getDevices();</button>
-    <br/>
-    <button id="setactivedevice0" type="button">jabra.setActiveDevice(0);</button>
-    <button id="setactivedevice1" type="button">jabra.setActiveDevice(1);</button>
-    <button id="setactivedevice2" type="button">jabra.setActiveDevice(2);</button>
+    <label for="changeActiveDeviceBtn">Select device to use:</label>
+    <select id="deviceSelector"> 
+    </select>
+    <input id="changeActiveDeviceBtn" type="button" value="Set as active"/>
     <br/>
   </div>
 
