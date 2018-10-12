@@ -815,8 +815,6 @@ namespace jabra {
         } else {
             return _doGetSDKDevices();
         }
-
-        return sendCmdWithResult<ReadonlyArray<DeviceInfo>>("getdevices");
      };
 
     /**
@@ -1232,7 +1230,7 @@ namespace jabra {
         } else if (typeof(arg) === "boolean")  {
             return arg;
         } else {
-            throw new Error("Illegal argument - boolean or string expected");
+            throw new Error("Illegal/missing argument - boolean or string expected");
         }
     }
 
@@ -1245,7 +1243,7 @@ namespace jabra {
         } else if (typeof arg == 'number') {
             return arg;
         } else {
-            throw new Error("Illegal argument - number or string expected");
+            throw new Error("Illegal/missing argument - number or string expected");
         }
     };
 
@@ -1258,11 +1256,11 @@ namespace jabra {
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
         } else if (Array.isArray(arg)) {
             if (arg.length !=3) {
-                throw new Error("Illegal argument - wrong dimension of color array (3 expected)");
+                throw new Error("Illegal argument - wrong dimension of number array (3 expected)");
             }
             return arg;
         } else {
-            throw new Error("Illegal argument - number or string expected");
+            throw new Error("Illegal/missing argument - number array or hex string expected");
         }
     };
 };
