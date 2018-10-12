@@ -1,71 +1,51 @@
 ﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts" />
 
-// Help text for command followed by help for parameters.
-const commandTxtHelp = {
-  getDevices: ["", "includeBrowserMediaDeviceInfo?: boolean"],
-  getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
-  setActiveDeviceId: ["", "id: integer"],
-  setMmiFocus: ["", "type: RemoteMmiType", "capture: boolean"],
-  setRemoteMmiLightAction: ["", "type: RemoteMmiType", "color: hex-string", "effect: RemoteMmiSequence"],
-  setBusyLight: ["", "busy: boolean"],
-  trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
-  isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
-  getUserDeviceMediaExt: ["", "constraints?: MediaStreamConstraints (JSON)"],
-
-  init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with most events/errors!!"],
-  shutdown: ["De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API."],
-  addEventListener: ["Must be called for events/errors to be shown in this app. 2nd eventListener argument setup internally. Call with /.*/ argument to pass all events/errors)", 
-                     "nameSpec: string | RegExp | Array<string | RegExp>"],
-  removeEventListener: ["2nd eventListener argument setup internally. Call with /.*/ argument to remove all events)", 
-                        "nameSpec: string | RegExp | Array<string | RegExp>"]
-};
-
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
-  let initSDKBtn = document.getElementById('initSDKBtn');
-  let unInitSDKBtn = document.getElementById('unInitSDKBtn');
-  let checkInstallBtn = document.getElementById('checkInstallBtn');
+  const initSDKBtn = document.getElementById('initSDKBtn');
+  const unInitSDKBtn = document.getElementById('unInitSDKBtn');
+  const checkInstallBtn = document.getElementById('checkInstallBtn');
 
-  let devicesBtn = document.getElementById('devicesBtn');
-  let deviceSelector = document.getElementById('deviceSelector');
-  let changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn');
+  const devicesBtn = document.getElementById('devicesBtn');
+  const deviceSelector = document.getElementById('deviceSelector');
+  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn');
 
-  let setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn');
+  const setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn');
 
-  let methodSelector = document.getElementById('methodSelector');
-  let filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
-  let invokeApiBtn = document.getElementById('invokeApiBtn');
+  const methodSelector = document.getElementById('methodSelector');
+  const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
+  const invokeApiBtn = document.getElementById('invokeApiBtn');
 
-  let txtParam1 = document.getElementById('txtParam1');
-  let txtParam2 = document.getElementById('txtParam2');
-  let txtParam3 = document.getElementById('txtParam3');
-  let txtParam4 = document.getElementById('txtParam4');
-  let txtParam5 = document.getElementById('txtParam5');
+  const txtParam1 = document.getElementById('txtParam1');
+  const txtParam2 = document.getElementById('txtParam2');
+  const txtParam3 = document.getElementById('txtParam3');
+  const txtParam4 = document.getElementById('txtParam4');
+  const txtParam5 = document.getElementById('txtParam5');
 
-  let methodHelp = document.getElementById('methodHelp');  
-  let param1Hint = document.getElementById('param1Hint');
-  let param2Hint = document.getElementById('param2Hint');
-  let param3Hint = document.getElementById('param3Hint');
-  let param4Hint = document.getElementById('param4Hint');
-  let param5Hint = document.getElementById('param5Hint');    
+  const methodHelp = document.getElementById('methodHelp');  
+  const param1Hint = document.getElementById('param1Hint');
+  const param2Hint = document.getElementById('param2Hint');
+  const param3Hint = document.getElementById('param3Hint');
+  const param4Hint = document.getElementById('param4Hint');
+  const param5Hint = document.getElementById('param5Hint');    
 
-  let clearMessageAreaBtn = document.getElementById('clearMessageAreaBtn');
-  let clearErrorAreaBtn = document.getElementById('clearErrorAreaBtn');
-  let clearlogAreaBtn = document.getElementById('clearlogAreaBtn');
+  const clearMessageAreaBtn = document.getElementById('clearMessageAreaBtn');
+  const clearErrorAreaBtn = document.getElementById('clearErrorAreaBtn');
+  const clearlogAreaBtn = document.getElementById('clearlogAreaBtn');
 
-  let toggleScrollMessageAreaBtn = document.getElementById('toggleScrollMessageAreaBtn');
-  let toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn');
-  let toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn');
+  const toggleScrollMessageAreaBtn = document.getElementById('toggleScrollMessageAreaBtn');
+  const toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn');
+  const toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn');
 
-  let messageArea = document.getElementById('messageArea');
-  let errorArea = document.getElementById('errorArea');
-  let logArea = document.getElementById('logArea');
+  const messageArea = document.getElementById('messageArea');
+  const errorArea = document.getElementById('errorArea');
+  const logArea = document.getElementById('logArea');
 
-  let installCheckResult = document.getElementById('installCheckResult');
-  let clientlibVersionTxt = document.getElementById('clientlibVersionTxt');
-  let otherVersionTxt = document.getElementById('otherVersionTxt');
+  const installCheckResult = document.getElementById('installCheckResult');
+  const clientlibVersionTxt = document.getElementById('clientlibVersionTxt');
+  const otherVersionTxt = document.getElementById('otherVersionTxt');
 
-  let player = document.getElementById('player');
+  const player = document.getElementById('player');
 
   let variables = {
     "audioElement": player
@@ -74,6 +54,58 @@ document.addEventListener('DOMContentLoaded', function () {
   let scrollMessageArea = true;
   let scrollErrorArea = true;
   let scrollLogArea = true;
+
+  // Help text for command followed by help for parameters:
+  const commandTxtHelp = {
+    getDevices: ["", "includeBrowserMediaDeviceInfo?: boolean"],
+    getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
+    setActiveDeviceId: ["", "id: integer"],
+    setMmiFocus: ["", "type: RemoteMmiType", "capture: boolean"],
+    setRemoteMmiLightAction: ["", "type: RemoteMmiType", "color: hex-string", "effect: RemoteMmiSequence"],
+    setBusyLight: ["", "busy: boolean"],
+    trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
+    isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
+    getUserDeviceMediaExt: ["", "constraints?: MediaStreamConstraints (JSON)"],
+
+    init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with most events/errors!!"],
+    shutdown: ["De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API."],
+    addEventListener: ["Must be called for events/errors to be shown in this app. 2nd eventListener argument setup internally. Call with /.*/ argument to pass all events/errors)", 
+                      "nameSpec: string | RegExp | Array<string | RegExp>"],
+    removeEventListener: ["2nd eventListener argument setup internally. Call with /.*/ argument to remove all events)", 
+                          "nameSpec: string | RegExp | Array<string | RegExp>"],
+    __default__: [""]
+  };
+
+  // Helper for converting textual parameter values into the right type:
+  function convertParam(value) {
+    // Peek and if we can find signs of non-string than evaluate it otherwise return as string.
+    if (value.trim().startsWith("[") 
+        || value.trim().startsWith("/") 
+        || value.trim().startsWith('"') 
+        || value.trim().startsWith("'") 
+        || value.trim().startsWith("{")
+        || value.trim().toLowerCase() === "true" 
+        || value.trim().toLowerCase() === "false"
+        || /^\d+$/.test(value.trim())) {
+      return eval(value); // Normally dangerous but since this is a test app it is acceptable.
+    } else { // Assume string otherwise.
+      return value;
+    }
+  }
+
+  // Resolves arguments for different API methods. All methods that require
+  // complex values or have default values should be explicitly handled here:
+  const commandArgs = {
+    trySetDeviceOutput: () => [ variables.audioElement, variables.deviceInfo ],
+    isDeviceSelectedForInput: () => [ variables.mediaStream, variables.deviceInfo ],
+    getUserDeviceMediaExt: () => [ convertParam(txtParam1.value || "{}") ],
+    getDevices: () => [ convertParam(txtParam1.value || "false") ],
+    addEventListener: () => [ convertParam(txtParam1.value), eventListener ],
+    removeEventListener: () => [ convertParam(txtParam1.value), eventListener ],
+    getActiveDevice: () => [  convertParam(txtParam1.value || "false") ],
+    __default__: () => [ convertParam(txtParam1.value), convertParam(txtParam2.value), convertParam(txtParam3.value), convertParam(txtParam4.value), convertParam(txtParam5.value) ],
+  };
+
 
   // Populate dropdown with api methods:
   function setupApiMethods(filtered) {
@@ -197,6 +229,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
     var help = commandTxtHelp[apiFuncName];
+    if (!help) {
+      help = commandTxtHelp["__default__"];
+    }
+
     if (help) {
       if (help.length>0) {
         methodHelp.innerText = help[0];
@@ -230,74 +266,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Call into user selected API method.
   invokeApiBtn.onclick = () => {
-    let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
-    let apiFunc = jabra[apiFuncName];
-    let result;
+    const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
+    const apiFunc = jabra[apiFuncName];
 
-    let arg1 = undefined;
-    let arg2 = undefined;
-    let arg3 = undefined;
-    let arg4 = undefined;
-    let arg5 = undefined;
-
-    function convertParam(value) {
-      // Peek and if we can find signs of an advanced structure than evaluate it otherwise return as string.
-      if (value.trim().startsWith("[") 
-          || value.trim().startsWith("/") 
-          || value.trim().startsWith('"') 
-          || value.trim().startsWith("'") 
-          || value.trim().startsWith("{")
-          || value.trim() === "true" 
-          || value.trim() === "false") {
-        return eval(value);
-      } else { // Assume string otherwise.
-        return value;
-      }
+    let argsResolver = commandArgs[apiFuncName];
+    if (!argsResolver) {
+      argsResolver = commandArgs["__default__"];
     }
 
-    // Setup arguments for special calls that have special needs:
-    if (apiFuncName === "trySetDeviceOutput") {
-      arg1 = variables.audioElement;
-      arg2 = variables.deviceInfo;
-      if (!arg1 || !arg2) {
-        addError("Prior call of getUserDeviceMediaExt required to setup custom arguments in this test application");
-        return;
-      }
-    } else if (apiFuncName === "isDeviceSelectedForInput") {
-      arg1 = variables.mediaStream;
-      arg2 = variables.deviceInfo;
-      if (!arg1 || !arg2) {
-        addError("Prior call of getUserDeviceMediaExt required to setup custom arguments in this test application");
-        return;
-      }      
-    } else if (apiFuncName === "getUserDeviceMediaExt") {
-      try {
-        arg1 = convertParam(txtParam1.value || "{}");
-      } catch (err) {
-        addError("Value of text parameter 1 should be a parse-able json object for this api method")
-        return;
-      }
-    } else if (apiFuncName === "getDevices") {
-      try {
-        arg1 = convertParam(txtParam1.value || "false");
-      } catch (err) {
-        addError("Value of text parameter 1 should be a parse-able json object for this api method")
-        return;
-      }      
-    }  else if (apiFuncName === "addEventListener" || apiFuncName === "removeEventListener") {
-      arg1 = convertParam(txtParam1.value);
-      arg2 = eventListener;
-    } else {
-      // Setup arguments for trivial calls that just use text as input.
-      arg1 = convertParam(txtParam1.value);
-      arg2 = convertParam(txtParam2.value);
-      arg3 = convertParam(txtParam3.value);
-      arg4 = convertParam(txtParam4.value);
-      arg5 = convertParam(txtParam5.value);
-    }
+    const args = argsResolver();
 
     try {
-      result = apiFunc.call(jabra, arg1, arg2, arg3, arg4, arg5);
+      let result = apiFunc.call(jabra, ...args);
       commandEffect(apiFuncName, result).then(() => {});
     } catch (err) {
       addError(err);
@@ -312,15 +292,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Handle special calls that must have side effects in this test application:
         if (apiFuncName === "init") {
-            // Use the Jabra library
-            addStatusMessage("Jabra library initialized successfully")
-            initSDKBtn.disabled = true;
-            unInitSDKBtn.disabled = false;
-            checkInstallBtn.disabled = false;
-            devicesBtn.disabled = false;
-            setupUserMediaPlaybackBtn.disabled = false;
+          // Use the Jabra library
+          addStatusMessage("Jabra library initialized successfully")
+          initSDKBtn.disabled = true;
+          unInitSDKBtn.disabled = false;
+          checkInstallBtn.disabled = false;
+          devicesBtn.disabled = false;
+          setupUserMediaPlaybackBtn.disabled = false;
 
-            toastr.info("Jabra library initialized successfully");
+          toastr.info("Jabra library initialized successfully");
         } else if (apiFuncName === "shutdown") {
           initSDKBtn.disabled = false;
           unInitSDKBtn.disabled = true;
