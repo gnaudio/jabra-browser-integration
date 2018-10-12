@@ -282,16 +282,16 @@ document.addEventListener('DOMContentLoaded', function () {
    
     // First find the jabra input device, then use this to initialize webrtc.
     // Note this involves asking for access to user media in advance (producing
-    // a dummy stream that we throw away), as required by getDeviceInfo because 
+    // a dummy stream that we throw away), as required by getDeviceInfo(true) because 
     // of browser security rules.
     navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((dummyStream) => {
+      // Shutdown initial dummy stream (not sure it is really required but let's be nice).
+      dummyStream.getTracks().forEach((track) => {
+        track.stop();
+      });
+
       // Important to call getActiveDevice with true argument to get browser media information:
-      return jabra.getActiveDevice(true).then((deviceInfo) => {
-          // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-          dummyStream.getTracks().forEach((track) => {
-              track.stop();
-          });
-  
+      return jabra.getActiveDevice(true).then((deviceInfo) => { 
           // Now that we have the IDs of our jabra device, startup webrtc
           webrtc = self.webrtcSetup(deviceInfo);
       });
