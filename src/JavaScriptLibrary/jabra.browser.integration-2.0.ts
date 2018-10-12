@@ -185,12 +185,18 @@ namespace jabra {
                             "headsetConnection","headsetDisConnection", "devlog", "busylight", 
                             "hearThrough", "batteryStatus", "gnpButton", "mmi", "error" ];
 
-   
+    /**
+     * Custom error returned by commands expecting results when failing.
+     */
     class CommandError extends Error {
+        command: string;
+        errmessage: string;
         data: any;
 
-        constructor(command: string, data: any) {
-            super("Command " + command +" failed with details: " + JSON.stringify(data));
+        constructor(command: string, errmessage: string, data?: string) {
+            super("Command " + command +" failed with error  message" + errmessage + " and details: " + JSON.stringify(data || {}));
+            this.command = command;
+            this.errmessage = errmessage;
             this.data = data;
             this.name = 'CommandError';
         }
@@ -202,6 +208,7 @@ namespace jabra {
      * for a command being processed.
      */
     interface PromiseCallbacks {
+        cmd: string,
         resolve: (value?: any | PromiseLike<any> | undefined) => void;
         reject: (err: Error) => void;
     }
@@ -408,21 +415,25 @@ namespace jabra {
                             delete event.data.message;
                         }
 
-                        if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
-                            logLevel = parseInt(event.data.message.substring(16));
-                            logger.trace("Logger set to level " + logLevel);
-                        } else if (duringInit === true) {
-                            // Hmm... this assume first event will be passed on to native host,
-                            // so it won't work with logLevel. Thus we check log level first.
-                            duringInit = false;
-                            if (event.data.error != null && event.data.error != undefined) {
-                                return reject(new Error(event.data.error));
-                            } else {
-                                return resolve();
-                            }
-                        } else if (event.data.message) {
+                        // For backward compatability reinterprent messages starting with error as errors:
+                        if (event.data.message && event.data.message.startsWith("Error:")) {
+                            event.data.error = event.data.message;
+                            delete event.data.message
+                        }
+
+                        if (event.data.message) {
                             logger.trace("Got message: " + JSON.stringify(event.data));
                             const normalizedMsg: string = event.data.message.substring(7); // Strip "Event" prefix;
+
+                            if (normalizedMsg.startsWith("logLevel")) {
+                                logLevel = parseInt(event.data.message.substring(16));
+                                logger.trace("Logger set to level " + logLevel);
+
+                                // Loglevels are internal events and not an indication of proper
+                                // initialization so skip rest of handling for log levels.
+                                return;
+                            }
+
                             const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
                                 // For install info and version command, we need to add api version number.
@@ -441,29 +452,28 @@ namespace jabra {
                              
                                 // Lookup and check that we have identified a (real) command target to pair result with.
                                 let resultTarget = identifyAndCleanupResultTarget(requestId);
-                                if (!resultTarget) {
-                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost";
+                                if (resultTarget) {
+                                    let result: any;
+                                    if (event.data.data) {
+                                        result = event.data.data;
+                                    } else {
+                                        let dataPosition = commandEventsList[commandIndex].length + 1;
+                                        let dataStr = normalizedMsg.substring(dataPosition);
+                                        result = {};
+                                        if (dataStr) {
+                                          result.legacy_result =  dataStr;
+                                        };
+                                    }
+    
+                                    resultTarget.resolve(result)
+                                } else {
+                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated or a software bug. Please upgrade extension and/or chromehost";
                                     logger.error(err);
                                     notify("error", {
                                         error: err,
                                         message: event.data.message
                                     });
-                                    return;
-                                }
-                                
-                                let result: any;
-                                if (event.data.data) {
-                                    result = event.data.data;
-                                } else {
-                                    let dataPosition = commandEventsList[commandIndex].length + 1;
-                                    let dataStr = normalizedMsg.substring(dataPosition);
-                                    result = {};
-                                    if (dataStr) {
-                                      result.legacy_result =  dataStr;
-                                    };
-                                }
-
-                                resultTarget.resolve(result);                                
+                                }                                
                             } else if (eventListeners.has(normalizedMsg as EventName)) {
                                 let clientEvent: ClientMessage = JSON.parse(JSON.stringify(event.data));
                                 delete clientEvent.direction;
@@ -478,6 +488,13 @@ namespace jabra {
                                     error: "Unknown message: ",
                                     message: event.data.message
                                 });
+                                // Don't let unknown messages complete initialization so stop here.
+                                return;
+                            }
+
+                            if (duringInit) {
+                                duringInit = false;
+                                return resolve();
                             }
                         } else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
@@ -486,8 +503,7 @@ namespace jabra {
                             // Reject target promise if there is one - otherwise send a general error.
                             let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
-                                let cmd = event.data.data ? event.data.data.command : undefined;
-                                resultTarget.reject(new CommandError(cmd || (normalizedError+" ??"), event.data.data));
+                                resultTarget.reject(new CommandError(resultTarget.cmd, normalizedError, event.data.data));
                             } else {
                                 let clientError: ClientError = JSON.parse(JSON.stringify(event.data));
                                 delete clientError.direction;
@@ -496,6 +512,11 @@ namespace jabra {
                                 clientError.error = normalizedError;
 
                                 notify("error", clientError);
+                            }
+
+                            if (duringInit) {
+                                duringInit = false;
+                                return reject(new Error(event.data.error));
                             }
                         }
                     }
@@ -590,7 +611,8 @@ namespace jabra {
                     // can assume this is the one.
                     let value = sendRequestResultMap.entries().next().value;
                     resultTarget = value[1];
-                    // Remember to cleanup to avoid memory leak!
+                    // Remember to cleanup to avoid memory leak and for future 
+                    // requests like this to be resolved.
                     sendRequestResultMap.delete(value[0]);
                 } else {
                     // No idea what target matches what request - give up.
@@ -895,7 +917,7 @@ namespace jabra {
             let requestId = (requestNumber++).toString();
 
             return new Promise<T>((resolve, reject) => {
-                sendRequestResultMap.set(requestId, { resolve, reject });
+                sendRequestResultMap.set(requestId, { cmd, resolve, reject });
 
                 let msg = {
                     direction: "jabra-headset-extension-from-page-script",
@@ -1139,6 +1161,8 @@ namespace jabra {
             if (audioOutputId) {
                 deviceInfo.browserAudioOutputId = audioOutputId;
             }
+        } else {
+            // Do nothing if device information is missing.
         }
     }
 

@@ -15,17 +15,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const noDeviceFound = document.getElementById('noDeviceFound');
 
-  // Use the Jabra library
-  jabra.init().then(() => {
-    toastr.info("Jabra library initialized successfully");
-    // Setup device list and enable/disable buttons according if min 1 jabra device is there.
-    return setupDevices().then( () => {
-      if (deviceSelector.options.length === 0) {
-        noDeviceFound
-      }
-      // Additional setup here.
-    });
-  }).catch((msg) => {
+  function showError(err) {
+    let msg;
+    if (err.name === "CommandError" && err.errmessage === "Unknown cmd" && err.command === "getinstallinfo" ) {
+      msg = "Could not lookup installation info - Your installation is incomplete, out of date or corrupted.";
+    } else if (err instanceof Error) {
+      msg = err.toString();
+    } else if ((typeof err === 'string') || (err instanceof String)) {
+      msg = err; 
+    } else {
+      msg = JSON.stringify(err);
+    }
+
     // Add nodes to show the error message
     var div = document.createElement("div");
     var att = document.createAttribute("class");
@@ -36,6 +37,27 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = document.getElementById("section");
     list.insertBefore(br, list.childNodes[0]);
     list.insertBefore(div, list.childNodes[0]);
+
+    toastr.info(msg);
+  }
+
+  // Use the Jabra library - to be sure of the installation we also check it and report errors
+  // This installation check is optional but is there to reduce support issues.
+  jabra.init().then(() => jabra.getInstallInfo()).then( (installInfo) => { 
+    if (installInfo.installationOk) {
+      toastr.info("Jabra library initialized successfully");
+      // Setup device list and enable/disable buttons according if min 1 jabra device is there.
+      return setupDevices().then( () => {
+        if (deviceSelector.options.length === 0) {
+          noDeviceFound
+        }
+        // Additional setup here.
+      });
+    } else { // Installation not ok:
+      showError("Installation not ok - Your installation is incomplete, out of date or corrupted.");
+    }
+  }).catch((err) => {
+    showError(err);
   });
 
   jabra.addEventListener("mute", (event) => {
