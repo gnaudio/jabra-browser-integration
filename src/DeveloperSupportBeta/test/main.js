@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn');
   const toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn');
 
+  const messageFilter = document.getElementById('messageFilter');
+  const logFilter = document.getElementById('logFilter');
+
   const messageArea = document.getElementById('messageArea');
   const errorArea = document.getElementById('errorArea');
   const logArea = document.getElementById('logArea');
@@ -118,11 +121,11 @@ document.addEventListener('DOMContentLoaded', function () {
       methodSelector.remove(0);
     }
 
-    // Advanced methods not available for normal testing (yet)
-    let untestable = [                         
-    ];
+    // Put any methods that are not available for testing here
+    let untestable = [];
 
-    // Filterd out by default (in addition to methods starting with underscore):
+    // Internals below are filtered out by default (in addition 
+    // to methods starting with underscore):
     let internals = [
       "init", 
       "shutdown",
@@ -147,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setupApiMethods(filterInternalsAndDeprecatedMethodsChk.checked);
 
   // Change available methods when filter toggled.
-  filterInternalsAndDeprecatedMethodsChk.onchange = ( () => {
+  filterInternalsAndDeprecatedMethodsChk.onchange = (() => {
     setupApiMethods(filterInternalsAndDeprecatedMethodsChk.checked);
     setupApiHelp();
   });
@@ -175,6 +178,34 @@ document.addEventListener('DOMContentLoaded', function () {
       addError(event);
     } else {
       addEventMessage(event);
+    }
+
+    // Look for add/remove events here instead of a seperate
+    // event listener as this test page needs a fixed
+    // eventhandler for other testing purposes:
+    if (event && event.message && event.data) {
+      let deviceIdStr = event.data.deviceID.toString();
+      let deviceName = event.data.deviceName;
+
+      if (event.message === "device attached") {
+        var opt = document.createElement('option');
+        opt.value = deviceIdStr;
+        opt.innerHTML = deviceName;
+        deviceSelector.appendChild(opt);
+      } else if (event.message === "device detached") {
+        let found = false;
+        let i = 0;
+        while (deviceSelector.options.length > i && !found) {
+          if (deviceSelector.options[i].value === deviceIdStr) {
+              deviceSelector.remove(i);
+              found = true;
+          }
+
+          ++i;
+        }
+      }
+
+      changeActiveDeviceBtn.disabled = deviceSelector.options.length === 0;
     }
   }
 
@@ -370,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Decode device information normally - recommended way going forward.
             value.forEach(device => {
               var opt = document.createElement('option');
-              opt.value = device.deviceID;
+              opt.value = device.deviceID.toString();
               opt.innerHTML = device.deviceName;
               deviceSelector.appendChild(opt);
             });
@@ -378,9 +409,9 @@ document.addEventListener('DOMContentLoaded', function () {
     
           if (deviceSelector.options.length == 0) {
             addError("No devices found");
-          } else {
-            changeActiveDeviceBtn.disabled = false;
           }
+
+          changeActiveDeviceBtn.disabled = deviceSelector.options.length === 0;
 
           addResponseMessage(value);
         } else { // Default handling of general API call:
@@ -445,6 +476,14 @@ document.addEventListener('DOMContentLoaded', function () {
     logArea.value="";
   };
 
+  function messageFilterAllows(str) {
+    return messageFilter.value === "" || str.toLocaleLowerCase().includes(messageFilter.value.toLocaleLowerCase());
+  }
+
+  function logFilterAllows(str) {
+    return logFilter.value === "" || str.toLocaleLowerCase().includes(logFilter.value.toLocaleLowerCase());
+  }
+
   function addError(err) {  
     let txt;
     if (typeof err === 'string' || err instanceof String) {
@@ -462,25 +501,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function addStatusMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? msg : "Status: " + JSON.stringify(msg, null, 2);
-    messageArea.value = messageArea.value + "\n" + txt;
-    if (scrollMessageArea) {
-      messageArea.scrollTop = messageArea.scrollHeight;
+    if (messageFilterAllows(txt)) {
+      messageArea.value = messageArea.value + "\n" + txt;
+      if (scrollMessageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
     }
   }
 
   function addResponseMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? "response string: " + msg : "response object: " + JSON.stringify(msg, null, 2);
-    messageArea.value = messageArea.value + "\n" + txt;
-    if (scrollMessageArea) {
-      messageArea.scrollTop = messageArea.scrollHeight;
+    if (messageFilterAllows(txt)) {
+      messageArea.value = messageArea.value + "\n" + txt;
+      if (scrollMessageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
     }
   }
 
   function addEventMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? "event string: " + msg : "event object: " + JSON.stringify(msg, null, 2);
-    messageArea.value = messageArea.value + "\n" + txt;
-    if (scrollMessageArea) {
-      messageArea.scrollTop = messageArea.scrollHeight;
+    if (messageFilterAllows(txt)) {
+      messageArea.value = messageArea.value + "\n" + txt;
+      if (scrollMessageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
     }
   }
 
@@ -497,10 +542,12 @@ document.addEventListener('DOMContentLoaded', function () {
         console[method] = function() {
           original.apply(console, arguments);
 
-          let txt = replaceStr.apply(this, arguments);          
-          logArea.value = logArea.value + "\n" + txt;
-          if (scrollLogArea) {
-            logArea.scrollTop = logArea.scrollHeight;
+          let txt = replaceStr.apply(this, arguments);
+          if (logFilterAllows(txt)) {
+            logArea.value = logArea.value + "\n" + txt;
+            if (scrollLogArea) {
+              logArea.scrollTop = logArea.scrollHeight;
+            }
           }
         }
     }

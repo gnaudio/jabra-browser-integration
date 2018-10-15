@@ -148,29 +148,37 @@
     <table>
         <tr>
             <td>
-              Message/event output: <input id="clearMessageAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" />
+              Message/events: <input id="clearMessageAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
+              <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" />
             </td>
+            <td>&nbsp;</td>
             <td>
-              Error Output: <input id="clearErrorAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" />
+              Errors: <input id="clearErrorAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" />
             </td>
         </tr>
         <tr>
             <td>
-              <textarea id="messageArea" rows="20" cols="80"></textarea>
+              <textarea id="messageArea" rows="25" cols="100"></textarea>
             </td>
+            <td>&nbsp;</td>
             <td>
-              <textarea id="errorArea" rows="20" cols="60"></textarea>
+              <textarea id="errorArea" rows="25" cols="60"></textarea>
             </td>
         </tr>
         <tr>
-            <td colspan="2">
-                API and extension content page log (open chrome developer tools for more details):
-                <input id="clearlogAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" /><br/>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                API/extension content page log:
+                <input id="clearlogAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
+                <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" />
+                <br/>
             </td>
         </tr>
         <tr>
-            <td colspan="2">
-              <textarea id="logArea" rows="10" cols="100"></textarea>
+            <td colspan="3">
+              <textarea id="logArea" rows="15" cols="160"></textarea>
               <br/>
               Nb. See also: 
               1) Extension background page console log.
