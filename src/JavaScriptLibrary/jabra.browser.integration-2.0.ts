@@ -217,7 +217,7 @@ namespace jabra {
      * Event type for call backs.
      */
     export interface Event {
-        name: string;
+        message: string;
         data: {
             deviceID: number;
             /* variable */
