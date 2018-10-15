@@ -34,7 +34,10 @@ const std::string EventOffHookMapper::mapperName = "EventOffHookMapper";
 const std::string EventOnHookMapper::mapperName = "EventOnHookMapper";
 
 bool EventOffHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {
-  return (service->GetRingerStatus(deviceId));
+  // Previous version looked at: (service->GetRingerStatus(deviceId));
+  // This has been changed to allow initial an outgoing call from device after discussing with Felix.
+
+  return !(service->GetHookStatus(deviceId));
 }
 
 bool EventOnHookMapper::accept(const unsigned short deviceId, const ButtonHidInfo&) const {

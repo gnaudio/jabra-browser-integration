@@ -61,6 +61,8 @@ const char * const JSON_KEY_EVENT_JSON_VALUE = "event";
 
 const char * const JSON_KEY_BUTTONINDATA = "buttonInData";
 const char * const JSON_KEY_TRANSLATEDINDATA = "translatedInData";
+const char * const JSON_KEY_RINGER_STATUS = "ringing";
+const char * const JSON_KEY_HOOK_STATUS = "isOffHook";
 
 const char * const JSON_KEY_VERSION_LEGACY = "version";
 const char * const JSON_KEY_VERSION_CHROMEHOST = "version_chromehost";

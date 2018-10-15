@@ -391,11 +391,23 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
 
     const EventMapper * mapper = buttonEventMappings[work.data];
     if (mapper) {
+      const bool ringerStatus = GetRingerStatus(work.deviceID);
+      const bool hookStatus = GetHookStatus(work.deviceID);
+
       const std::string& mapperName = mapper->getMapperName();
       if (mapper->accept(work.deviceID, work.data)) {
        const std::string& outputEventName = mapper->getEventName();
        LOG_INFO << "Button translation accepted and mapped to " << outputEventName << " by " << mapperName << " mapper";
-       Event(Context::device(), outputEventName, { { JSON_KEY_DEVICEID, work.deviceID }, { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData } });
+
+       nlohmann::json eventData = { 
+         { JSON_KEY_DEVICEID, work.deviceID }, 
+         { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, 
+         { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData },
+         { JSON_KEY_RINGER_STATUS, ringerStatus },
+         { JSON_KEY_HOOK_STATUS, hookStatus }
+       };
+
+       Event(Context::device(), outputEventName, eventData);
       } else {
         LOG_INFO << "Button translation ignored as directed by " << mapperName << " mapper";
       }
