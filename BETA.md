@@ -30,7 +30,8 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta3.msi) | Chromehost 2.0 Beta 3 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta4.msi) | Chromehost 2.0 Beta 4 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta3.msi) | Chromehost 2.0 Beta 3 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta2.msi) | Chromehost 2.0 Beta 2 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta1.msi) | Chromehost 2.0 Beta 1 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix for allowing beta extension to work with old chrome host executable + allow downgrades. Otherwise same as 0.5 release. See note under web extension for details. |
@@ -46,8 +47,8 @@ may need to change their code when updating. Increases in minor version indicate
 v0.51 of the chromehost which fixes this issue but otherwise contains the same executable. Alternatively, you can manually add the new beta extension id `igcbbdnhomedfadljgcmcfpdcoonihfe` to allowed_origins in file com.jabra.nm.json in the installation directory of the native host. On windows this file is normally located in `C:\Program Files (x86)\JabraChromeHost`. Note, that this security issues only affects the beta - the problem goes away when the official version is released using an update to the non-beta browser extension. New versions of the chrome host will contain this new security setting by default.
 
 # BETA Development tools/demos
-* [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - test page to try out call control in the library
-* [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - **NEW** test page that allows detailed testing of individual API calls)
+* [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - test page to try out basic call control in the library
+* [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - **NEW** advanced test page that allows detailed testing of individual API calls)
 * [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/beta/playback/) - demo page showing auto selection of jabra device with simple audio playback example
 * [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/beta/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 
@@ -104,6 +105,10 @@ Methods like `GetDevices()` and `getActiveDevice()` now return detailed device i
 
 Support for >30 more device events like for example batteryStatus, keys,
 devlog etc. See typescript definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for details.
+
+# Man-machine interface (MMI v2) support for custom buttons and light effects (new notable BETA feature).
+Methods `setMmiFocus()` and `setRemoteMmiLightAction` can be used to take over device 
+buttons for customization and to change light effects (on supported devices).
 
 # Logging (new notable BETA feature)
 In this beta version of the extension, chromehost and api has logging support that can be used

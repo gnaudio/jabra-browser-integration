@@ -33,7 +33,7 @@ var jabra;
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    jabra.apiVersion = "2.0.beta3";
+    jabra.apiVersion = "2.0.beta4";
     /**
      * Is the current version a beta ?
      */
