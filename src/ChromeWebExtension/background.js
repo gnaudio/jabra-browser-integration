@@ -30,6 +30,8 @@ SOFTWARE.
   const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
   const betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
   const developmentExtensionIds = ["klapphmlodmhfolphohgkmimlkpcindc"]
+  
+  var manifestData = chrome.runtime.getManifest();
 
   // Identify what we know about the actual extension running.
   let extensionId = chrome.runtime.id;
@@ -44,7 +46,7 @@ SOFTWARE.
     extensionType = "unknown";
   }
 
-  let extensionTitle = (extensionType == "production") ? "Jabra Integration Extension" : "Jabra Integration Extension (" + extensionType + ")";
+  let extensionTitle = (extensionType == "production") ? ("Jabra Integration Extension " + manifestData.version_name) : ("Jabra Integration Extension (" + extensionType + ") " + manifestData.version_name);
 
   // Set title dynamically and clear badge - if we have been granted permission to do it.
   try {
@@ -62,8 +64,6 @@ SOFTWARE.
   } catch (err) {
     console.error("Could not change badge/title: " + err);
   }
-
-  var manifestData = chrome.runtime.getManifest();
 
   // Make logLevel variable in sync with storage (updated by options page).
   var logLevel = 2;
