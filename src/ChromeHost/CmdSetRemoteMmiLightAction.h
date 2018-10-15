@@ -25,35 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <climits>
-#include "stdafx.h"
-#include "CmdGetActiveDevice.h"
-#include "Util.h"
+#pragma once
 
-CmdGetActiveDevice::CmdGetActiveDevice(HeadsetIntegrationService* headsetIntegrationService)
+#include "CmdInterface.h"
+#include "HeadsetIntegrationService.h"
+
+class CmdSetRemoteMmiLightAction : public CmdInterface
 {
-  m_headsetIntegrationService = headsetIntegrationService;
-}
+public:
+  explicit CmdSetRemoteMmiLightAction(HeadsetIntegrationService* headsetIntegrationService);
+  ~CmdSetRemoteMmiLightAction();
 
-CmdGetActiveDevice::~CmdGetActiveDevice()
-{
-}
+  bool CanExecute(const Request& request) override;
+  void Execute(const Request& request) override;
 
-bool CmdGetActiveDevice::CanExecute(const Request& request)
-{
-  return (request.message == "getactivedevice");
-}
+protected:
+  HeadsetIntegrationService* m_headsetIntegrationService;
+};
 
-void CmdGetActiveDevice::Execute(const Request& request)
-{
-  const DeviceInfo& deviceInfo = m_headsetIntegrationService->GetCurrentDevice();
-
-  if (deviceInfo.isEmpty())
-  {
-	  m_headsetIntegrationService->Event(request, "activedevice -1", nlohmann::json::value_t::object);
-  } else {
-    nlohmann::json j;
-	  setDeviceInfo(j, deviceInfo, m_headsetIntegrationService->getDynamicDeviceInfo(deviceInfo));
-    m_headsetIntegrationService->Event(request, "activedevice " + std::to_string(deviceInfo.getDeviceID()), j);
-  }
-}

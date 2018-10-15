@@ -90,14 +90,7 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
 
     if (dynSrc.battertyStatus.supported) {
       // Nested battery objects seems to break Chrome 69 (OR maybe through unlikely nlohmann::json), course Chrome stops
-      // seeing outbounds messages after calling getDevices if commented code below is there :
-      //
-      //      dest["battertyStatus"]["levelInPercent"] = dynSrc.battertyStatus.levelInPercent;
-      //      dest["battertyStatus"]["charging"] = dynSrc.battertyStatus.charging;
-      //      dest["battertyStatus"]["batteryLow"] = dynSrc.battertyStatus.batteryLow;
-      // 
-      // Therefore we just inline battery stuff instead:
-
+      // seeing outbounds messages after calling getDevices so we inline stuff instead:
       dest[JSON_KEY_BATTERY_LEVEL_PCT] = dynSrc.battertyStatus.levelInPercent;
       dest[JSON_KEY_BATTERY_CHARGING] = dynSrc.battertyStatus.charging;
       dest[JSON_KEY_BATTERY_LOW] = dynSrc.battertyStatus.batteryLow;
@@ -116,5 +109,4 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
     }
 
   }
-
 }

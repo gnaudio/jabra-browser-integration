@@ -6,7 +6,8 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 2.0 (BETA) Added/changed the following ( this section is work in progress )
 * Added [typescript](https://www.typescriptlang.org/) definitions `jabra.browser.integration-2.0.d.ts` of API for detailed documentation, static checking and better IDE support. *Tip: Use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools.* 
-* Modern ES5+ promisified Javascript API - All methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks in order to enabled streamlined testing and API usage. This means for instance, the `init()` method now returns a JS promise that user should use then()/catch() on to react on initialization **(breaking change)**.
+* Modern ES5+ promisified Javascript API - All methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks in order to enabled streamlined testing and API usage. This means for instance, the `init()` method now returns a JS promise that user should use then()/catch() on to react on initialization. In addition, methods that performs side-effects return void promises
+to enable clients to synchronize **(breaking change)**.
 * Individual subscription to event(s) using `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` **(breaking change)**.
 * Removed requestEnum. Use of individual subscription event handlers (see above) abolish the need for this enumeration **(breaking change)**.
 * `getActiveDevice()` now return a JS object with detailed information rather than a simple number **(breaking change)**.
@@ -15,6 +16,8 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 * `getUserDeviceMedia()` has been removed. Use `getUserDeviceMediaExt` instead.
 * `getDeviceInfo()` has been deleted. Use ``getActiveDevice(true)` instead.
 * Added `getInstallInfo()` that checks and details the current installation.    
+* Added `setMmiFocus` to do custom button handling for supported devices (MMIv2).
+* Added `setRemoteMmiLightAction` to change button colors (MMIv2).
 * Added shutdown method (for use in testing).
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
 * Better support for multiple devices.

@@ -34,11 +34,24 @@ const char * const EVENT_DEVLOG = "devlog";
 const char * const EVENT_DEVICE_ATTACHED = "device attached";
 const char * const EVENT_DEVICE_DEATTACHED = "device detached";
 
+const char * const EVENT_GNPBUTTON = "gnpButton";
+const char * const EVENT_MMI = "mmi";
+
 const char * const SET_BUSYLIGHT_COMMAND_ARG_BUSY = "busy";
 const char * const SET_ACTIVE_DEVICE_COMMAND_ARG_ID = "id";
 
+const char * const SET_MMIFOCUS_COMMAND_ARG_TYPE = "type";
+const char * const SET_MMIFOCUS_COMMAND_ARG_CAPTURE = "capture";
+
+const char * const SET_REMOTE_MMI_LIGHT_COMMAND_ARG_TYPE = "type";
+const char * const SET_REMOTE_MMI_LIGHT_COMMAND_ARG_COLOR = "color";
+const char * const SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT = "effect";
+
+const char * const JSON_KEY_COMMAND = "command";
 const char * const JSON_KEY_EXCEPTION = "exception";
 const char * const JSON_KEY_JABRA_ERRORCODE = "errorcode";
+const char * const JSON_KEY_ERROR_MESSAGE = "errormsg";
+const char * const JSON_KEY_CAPTURED = "captured";
 
 const char * const JSON_KEY_DEVICEID = "deviceID";
 const char * const JSON_KEY_DEVICENAME = "deviceName";
@@ -48,6 +61,8 @@ const char * const JSON_KEY_EVENT_JSON_VALUE = "event";
 
 const char * const JSON_KEY_BUTTONINDATA = "buttonInData";
 const char * const JSON_KEY_TRANSLATEDINDATA = "translatedInData";
+const char * const JSON_KEY_RINGER_STATUS = "ringing";
+const char * const JSON_KEY_HOOK_STATUS = "isOffHook";
 
 const char * const JSON_KEY_VERSION_LEGACY = "version";
 const char * const JSON_KEY_VERSION_CHROMEHOST = "version_chromehost";
@@ -58,3 +73,6 @@ const char * const JSON_KEY_LOGPATH = "chromehost_logpath";
 const char * const JSON_KEY_BATTERY_LEVEL_PCT = "batteryLevelInPercent"; 
 const char * const JSON_KEY_BATTERY_CHARGING = "batteryCharging"; 
 const char * const JSON_KEY_BATTERY_LOW = "batteryLow"; 
+
+const char * const JSON_KEY_TYPE = "type";
+const char * const JSON_KEY_ACTION = "action"; 

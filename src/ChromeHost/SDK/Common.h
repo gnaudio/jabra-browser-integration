@@ -1163,6 +1163,22 @@ LIBRARY_API void Jabra_FreeFirmwareInfo(Jabra_FirmwareInfo* firmwareInfo);
  */
 LIBRARY_API char* Jabra_GetFirmwareFilePath(unsigned short deviceID, const char* version);
 
+/**
+ * Gets information of all the firmware present in cloud for the specific device.
+ * @param[in] deviceID Id for the specific device.
+ * @param[in] authorizationId authorization Id.
+ * @return a list of information about all firmware versions. If no information
+ * is available NULL is returned.
+ * @note the list must be freed by calling Jabra_FreeFirmwareInfoList API.
+ */
+Jabra_FirmwareInfoList* Jabra_GetAllFirmwareInformation(unsigned short deviceID, const char* authorizationId);
+
+/**
+ * Frees the list of firmware information structure.
+ * @param[in] firmwareInfolist Jabra_FirmwareInfoList structure to be freed.
+ */
+void Jabra_FreeFirmwareInfoList(Jabra_FirmwareInfoList* firmwareInfolist);
+
 /** Downloads the specified firmware version file
  *  @param[in]   : deviceID: Id for specific device
  *  @param[in]   : version: Version for which file download needs to be initiated.
@@ -1170,7 +1186,7 @@ LIBRARY_API char* Jabra_GetFirmwareFilePath(unsigned short deviceID, const char*
  *  @return      : Device_Unknown: If unable to get the device mutex.
  *                 Device_Invalid: If deviceID is wrong.
                    Return_ParameterFail: If firmware version is invalid.
-                   Return_Async: If firmware download is in progress and will be returned asyncronously using the callback                   
+                   Return_Async: If firmware download is in progress and will be returned asynchronously using the callback
  */
 LIBRARY_API Jabra_ReturnCode Jabra_DownloadFirmware(unsigned short deviceID, const char* version, const char* authorizationId);
 
@@ -1231,7 +1247,6 @@ LIBRARY_API Jabra_FirmwareErrorInfo* Jabra_GetLastFirmwareUpdateErrorInfo(unsign
 
 /** Frees the firmware error information structure members.
 *  @param[in] : Jabra_FirmwareErrorInfo structure to be freed.
-*  @return    : void.
 */
 LIBRARY_API void Jabra_FreeFirmwareErrorInfo(Jabra_FirmwareErrorInfo* firmwareErrorInfo);
 

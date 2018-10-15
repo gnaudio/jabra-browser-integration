@@ -19,6 +19,6 @@
 #include "Types.h"
 
 // Enables additonal diagnostics info.
-#define DEBUG_CHROMEHOST_INFO false
+// #define DEBUG_CHROMEHOST_INFO 1
 
 

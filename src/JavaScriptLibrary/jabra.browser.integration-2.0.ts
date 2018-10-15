@@ -32,7 +32,7 @@ namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    export const apiVersion = "2.0.beta3";
+    export const apiVersion = "2.0.beta4";
 
     /**
      * Is the current version a beta ?
@@ -70,6 +70,7 @@ namespace jabra {
         deviceID: number;
         deviceName: string;
         deviceConnection: number;
+        deviceFeatures: ReadonlyArray<DeviceFeature>;
         errStatus: number;
         isBTPaired?: boolean;
         isInFirmwareUpdateMode: boolean;
@@ -148,7 +149,11 @@ namespace jabra {
         "devices",
         "activedevice",
         "getinstallinfo",
-        "Version"
+        "Version",
+        "setmmifocus",
+        "setactivedevice2",
+        "setbusylight",
+        "setremotemmilightaction"
     ];
 
     /**
@@ -163,7 +168,7 @@ namespace jabra {
                             | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm"
                             | "jackConnection" | "jackDisConnection" | "qdConnection" | "qdDisconnection"
                             | "headsetConnection" | "headsetDisConnection" | "devlog" | "busylight" 
-                            | "hearThrough" | "batteryStatus" | "error";
+                            | "hearThrough" | "batteryStatus" | "gnpButton" | "mmi" | "error";
 
     /**
      * All possible device events as internal array.
@@ -178,7 +183,24 @@ namespace jabra {
                             "button1", "button2", "button3", "volumeUp", "volumeDown", "fireAlarm",
                             "jackConnection", "jackDisConnection", "qdConnection", "qdDisconnection", 
                             "headsetConnection","headsetDisConnection", "devlog", "busylight", 
-                            "hearThrough", "batteryStatus", "error" ];
+                            "hearThrough", "batteryStatus", "gnpButton", "mmi", "error" ];
+
+    /**
+     * Custom error returned by commands expecting results when failing.
+     */
+    class CommandError extends Error {
+        command: string;
+        errmessage: string;
+        data: any;
+
+        constructor(command: string, errmessage: string, data?: string) {
+            super("Command " + command +" failed with error  message" + errmessage + " and details: " + JSON.stringify(data || {}));
+            this.command = command;
+            this.errmessage = errmessage;
+            this.data = data;
+            this.name = 'CommandError';
+        }
+    };
 
 
     /**
@@ -186,6 +208,7 @@ namespace jabra {
      * for a command being processed.
      */
     interface PromiseCallbacks {
+        cmd: string,
         resolve: (value?: any | PromiseLike<any> | undefined) => void;
         reject: (err: Error) => void;
     }
@@ -194,7 +217,7 @@ namespace jabra {
      * Event type for call backs.
      */
     export interface Event {
-        name: string;
+        message: string;
         data: {
             deviceID: number;
             /* variable */
@@ -226,6 +249,72 @@ namespace jabra {
      */
     const eventListeners: Map<EventName, Array<EventCallback>> = new Map<EventName, Array<EventCallback>>();
     eventNamesList.forEach((event: EventName) => eventListeners.set(event, []));
+     
+    /**
+     * Device feature codes.
+     */
+    enum DeviceFeature {
+        BusyLight = 1000,
+        FactoryReset = 1001,
+        PairingList = 1002,
+        RemoteMMI = 1003,
+        MusicEqualizer = 1004,
+        EarbudInterconnectionStatus = 1005,
+        StepRate = 1006,
+        HeartRate = 1007,
+        RRInterval = 1008,
+        RingtoneUpload = 1009,
+        ImageUpload = 1010,
+        NeedsExplicitRebootAfterOta = 1011,
+        NeedsToBePutIncCradleToCompleteFwu = 1012,
+        RemoteMMIv2 = 1013,
+        Logging = 1014,
+        PreferredSoftphoneListInDevice = 1015,
+        VoiceAssistant = 1016,
+        PlayRingtone=1017
+    };
+
+    /**
+     * A specification of a button for MMI capturing.
+     */
+    enum RemoteMmiType {
+        MMI_TYPE_MFB       = 0,
+        MMI_TYPE_VOLUP     = 1,
+        MMI_TYPE_VOLDOWN   = 2,
+        MMI_TYPE_VCB       = 3,
+        MMI_TYPE_APP       = 4,
+        MMI_TYPE_TR_FORW   = 5,
+        MMI_TYPE_TR_BACK   = 6,
+        MMI_TYPE_PLAY      = 7,
+        MMI_TYPE_MUTE      = 8,
+        MMI_TYPE_HOOK_OFF  = 9,
+        MMI_TYPE_HOOK_ON   = 10,
+        MMI_TYPE_BLUETOOTH = 11,
+        MMI_TYPE_JABRA     = 12,
+        MMI_TYPE_BATTERY   = 13,
+        MMI_TYPE_PROG      = 14,
+        MMI_TYPE_LINK      = 15,
+        MMI_TYPE_ANC       = 16,
+        MMI_TYPE_LISTEN_IN = 17,
+        MMI_TYPE_DOT3      = 18,
+        MMI_TYPE_DOT4      = 19,
+        MMI_TYPE_ALL       = 255
+    };
+
+    /**
+     * A MMI efffect specification for light on, off or blinking in different tempo.
+     */
+    enum RemoteMmiSequence {
+        MMI_LED_SEQUENCE_OFF     = 0,
+        MMI_LED_SEQUENCE_ON      = 1,
+        MMI_LED_SEQUENCE_SLOW    = 2,
+        MMI_LED_SEQUENCE_FAST    = 3
+    };
+
+    /**
+     * A 3 x 8 bit set of RGB colors. Numbers can be between 0-255.
+     */
+    type ColorType = [number, number, number];
 
     /**
      * The log level curently used internally in this api facade. Initially this is set to show errors and 
@@ -326,21 +415,25 @@ namespace jabra {
                             delete event.data.message;
                         }
 
-                        if (event.data.message && event.data.message.startsWith("Event: logLevel")) {
-                            logLevel = parseInt(event.data.message.substring(16));
-                            logger.trace("Logger set to level " + logLevel);
-                        } else if (duringInit === true) {
-                            // Hmm... this assume first event will be passed on to native host,
-                            // so it won't work with logLevel. Thus we check log level first.
-                            duringInit = false;
-                            if (event.data.error != null && event.data.error != undefined) {
-                                return reject(new Error(event.data.error));
-                            } else {
-                                return resolve();
-                            }
-                        } else if (event.data.message) {
+                        // For backward compatability reinterprent messages starting with error as errors:
+                        if (event.data.message && event.data.message.startsWith("Error:")) {
+                            event.data.error = event.data.message;
+                            delete event.data.message
+                        }
+
+                        if (event.data.message) {
                             logger.trace("Got message: " + JSON.stringify(event.data));
                             const normalizedMsg: string = event.data.message.substring(7); // Strip "Event" prefix;
+
+                            if (normalizedMsg.startsWith("logLevel")) {
+                                logLevel = parseInt(event.data.message.substring(16));
+                                logger.trace("Logger set to level " + logLevel);
+
+                                // Loglevels are internal events and not an indication of proper
+                                // initialization so skip rest of handling for log levels.
+                                return;
+                            }
+
                             const commandIndex = commandEventsList.findIndex((e) => normalizedMsg.startsWith(e));
                             if (commandIndex >= 0) {
                                 // For install info and version command, we need to add api version number.
@@ -359,29 +452,28 @@ namespace jabra {
                              
                                 // Lookup and check that we have identified a (real) command target to pair result with.
                                 let resultTarget = identifyAndCleanupResultTarget(requestId);
-                                if (!resultTarget) {
-                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated. Please upgrade extension and/or chromehost";
+                                if (resultTarget) {
+                                    let result: any;
+                                    if (event.data.data) {
+                                        result = event.data.data;
+                                    } else {
+                                        let dataPosition = commandEventsList[commandIndex].length + 1;
+                                        let dataStr = normalizedMsg.substring(dataPosition);
+                                        result = {};
+                                        if (dataStr) {
+                                          result.legacy_result =  dataStr;
+                                        };
+                                    }
+    
+                                    resultTarget.resolve(result)
+                                } else {
+                                    let err = "Result target information missing for message " + event.data.message + ". This is likely due to some software components that have not been updated or a software bug. Please upgrade extension and/or chromehost";
                                     logger.error(err);
                                     notify("error", {
                                         error: err,
                                         message: event.data.message
                                     });
-                                    return;
-                                }
-                                
-                                let result: any;
-                                if (event.data.data) {
-                                    result = event.data.data;
-                                } else {
-                                    let dataPosition = commandEventsList[commandIndex].length + 1;
-                                    let dataStr = normalizedMsg.substring(dataPosition);
-                                    result = {};
-                                    if (dataStr) {
-                                      result.legacy_result =  dataStr;
-                                    };
-                                }
-
-                                resultTarget.resolve(result);                                
+                                }                                
                             } else if (eventListeners.has(normalizedMsg as EventName)) {
                                 let clientEvent: ClientMessage = JSON.parse(JSON.stringify(event.data));
                                 delete clientEvent.direction;
@@ -396,6 +488,13 @@ namespace jabra {
                                     error: "Unknown message: ",
                                     message: event.data.message
                                 });
+                                // Don't let unknown messages complete initialization so stop here.
+                                return;
+                            }
+
+                            if (duringInit) {
+                                duringInit = false;
+                                return resolve();
                             }
                         } else if (event.data.error) {
                             logger.error("Got error: " + event.data.error);
@@ -404,7 +503,7 @@ namespace jabra {
                             // Reject target promise if there is one - otherwise send a general error.
                             let resultTarget = identifyAndCleanupResultTarget(requestId);
                             if (resultTarget) {
-                                resultTarget.reject(new Error(normalizedError));
+                                resultTarget.reject(new CommandError(resultTarget.cmd, normalizedError, event.data.data));
                             } else {
                                 let clientError: ClientError = JSON.parse(JSON.stringify(event.data));
                                 delete clientError.direction;
@@ -413,6 +512,11 @@ namespace jabra {
                                 clientError.error = normalizedError;
 
                                 notify("error", clientError);
+                            }
+
+                            if (duringInit) {
+                                duringInit = false;
+                                return reject(new Error(event.data.error));
                             }
                         }
                     }
@@ -507,7 +611,8 @@ namespace jabra {
                     // can assume this is the one.
                     let value = sendRequestResultMap.entries().next().value;
                     resultTarget = value[1];
-                    // Remember to cleanup to avoid memory leak!
+                    // Remember to cleanup to avoid memory leak and for future 
+                    // requests like this to be resolved.
                     sendRequestResultMap.delete(value[0]);
                 } else {
                     // No idea what target matches what request - give up.
@@ -527,7 +632,7 @@ namespace jabra {
     * De-initialize the api after use. Not normally used as api will normally
     * stay in use thoughout an application - mostly of interest for testing.
     */
-    export function shutdown() {
+    export function shutdown(): Promise<void> {
         if (initState.initialized) {
             window.removeEventListener("message", initState.eventCallback!);
             initState.eventCallback = undefined;
@@ -539,10 +644,10 @@ namespace jabra {
             eventListeners.forEach((value, key) => {
                 value = [];
             });
-            return true;
+            return Promise.resolve();
         }
 
-        return false;
+        return Promise.reject(new Error("Browser integration not initialized"));
     };
 
     /**
@@ -644,6 +749,45 @@ namespace jabra {
     };
 
     /**
+    * Capture/release buttons for customization (if supported). This turns off default behavior and enables mmi events to
+    * be received instead. It also allows for mmi actions to be applied like changing lights with setRemoteMmiLightAction.
+    * 
+    * @param type The button that should be captured/released.
+    * @param capture True if button should be captured, false if it should be released.
+    * 
+    * @returns A promise that is resolved once operation completes.
+    */
+    export function setMmiFocus(type: RemoteMmiType | string, capture: boolean | string): Promise<void> {
+        let typeVal = numberOrString(type);
+        let captureVal = booleanOrString(capture);
+        return sendCmdWithResult<void>("setmmifocus", { 
+            type: typeVal,
+            capture: captureVal
+        });
+    }
+
+    /**
+    * Change light/color on a previously captured button.
+    * Nb. This requires the button to be previously captured though setMMiFocus.
+    * 
+    * @param type The button that should be captured/released.
+    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param effect What effect to apply to the button.
+    * 
+    * @returns A promise that is resolved once operation completes.
+    */
+    export function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string, effect: RemoteMmiSequence | string): Promise<void> {
+        let typeVal = numberOrString(type);
+        let colorVal = colorOrString(color);
+        let effectVal = numberOrString(effect);
+        return sendCmdWithResult<void>("setremotemmilightaction", { 
+            type: typeVal,
+            color: colorVal,
+            effect: effectVal
+        });        
+    }
+
+    /**
     * Internal helper to get detailed information about the current active Jabra Device
     * from SDK, including current status but excluding media device information.
     */
@@ -669,16 +813,7 @@ namespace jabra {
     * setSinkId (when supported by the browser) to set output.
     */
     export function getActiveDevice(includeBrowserMediaDeviceInfo: boolean | string = false): Promise<DeviceInfo> {
-        let includeBrowserMediaDeviceInfoVal: boolean;
-
-        if ((typeof includeBrowserMediaDeviceInfo === 'string') || ((includeBrowserMediaDeviceInfo as any) instanceof String))  {
-            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
-        } else if (typeof(includeBrowserMediaDeviceInfo) === "boolean")  {
-            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
-        } else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
-
+        let includeBrowserMediaDeviceInfoVal = booleanOrString(includeBrowserMediaDeviceInfo);
         if (includeBrowserMediaDeviceInfoVal) {
             return _doGetActiveSDKDevice_And_BrowserDevice();
         } else {
@@ -696,58 +831,49 @@ namespace jabra {
     * setSinkId (when supported by the browser) to set output.
     */
     export function getDevices(includeBrowserMediaDeviceInfo: boolean | string = false): Promise<ReadonlyArray<DeviceInfo>> {
-        let includeBrowserMediaDeviceInfoVal: boolean;
-
-        if ((typeof includeBrowserMediaDeviceInfo === 'string') || ((includeBrowserMediaDeviceInfo as any) instanceof String))  {
-            includeBrowserMediaDeviceInfoVal = (includeBrowserMediaDeviceInfo === 'true' || includeBrowserMediaDeviceInfo === '1');
-        } else if (typeof(includeBrowserMediaDeviceInfo) === "boolean")  {
-            includeBrowserMediaDeviceInfoVal = includeBrowserMediaDeviceInfo;
-        } else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
-
+        let includeBrowserMediaDeviceInfoVal = booleanOrString(includeBrowserMediaDeviceInfo);
         if (includeBrowserMediaDeviceInfoVal) {
             return _doGetSDKDevices_And_BrowserDevice();
         } else {
             return _doGetSDKDevices();
         }
-
-        return sendCmdWithResult<ReadonlyArray<DeviceInfo>>("getdevices");
      };
 
     /**
-    * Select a new active device.
+    * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
+    * Used internally by test tool - do not use otherwise.
+    * 
+    * @deprecated Use setActiveDeviceId instead.
     */
-    export function setActiveDeviceId(id: number | string): void {
-        let idVal;
-
-        if ((typeof id === 'string') || ((id as any) instanceof String))  {
-            idVal = parseInt(id as string);
-        } else if (typeof id == 'number') {
-            idVal = id;
-        } else {
-            throw new Error("Illegal argument - number or string expected");
-        }
+    export function _setActiveDeviceId(id: number | string): void {
+        let idVal =  numberOrString(id);
         
         // Use both new and old way of passing parameters for compatibility with <= v0.5.
         sendCmd("setactivedevice " + id.toString(), { id: idVal } );
     };
+    
+    /**
+    * Select a new active device returning once selection is completed.
+    * 
+    * @param id The id number of the new active device.
+    * @returns A promise that is resolved once selection completes.
+    * 
+    */
+    export function setActiveDeviceId(id: number | string): Promise<void> {
+      let idVal =  numberOrString(id);
+    
+      return sendCmdWithResult<void>("setactivedevice2", { id: idVal } );
+    };
 
     /**
     * Set busylight on active device (if supported)
+    * 
+    * @param busy True if busy light should be set, false if it should be cleared.
     */
-    export function setBusyLight(busy: boolean | string): void {
-        let busyVal;
-
-        if ((typeof busy === 'string') || ((busy as any) instanceof String))  {
-            busyVal = (busy == 'true' || busy == '1');
-        } else if (typeof(busy) === "boolean") {
-            busyVal = busy;
-        } else {
-            throw new Error("Illegal argument - boolean or string expected");
-        }
-        
-        sendCmd("setbusylight", { busy: busyVal } );
+    export function setBusyLight(busy: boolean | string): Promise<void> {
+        let busyVal = booleanOrString(busy);
+       
+        return sendCmdWithResult<void>("setbusylight", { busy: busyVal } );
     };
 
     /**
@@ -791,7 +917,7 @@ namespace jabra {
             let requestId = (requestNumber++).toString();
 
             return new Promise<T>((resolve, reject) => {
-                sendRequestResultMap.set(requestId, { resolve, reject });
+                sendRequestResultMap.set(requestId, { cmd, resolve, reject });
 
                 let msg = {
                     direction: "jabra-headset-extension-from-page-script",
@@ -1035,6 +1161,8 @@ namespace jabra {
             if (audioOutputId) {
                 deviceInfo.browserAudioOutputId = audioOutputId;
             }
+        } else {
+            // Do nothing if device information is missing.
         }
     }
 
@@ -1114,5 +1242,49 @@ namespace jabra {
             fillInMatchingMediaInfo(deviceInfo, mediaDevices);
             return deviceInfo;
         });
-    };   
+    };
+
+     /**
+     * Helper that pass boolean values through and parses strings to booleans.
+     */
+    function booleanOrString(arg: boolean | string) : boolean
+    {
+        if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String))) {
+            return (arg === 'true' || arg === '1');
+        } else if (typeof(arg) === "boolean")  {
+            return arg;
+        } else {
+            throw new Error("Illegal/missing argument - boolean or string expected");
+        }
+    }
+
+    /**
+     * Helper that pass numbers through and parses strings to numbers.
+     */
+    function numberOrString(arg: number | string): number {
+        if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String))) {
+            return parseInt(arg as string);
+        } else if (typeof arg == 'number') {
+            return arg;
+        } else {
+            throw new Error("Illegal/missing argument - number or string expected");
+        }
+    };
+
+    /**
+     * Helper that pass color array through and parses strings (as hex number) to color array.
+     */
+    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number> {
+        if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String)))  {
+            let combinedValue = parseInt(arg as string, 16);
+            return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
+        } else if (Array.isArray(arg)) {
+            if (arg.length !=3) {
+                throw new Error("Illegal argument - wrong dimension of number array (3 expected)");
+            }
+            return arg;
+        } else {
+            throw new Error("Illegal/missing argument - number array or hex string expected");
+        }
+    };
 };

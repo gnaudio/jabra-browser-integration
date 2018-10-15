@@ -18,25 +18,28 @@
   <div class="wrapper">
     <h4>Description</h4>
     <p>On this page you can try out the Jabra library. Callbacks are shown as toasts. Look at the source for an example on how to use the library.</p>
+    <div id="subTitles">
+        <p id="subTitle1"></p>
+        <p id="subTitle2"></p>
+        <b id="noDeviceFound"></b>
+    </div>
     <br/>
     <h4>Basic:</h4>
-    <button id="ring" type="button">jabra.ring();</button>
+    <button id="ring" type="button" disabled="true">jabra.ring();</button>
     <br/>
-    <button id="offhook" type="button">jabra.offHook();</button>
-    <button id="onhook" type="button">jabra.onHook();</button>
+    <button id="offhook" type="button" disabled="true">jabra.offHook();</button>
+    <button id="onhook" type="button" disabled="true">jabra.onHook();</button>
     <br/>
-    <button id="mute" type="button">jabra.mute();</button>
-    <button id="unmute" type="button">jabra.unmute();</button>
+    <button id="mute" type="button" disabled="true">jabra.mute();</button>
+    <button id="unmute" type="button" disabled="true">jabra.unmute();</button>
     <h4>Advanced (optional):</h4>
-    <button id="hold" type="button">jabra.hold();</button>
-    <button id="resume" type="button">jabra.resume();</button>
+    <button id="hold" type="button" disabled="true">jabra.hold();</button>
+    <button id="resume" type="button" disabled="true">jabra.resume();</button>
     <h4>Device management (optional, only required for multi-device handling):</h4>
-    <button id="getactivedevice" type="button">jabra.getActiveDevice();</button>
-    <button id="getdevices" type="button">jabra.getDevices();</button>
-    <br/>
-    <button id="setactivedevice0" type="button">jabra.setActiveDevice(0);</button>
-    <button id="setactivedevice1" type="button">jabra.setActiveDevice(1);</button>
-    <button id="setactivedevice2" type="button">jabra.setActiveDevice(2);</button>
+    <label for="changeActiveDeviceBtn" disabled="true">Select device to use:</label>
+    <select id="deviceSelector"> 
+    </select>
+    <input id="changeActiveDeviceBtn" type="button" value="Set as active" disabled="true"/>
     <br/>
   </div>
 

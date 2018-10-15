@@ -42,6 +42,7 @@ class BusylightWork;
 class HearThroughSettingWork;
 class BatteryStatusWork;
 class GNPButtonWork;
+class RemoteMmiWork;
 
 /**
  * A visitor interface that a class that process work should implement.
@@ -60,6 +61,7 @@ class WorkProcessor
   virtual void processHearThroughSetting(const HearThroughSettingWork& work) = 0;
   virtual void processBatteryStatus(const BatteryStatusWork& work) = 0;
   virtual void processGnpButtons(const GNPButtonWork& work) = 0;
+  virtual void processRemoteMmiWork(const RemoteMmiWork& work) = 0;
 };
 
 /**
@@ -234,5 +236,22 @@ class GNPButtonWork : public DeviceWork {
     }
 };
 
+
+class RemoteMmiWork : public DeviceWork {
+    public:
+    const RemoteMmiType type;
+    const RemoteMmiInput action;
+
+    explicit RemoteMmiWork(const unsigned short deviceID, const RemoteMmiType type, const RemoteMmiInput action) 
+                          : DeviceWork(deviceID), type(type), action(action) {}
+
+    void accept(WorkProcessor& visitor) const override {
+        visitor.processRemoteMmiWork(* this);
+    }
+
+    void print(std::ostream& os) const override {
+      os << "GNPButtonWork[" << getWorkId() << "], type= " << type << " , action= " << action;
+    }
+};
 
 

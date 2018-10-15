@@ -2,11 +2,31 @@
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
+  const deviceSelector = document.getElementById('deviceSelector');
+  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn');
 
-  // Use the Jabra library
-  jabra.init().then(() => {
-    toastr.info("Jabra library initialized successfully");
-  }).catch((msg) => {
+  const ringBtn = document.getElementById('ring');
+  const offhookBtn = document.getElementById('offhook');
+  const onhookBtn = document.getElementById('onhook');
+  const muteBtn = document.getElementById('mute');
+  const unmuteBtn = document.getElementById('unmute');
+  const holdBtn = document.getElementById('hold');
+  const resumeBtn = document.getElementById('resume');
+
+  const noDeviceFound = document.getElementById('noDeviceFound');
+
+  function showError(err) {
+    let msg;
+    if (err.name === "CommandError" && err.errmessage === "Unknown cmd" && err.command === "getinstallinfo" ) {
+      msg = "Could not lookup installation info - Your installation is incomplete, out of date or corrupted.";
+    } else if (err instanceof Error) {
+      msg = err.toString();
+    } else if ((typeof err === 'string') || (err instanceof String)) {
+      msg = err; 
+    } else {
+      msg = JSON.stringify(err);
+    }
+
     // Add nodes to show the error message
     var div = document.createElement("div");
     var att = document.createAttribute("class");
@@ -17,6 +37,27 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = document.getElementById("section");
     list.insertBefore(br, list.childNodes[0]);
     list.insertBefore(div, list.childNodes[0]);
+
+    toastr.info(msg);
+  }
+
+  // Use the Jabra library - to be sure of the installation we also check it and report errors
+  // This installation check is optional but is there to reduce support issues.
+  jabra.init().then(() => jabra.getInstallInfo()).then( (installInfo) => { 
+    if (installInfo.installationOk) {
+      toastr.info("Jabra library initialized successfully");
+      // Setup device list and enable/disable buttons according if min 1 jabra device is there.
+      return setupDevices().then( () => {
+        if (deviceSelector.options.length === 0) {
+          noDeviceFound
+        }
+        // Additional setup here.
+      });
+    } else { // Installation not ok:
+      showError("Installation not ok - Your installation is incomplete, out of date or corrupted.");
+    }
+  }).catch((err) => {
+    showError(err);
   });
 
   jabra.addEventListener("mute", (event) => {
@@ -51,49 +92,76 @@ document.addEventListener('DOMContentLoaded', function () {
     toastr.info("Flash from the device");
   });
 
-  document.getElementById('ring').onclick = function () {
+  ringBtn.onclick = function () {
     jabra.ring();
   }
-  document.getElementById('offhook').onclick = function () {
+
+  offhookBtn.onclick = function () {
     jabra.offHook();
   }
-  document.getElementById('onhook').onclick = function () {
+
+  onhookBtn.onclick = function () {
     jabra.onHook();
   }
-  document.getElementById('mute').onclick = function () {
+
+  muteBtn.onclick = function () {
     jabra.mute();
   }
-  document.getElementById('unmute').onclick = function () {
+
+  unmuteBtn.onclick = function () {
     jabra.unmute();
   }
-  document.getElementById('hold').onclick = function () {
+
+  holdBtn.onclick = function () {
     jabra.hold();
   }
-  document.getElementById('resume').onclick = function () {
+
+  resumeBtn.onclick = function () {
     jabra.resume();
   }
-  document.getElementById('getactivedevice').onclick = function () {
-    jabra.getActiveDevice().then(
-      function (device) {
-        alert(JSON.stringify(device));
-      }
-    );
+
+  // Refresh device list automatically when devices are inserted/removed:
+  jabra.addEventListener(["device attached", "device detached"] , (event) => {
+    setupDevices();
+  });
+
+  // Helper to update device list returning promise that resolves when finished.
+  function setupDevices() {
+    while (deviceSelector.options.length > 0) {
+      deviceSelector.remove(0);
+    }
+
+    return jabra.getDevices().then((devices) => {
+      devices.forEach(device => {
+        var opt = document.createElement('option');
+        opt.value = device.deviceID;
+        opt.innerHTML = device.deviceName;
+        deviceSelector.appendChild(opt);
+      });
+
+      changeActiveDeviceBtn.disabled = (devices.length === 0);
+      ringBtn.disabled = (devices.length === 0);
+      offhookBtn.disabled = (devices.length === 0);
+      onhookBtn.disabled = (devices.length === 0);
+      muteBtn.disabled = (devices.length === 0);
+      unmuteBtn.disabled = (devices.length === 0);
+      holdBtn.disabled = (devices.length === 0);
+      resumeBtn.disabled = (devices.length === 0);
+
+      let notificationText = (devices.length === 0) ? "No Jabra device found - Please insert a Jabra Device!" : "";
+      noDeviceFound.innerText = notificationText;
+    });
   }
-  document.getElementById('getdevices').onclick = function () {
-    jabra.getDevices().then(
-      function(devices) {
-        alert(JSON.stringify(devices));
-      }
-    );
-  }
-  document.getElementById('setactivedevice0').onclick = function () {
-    jabra.setActiveDeviceId(0);
-  }
-  document.getElementById('setactivedevice1').onclick = function () {
-    jabra.setActiveDeviceId(1);
-  }
-  document.getElementById('setactivedevice2').onclick = function () {
-    jabra.setActiveDeviceId(2);
-  }
+
+  // Change active device when user asks:
+  changeActiveDeviceBtn.onclick = () => {
+    let id = deviceSelector.value;
+
+    jabra.setActiveDeviceId(id).then(() => {
+      toastr.info("Active device set to " + deviceSelector.options[deviceSelector.selectedIndex].text + " (id # " + id + ")");
+    }).then( (err) => {
+      toastr.info("Error setting active device " + err)
+    });
+  };
 
 }, false);

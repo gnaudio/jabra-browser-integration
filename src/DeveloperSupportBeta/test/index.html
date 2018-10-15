@@ -16,18 +16,26 @@
   </div>
 </header>
 <section id="section">
+  <div id="subTitles">
+        <p id="subTitle1"></p>
+        <p id="subTitle2"></p>
+  </div>
+  
   <div class="wrapper">
     <table>
         <tr> 
             <td>
-                <input id="initSDKBtn" type="button" value="Init"/>
+                <input id="initSDKBtn" type="button" value="Init" title="Initialize API and subscribe to ALL events (must be called prior to anything else) - Alias for init call followed by addEventListener call with catch all /.*/ argument"/>
             </td>
             <td>
-                <input id="unInitSDKBtn" type="button" value="UnInit" disabled="true"/>
+                <input id="unInitSDKBtn" type="button" value="UnInit" disabled="true" title="De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API - Alias for shutdown call"/>
             </td>
             <td>&nbsp;&nbsp;&nbsp;</td>
             <td>
-                <input id="checkInstallBtn" type="button" value="CheckInstall" disabled="true"/>
+                <input id="setupUserMediaPlaybackBtn" type="button" value="Setup user media playback" title="Activates microphone and speaker for playback - equivalent to call into getUserDeviceMediaExt followed by trySetDeviceOutput" disabled="true"/>
+            </td>
+            <td>
+                <input id="checkInstallBtn" type="button" value="CheckInstall" title="Alias for call into getInstallInfo" disabled="true"/>
             </td>
             <td>
                  <div id="installCheckResult"></div>
@@ -35,14 +43,14 @@
         </tr>    
     </table>
       
-    <p/>
+    <br/>
     <audio id="player" muted autoplay></audio>
-    <p/>
+    <br/>
     
     <table>
         <tr>
             <td>
-                <input id="devicesBtn" type="button" value="Get Devices" disabled="true"/>   
+                <input id="devicesBtn" type="button" value="Get Devices" title="Alias for call into getDevices" disabled="true"/>
             </td>
             <td>
                 <div>   
@@ -51,7 +59,7 @@
                 </div>   
             </td>
             <td>
-                 <input id="changeActiveDeviceBtn" type="button" value="Set as active" disabled="true"/>
+                 <input id="changeActiveDeviceBtn" type="button" value="Set as active" title="Select active device using special backwards compatible call into _setActiveDeviceId_deprecated" disabled="true"/>
             </td>
         </tr>
     </table>
@@ -65,10 +73,17 @@
             </td>
             <td>
                 <select id="methodSelector">                  
-                </select>   
+                </select>
             </td>
             <td>
-                <input id="invokeApiBtn" type="button" value="Invoke"/>
+                <input type="checkbox" id="filterInternalsAndDeprecatedMethodsChk" value="true" title="Filter out internals/deprecated methods" checked />
+
+            </td>
+            <td>
+                <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function"/>
+            </td>
+            <td>
+                <div id="methodHelp" class="methodHelp"></div>
             </td>
         </tr>
     </table>
@@ -93,52 +108,77 @@
         </tr>
         <tr>
             <td>
-                <input type="text" id="txtParam1" />
+                <input type="text" class="param" id="txtParam1" />
             </td>
             <td>
-                <input type="text" id="txtParam2" />
+                <input type="text" class="param" id="txtParam2" />
             </td>
             <td>
-                <input type="text" id="txtParam3" />
+                <input type="text" class="param" id="txtParam3" />
             </td>
             <td>
-                <input type="text" id="txtParam4" />
+                <input type="text" class="param" id="txtParam4" />
             </td>
             <td>
-                <input type="text" id="txtParam5" />
+                <input type="text" class="param" id="txtParam5" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span id="param1Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param2Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param3Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param4Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param5Hint" class="paramHint"></span>
             </td>
         </tr>
     </table>
     
     
-    <p/><p/>
+    <p><br/></p>
     
     <table>
         <tr>
             <td>
-              Message/event output: <input id="clearMessageAreaBtn" type="button" value="Clear" />   
+              Message/events: <input id="clearMessageAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
+              <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" />
             </td>
+            <td>&nbsp;</td>
             <td>
-              Error Output: <input id="clearErrorAreaBtn" type="button" value="Clear" />   
+              Errors: <input id="clearErrorAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" />
             </td>
         </tr>
         <tr>
             <td>
-              <textarea id="messageArea" rows="20" cols="80"></textarea>
+              <textarea id="messageArea" rows="25" cols="100"></textarea>
             </td>
+            <td>&nbsp;</td>
             <td>
-              <textarea id="errorArea" rows="20" cols="60"></textarea>
+              <textarea id="errorArea" rows="25" cols="60"></textarea>
             </td>
         </tr>
         <tr>
-            <td colspan="2">
-                API and extension content page log (open chrome developer tools for more details):
-                <input id="clearlogAreaBtn" type="button" value="Clear" /><br/>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                API/extension content page log:
+                <input id="clearlogAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
+                <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" />
+                <br/>
             </td>
         </tr>
         <tr>
-            <td colspan="2">
-              <textarea id="logArea" rows="10" cols="100"></textarea>
+            <td colspan="3">
+              <textarea id="logArea" rows="15" cols="160"></textarea>
               <br/>
               Nb. See also: 
               1) Extension background page console log.

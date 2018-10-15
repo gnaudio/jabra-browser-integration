@@ -246,63 +246,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // First initialize the Jabra library so we can call into the API.
-  jabra.init().then(() => {
-    jabra.addEventListener("mute", (event) => {
-      SetMute(true);
-      jabra.mute();
-    });
-  
-    jabra.addEventListener("unmute", (event) => {
-      SetMute(false);
-      jabra.unmute();
-    });
-  
-    jabra.addEventListener("endcall", (event) => {
-      if (webrtc) {
-        webrtc.leaveRoom();
-      } else {
-        console.error("Webrtc not initialized");
-      }
-      jabra.onHook();
-      setTimeout(function () {
-        location.href = window.location.origin + window.location.pathname;
-      }, 1 * 1000);
-    });
-  
-    $('#mute').click(function () {
-      if ($('#mute').hasClass('muted')) {
-        SetMute(false);
-        jabra.unmute();
-      } else {
-        SetMute(true);
-        jabra.mute();
-      }
-    });
-   
-    // First find the jabra input device, then use this to initialize webrtc.
-    // Note this involves asking for access to user media in advance (producing
-    // a dummy stream that we throw away), as required by getDeviceInfo because 
-    // of browser security rules.
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((dummyStream) => {
-      // Important to call getActiveDevice with true argument to get browser media information:
-      return jabra.getActiveDevice(true).then((deviceInfo) => {
-          // Shutdown initial dummy stream (not sure it is really required but lets be nice).
-          dummyStream.getTracks().forEach((track) => {
-              track.stop();
-          });
-  
-          // Now that we have the IDs of our jabra device, startup webrtc
-          webrtc = self.webrtcSetup(deviceInfo);
-      });
-    }).catch((err) => {
-      if (err.name === "NotFoundError") {
-        inputStat.innerText = "Input device not accessible/found";
-      } else {
-        inputStat.innerText = "Input device selection problem: " + err.name + ": " + err.message;
-      }
-    });
-  }).catch( (msg) => {
+  function showError(err) {
+    let msg;
+    if (err.name === "CommandError" && err.errmessage === "Unknown cmd" && err.command === "getinstallinfo" ) {
+      msg = "Could not lookup installation info - Your installation is incomplete, out of date or corrupted.";
+    } else if (err instanceof Error) {
+      msg = err.toString();
+    } else if ((typeof err === 'string') || (err instanceof String)) {
+      msg = err; 
+    } else {
+      msg = JSON.stringify(err);
+    }
+
     // Add nodes to show the message
     var div = document.createElement("div");
     var att = document.createAttribute("class");
@@ -313,5 +268,70 @@ document.addEventListener('DOMContentLoaded', function () {
     var list = document.getElementById("subTitles");
     list.insertBefore(br, list.childNodes[0]);
     list.insertBefore(div, list.childNodes[0]);
+  }
+
+  // Use the Jabra library - to be sure of the installation we also check it and report errors
+  // This installation check is optional but is there to reduce support issues.
+  jabra.init().then(() => jabra.getInstallInfo()).then( (installInfo) => {
+    if (installInfo.installationOk) {
+      jabra.addEventListener("mute", (event) => {
+        SetMute(true);
+        jabra.mute();
+      });
+    
+      jabra.addEventListener("unmute", (event) => {
+        SetMute(false);
+        jabra.unmute();
+      });
+    
+      jabra.addEventListener("endcall", (event) => {
+        if (webrtc) {
+          webrtc.leaveRoom();
+        } else {
+          console.error("Webrtc not initialized");
+        }
+        jabra.onHook();
+        setTimeout(function () {
+          location.href = window.location.origin + window.location.pathname;
+        }, 1 * 1000);
+      });
+    
+      $('#mute').click(function () {
+        if ($('#mute').hasClass('muted')) {
+          SetMute(false);
+          jabra.unmute();
+        } else {
+          SetMute(true);
+          jabra.mute();
+        }
+      });
+    
+      // First find the jabra input device, then use this to initialize webrtc.
+      // Note this involves asking for access to user media in advance (producing
+      // a dummy stream that we throw away), as required by getDeviceInfo(true) because 
+      // of browser security rules.
+      navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((dummyStream) => {
+        // Shutdown initial dummy stream (not sure it is really required but let's be nice).
+        dummyStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+
+        // Important to call getActiveDevice with true argument to get browser media information:
+        return jabra.getActiveDevice(true).then((deviceInfo) => { 
+            // Now that we have the IDs of our jabra device, startup webrtc
+            webrtc = self.webrtcSetup(deviceInfo);
+        });
+      }).catch((err) => {
+        if (err.name === "NotFoundError") {
+          inputStat.innerText = "Input device not accessible/found";
+        } else {
+          inputStat.innerText = "Input device selection problem: " + err.name + ": " + err.message;
+        }
+      });
+    } else { // Installation not ok:
+      showError("Installation not ok - Your installation is incomplete, out of date or corrupted.");
+    }
+  }).catch( (err) => {
+    showError(err);
   });
 }, false);
