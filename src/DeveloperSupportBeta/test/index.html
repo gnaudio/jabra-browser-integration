@@ -38,9 +38,9 @@
                 <input id="checkInstallBtn" type="button" value="CheckInstall" title="Alias for call into getInstallInfo" disabled="true"/>
             </td>
             <td>
-                 <div id="installCheckResult"></div>
+                 <div id="installCheckResult" class="installCheck"></div>
             </td>
-        </tr>    
+        </tr>   
     </table>
       
     <br/>
@@ -141,10 +141,9 @@
             </td>
         </tr>
     </table>
-    
-    
-    <p><br/></p>
-    
+
+    <br/>
+
     <table>
         <tr>
             <td>
@@ -167,6 +166,24 @@
         </tr>
         <tr>
             <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>   
+            <td colspan="3">
+                <span id="devLogStatus" class="devLogStatus" style="display:none">
+                    <br/>
+                    Devlog status&nbsp;&nbsp;
+                    <label for="boomArmStatus">Boom arm:</label>&nbsp;<span id="boomArmStatus">?</span>&nbsp;,
+                    <label for="txStatus">Tx:</label>&nbsp;<span id="txStatus">?</span>&nbsp;,
+                    <label for="txPeakStatus">Tx peak:</label>&nbsp;<span id="txPeakStatus">?</span>&nbsp;,
+                    <label for="rxStatus">Rx:</label>&nbsp;<span id="rxStatus">?</span>&nbsp;,
+                    <label for="rxPeakStatus">Rx peak:</label>&nbsp;<span id="rxPeakStatus">?</span>&nbsp;,
+                    <label for="txSpeechStatus">Tx speech:</label>&nbsp;<span id="txSpeechStatus">?</span>&nbsp;,
+                    <label for="rxSpeechStatus">Rx speech:</label>&nbsp;<span id="rxSpeechStatus">?</span>                    
+                    <br/>
+                    <br/>
+                    <br/>
+                </span>
+            </td>
         </tr>
         <tr>
             <td colspan="3">
