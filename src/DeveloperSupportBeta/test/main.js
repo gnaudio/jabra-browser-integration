@@ -50,9 +50,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const player = document.getElementById('player');
 
+  let boomArmStatus = document.getElementById('boomArmStatus');
+  let txStatus = document.getElementById('txStatus');
+  let txPeakStatus = document.getElementById('txPeakStatus');
+  let rxStatus = document.getElementById('rxStatus');
+  let rxPeakStatus = document.getElementById('rxPeakStatus');
+  let txSpeechStatus = document.getElementById('txSpeechStatus');
+  let rxSpeechStatus = document.getElementById('rxSpeechStatus');
+
   let variables = {
     "audioElement": player
   }
+  
+  let boomArm = undefined;
+  let txDb = undefined;
+  let txPeakDb = undefined;
+  let rxDb = undefined;
+  let rxPeakDb = undefined;
+  let rxSpeech = undefined;
+  let txSpeech = undefined;
 
   let scrollMessageArea = true;
   let scrollErrorArea = true;
@@ -206,6 +222,53 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       changeActiveDeviceBtn.disabled = deviceSelector.options.length === 0;
+    }
+
+    // Watch for interesting status in devlog events:
+    if (event && event.message === "devlog") {
+      devLogStatus.style = "display: block";
+
+      let boomArmEvent = event.data.event["Boom Position Guidance OK"];
+      if (boomArmEvent !== undefined) {
+          boomArm = (boomArmEvent.toString().toLowerCase() === "true");
+          boomArmStatus.innerText = boomArm;
+      }
+  
+      let txLevelEvent = event.data.event["TX Acoustic Logging Level"];
+      if (txLevelEvent !== undefined) {
+          txDb = parseInt(txLevelEvent);
+          txStatus.innerText = txDb.toString()+"db";
+      }
+
+      let txPeakLevelEvent = event.data.event["TX Acoustic Logging Peak"];
+      if (txPeakLevelEvent !== undefined) {
+          txPeakDb = parseInt(txPeakLevelEvent);
+          txPeakStatus.innerText = txPeakDb.toString()+"db";
+      }
+
+      let rxLevelEvent = event.data.event["RX Acoustic Logging Level"];
+      if (rxLevelEvent !== undefined) {
+          rxDb = parseInt(rxLevelEvent);
+          rxStatus.innerText = rxDb.toString()+"db";
+      }
+
+      let rxPeakLevelEvent = event.data.event["RX Acoustic Logging Peak"];
+      if (rxPeakLevelEvent !== undefined) {
+          rxPeakDb = parseInt(rxPeakLevelEvent);
+          rxPeakStatus.innerText = rxPeakDb.toString()+"db";
+      }
+
+      let txSpeechEvent = event.data.event["Speech_Analysis_TX"];
+      if (txSpeechEvent !== undefined) {
+          txSpeech = (txSpeechEvent.toString().toLowerCase() === "true");
+          txSpeechStatus.innerText = txSpeech.toString();
+      }
+
+      let rxSpeechEvent = event.data.event["Speech_Analysis_RX"];
+      if (rxSpeechEvent !== undefined) {
+          rxSpeech = (rxSpeechEvent.toString().toLowerCase() === "true");
+          rxSpeechStatus.innerText = rxSpeech.toString();
+      }
     }
   }
 
