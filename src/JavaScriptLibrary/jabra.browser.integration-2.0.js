@@ -76,6 +76,67 @@ var jabra;
         "headsetConnection", "headsetDisConnection", "devlog", "busylight",
         "hearThrough", "batteryStatus", "gnpButton", "mmi", "error"];
     /**
+     * Error status codes returned by SDK. Same as Jabra_ErrorStatus in native SDK.
+     */
+    let ErrorCodes;
+    (function (ErrorCodes) {
+        ErrorCodes[ErrorCodes["NoError"] = 0] = "NoError";
+        ErrorCodes[ErrorCodes["SSLError"] = 1] = "SSLError";
+        ErrorCodes[ErrorCodes["CertError"] = 2] = "CertError";
+        ErrorCodes[ErrorCodes["NetworkError"] = 3] = "NetworkError";
+        ErrorCodes[ErrorCodes["DownloadError"] = 4] = "DownloadError";
+        ErrorCodes[ErrorCodes["ParseError"] = 5] = "ParseError";
+        ErrorCodes[ErrorCodes["OtherError"] = 6] = "OtherError";
+        ErrorCodes[ErrorCodes["DeviceInfoError"] = 7] = "DeviceInfoError";
+        ErrorCodes[ErrorCodes["FileNotAccessible"] = 8] = "FileNotAccessible";
+        ErrorCodes[ErrorCodes["FileNotCompatible"] = 9] = "FileNotCompatible";
+        ErrorCodes[ErrorCodes["Device_NotFound"] = 10] = "Device_NotFound";
+        ErrorCodes[ErrorCodes["Parameter_fail"] = 11] = "Parameter_fail";
+        ErrorCodes[ErrorCodes["Authorization_failed"] = 12] = "Authorization_failed";
+        ErrorCodes[ErrorCodes["FileNotAvailable"] = 13] = "FileNotAvailable";
+        ErrorCodes[ErrorCodes["ConfigParseError"] = 14] = "ConfigParseError";
+        ErrorCodes[ErrorCodes["SetSettings_Fail"] = 15] = "SetSettings_Fail";
+        ErrorCodes[ErrorCodes["Device_Reboot"] = 16] = "Device_Reboot";
+        ErrorCodes[ErrorCodes["Device_ReadFail"] = 17] = "Device_ReadFail";
+        ErrorCodes[ErrorCodes["Device_NotReady"] = 18] = "Device_NotReady";
+        ErrorCodes[ErrorCodes["FilePartiallyCompatible"] = 19] = "FilePartiallyCompatible";
+    })(ErrorCodes || (ErrorCodes = {}));
+    ;
+    /**
+     * Error return codes. Same as Jabra_ReturnCode in native SDK.
+     */
+    let ErroReturnCodes;
+    (function (ErroReturnCodes) {
+        ErroReturnCodes[ErroReturnCodes["Return_Ok"] = 0] = "Return_Ok";
+        ErroReturnCodes[ErroReturnCodes["Device_Unknown"] = 1] = "Device_Unknown";
+        ErroReturnCodes[ErroReturnCodes["Device_Invalid"] = 2] = "Device_Invalid";
+        ErroReturnCodes[ErroReturnCodes["Not_Supported"] = 3] = "Not_Supported";
+        ErroReturnCodes[ErroReturnCodes["Return_ParameterFail"] = 4] = "Return_ParameterFail";
+        ErroReturnCodes[ErroReturnCodes["ProtectedSetting_Write"] = 5] = "ProtectedSetting_Write";
+        ErroReturnCodes[ErroReturnCodes["No_Information"] = 6] = "No_Information";
+        ErroReturnCodes[ErroReturnCodes["NetworkRequest_Fail"] = 7] = "NetworkRequest_Fail";
+        ErroReturnCodes[ErroReturnCodes["Device_WriteFail"] = 8] = "Device_WriteFail";
+        ErroReturnCodes[ErroReturnCodes["Device_ReadFails"] = 9] = "Device_ReadFails";
+        ErroReturnCodes[ErroReturnCodes["No_FactorySupported"] = 10] = "No_FactorySupported";
+        ErroReturnCodes[ErroReturnCodes["System_Error"] = 11] = "System_Error";
+        ErroReturnCodes[ErroReturnCodes["Device_BadState"] = 12] = "Device_BadState";
+        ErroReturnCodes[ErroReturnCodes["FileWrite_Fail"] = 13] = "FileWrite_Fail";
+        ErroReturnCodes[ErroReturnCodes["File_AlreadyExists"] = 14] = "File_AlreadyExists";
+        ErroReturnCodes[ErroReturnCodes["File_Not_Accessible"] = 15] = "File_Not_Accessible";
+        ErroReturnCodes[ErroReturnCodes["Firmware_UpToDate"] = 16] = "Firmware_UpToDate";
+        ErroReturnCodes[ErroReturnCodes["Firmware_Available"] = 17] = "Firmware_Available";
+        ErroReturnCodes[ErroReturnCodes["Return_Async"] = 18] = "Return_Async";
+        ErroReturnCodes[ErroReturnCodes["Invalid_Authorization"] = 19] = "Invalid_Authorization";
+        ErroReturnCodes[ErroReturnCodes["FWU_Application_Not_Available"] = 20] = "FWU_Application_Not_Available";
+        ErroReturnCodes[ErroReturnCodes["Device_AlreadyConnected"] = 21] = "Device_AlreadyConnected";
+        ErroReturnCodes[ErroReturnCodes["Device_NotConnected"] = 22] = "Device_NotConnected";
+        ErroReturnCodes[ErroReturnCodes["CannotClear_DeviceConnected"] = 23] = "CannotClear_DeviceConnected";
+        ErroReturnCodes[ErroReturnCodes["Device_Rebooted"] = 24] = "Device_Rebooted";
+        ErroReturnCodes[ErroReturnCodes["Upload_AlreadyInProgress"] = 25] = "Upload_AlreadyInProgress";
+        ErroReturnCodes[ErroReturnCodes["Download_AlreadyInProgress"] = 26] = "Download_AlreadyInProgress";
+    })(ErroReturnCodes || (ErroReturnCodes = {}));
+    ;
+    /**
      * Custom error returned by commands expecting results when failing.
      */
     class CommandError extends Error {
@@ -160,7 +221,21 @@ var jabra;
     })(RemoteMmiSequence || (RemoteMmiSequence = {}));
     ;
     /**
-     * The log level curently used internally in this api facade. Initially this is set to show errors and
+     * MMI button actions reported when button has focus.
+     */
+    let RemoteMmiActionInput;
+    (function (RemoteMmiActionInput) {
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_UP"] = 1] = "MMI_ACTION_UP";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_DOWN"] = 2] = "MMI_ACTION_DOWN";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_TAP"] = 4] = "MMI_ACTION_TAP";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_DOUBLE_TAP"] = 8] = "MMI_ACTION_DOUBLE_TAP";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_PRESS"] = 16] = "MMI_ACTION_PRESS";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_LONG_PRESS"] = 32] = "MMI_ACTION_LONG_PRESS";
+        RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_X_LONG_PRESS"] = 64] = "MMI_ACTION_X_LONG_PRESS";
+    })(RemoteMmiActionInput || (RemoteMmiActionInput = {}));
+    ;
+    /**
+     * The log level currently used internally in this api facade. Initially this is set to show errors and
      * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
      * changes the log level. Available in the API for testing only - do not use this in normal applications.
      */
@@ -799,7 +874,7 @@ var jabra;
     *
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     *
-    * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check
+    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints) {
