@@ -55,9 +55,9 @@ void CmdSetRemoteMmiLightAction::Execute(const Request& request)
   uint8_t blue = 0;
   
   if (colorArray.is_array() && colorArray.size()) {
-    uint8_t red = colorArray[0];
-    uint8_t green = colorArray[1];
-    uint8_t blue = colorArray[2];
+    red = colorArray[0];
+    green = colorArray[1];
+    blue = colorArray[2];
   }
 
   RemoteMmiActionOutput output = {
