@@ -49,11 +49,12 @@ const char * const SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT = "effect";
 
 const char * const JSON_KEY_COMMAND = "command";
 const char * const JSON_KEY_EXCEPTION = "exception";
-const char * const JSON_KEY_JABRA_ERRORCODE = "errorcode";
+const char * const JSON_KEY_JABRA_RETURN_ERRORCODE = "returnErrorCode";
 const char * const JSON_KEY_ERROR_MESSAGE = "errormsg";
 const char * const JSON_KEY_CAPTURED = "captured";
 
 const char * const JSON_KEY_DEVICEID = "deviceID";
+const char * const JSON_KEY_ACTIVEDEVICE = "activeDevice";
 const char * const JSON_KEY_DEVICENAME = "deviceName";
 
 const char * const JSON_KEY_SIMPLE_VALUE = "value";

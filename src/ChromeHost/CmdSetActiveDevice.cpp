@@ -83,7 +83,7 @@ void CmdSetActiveDevice::Execute(const Request& request)
       if (!m_headsetIntegrationService->SetCurrentDeviceId(id)) {
        m_headsetIntegrationService->Error(request, commandStr2, {
          { JSON_KEY_COMMAND, request.message },
-         { JSON_KEY_JABRA_ERRORCODE, Device_Unknown },
+         { JSON_KEY_JABRA_RETURN_ERRORCODE, Device_Unknown },
          { JSON_KEY_ERROR_MESSAGE, "no device with id = " + std::to_string(id) + " attached" }
        });
       } else {
@@ -92,7 +92,7 @@ void CmdSetActiveDevice::Execute(const Request& request)
     } else { // Argument missng
        m_headsetIntegrationService->Error(request, commandStr2, {
          { JSON_KEY_COMMAND, request.message },
-         { JSON_KEY_JABRA_ERRORCODE, Return_ParameterFail },
+         { JSON_KEY_JABRA_RETURN_ERRORCODE, Return_ParameterFail },
          { JSON_KEY_ERROR_MESSAGE, "Could not resolve active device argument" }
        });
     }

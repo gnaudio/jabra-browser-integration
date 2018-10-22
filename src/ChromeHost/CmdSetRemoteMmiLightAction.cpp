@@ -67,11 +67,15 @@ void CmdSetRemoteMmiLightAction::Execute(const Request& request)
     effect
   };
 
+  const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+
   Jabra_ReturnCode retv;
-  if ((retv=Jabra_SetRemoteMmiAction(m_headsetIntegrationService->GetCurrentDeviceId(), type, output)) != Return_Ok) {
+  if ((retv=Jabra_SetRemoteMmiAction(deviceId, type, output)) != Return_Ok) {
       m_headsetIntegrationService->Error(request, command, { 
-        { JSON_KEY_JABRA_ERRORCODE, retv},
-        { JSON_KEY_COMMAND, request.message }
+        { JSON_KEY_JABRA_RETURN_ERRORCODE, retv},
+        { JSON_KEY_COMMAND, request.message },
+		{ std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
+		{ std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }
       });
   } else {
       m_headsetIntegrationService->Event(request, command, {});
