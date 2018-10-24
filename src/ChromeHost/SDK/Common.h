@@ -503,9 +503,9 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetVersion(char* const version, int count);
  */
 LIBRARY_API void Jabra_SetAppID(const char* inAppID);
 
-/** Library initialization - only intended to be called once (or at least symmetrically with Jabra_Uninitialize()).
+/** Library initialization - only intended to be called once.
  *  @param[in]   : FirstScanForDevicesDoneFunc: Callback method. Called when USB scan is done. Can be NULL if not used.
- *  @param[in]   : DeviceAttachedFunc: Callback method. Called when a device is attached. Can be NULL if not used.
+ *  @param[in]   : DeviceAttachedFunc: Callback method. Called when a device is attached. Can be NULL if not used. Callee must call Jabra_FreeDeviceInfo() to free memory.
  *  @param[in]   : DeviceRemovedFunc: Callback method. Called when a device is removed. Can be NULL if not used.
  *  @param[in]   : ButtonInDataRawHidFunc: Callback method. Called on new input data. Raw HID. Low-level. Can be NULL if not used.
  *  @param[in]   : ButtonInDataTranslatedFunc: Callback method. Called on new input data. High-level. Can be NULL if not used.
@@ -549,6 +549,7 @@ LIBRARY_API bool Jabra_IsDeviceAttached(unsigned short deviceID);
 				   On return this pointer has the value of how many devices that was added.
  *  @param[in]   : deviceInfoList: Pointer to an array of Jabra_DeviceInfo to be populated.
  *  @return      : void.
+ *  Note: call Jabra_FreeDeviceInfo() on each object in the list when done do avoid a memory leak.
  */
 LIBRARY_API void Jabra_GetAttachedJabraDevices(int* count, Jabra_DeviceInfo* deviceInfoList);
 
@@ -818,7 +819,9 @@ LIBRARY_API void Jabra_FreePairingList(Jabra_PairingList* deviceList);
                  System_Error if there is some error during packet formation.
                  Device_WriteFail if it fails to write the value to the device.
  *  Note       : After device connection, Jabra_GetPairingList api has to be called to get updated connection status.
- */
+ *     			  In order to connect to a device from the list of paired devices, make sure that there is no paired device currently connected.
+ *				  Any paired device currently connected has to be disconnected by calling Jabra_DisconnectPairedDevice() before using Jabra_ConnectPairedDevice.
+*/
 LIBRARY_API Jabra_ReturnCode Jabra_ConnectPairedDevice(unsigned short deviceID, Jabra_PairedDevice* device);
 
 /** Disconnect a paired device.
@@ -904,7 +907,7 @@ LIBRARY_API bool Jabra_GetLeftEarbudStatus(unsigned short deviceID);
 *  @param[in]   : LeftEarbudFunc: Callback method. Called when left earbud status event is received from device. Can be NULL if not used.
 *  @return      : Return_Ok if success otherwise error code.
 */
-LIBRARY_API Jabra_ReturnCode Jabra_RegisterLeftEarbudStatus(unsigned short deviceID, void(*LeftEarbudFunc)(unsigned short deviceID, bool busylightValue));
+LIBRARY_API Jabra_ReturnCode Jabra_RegisterLeftEarbudStatus(unsigned short deviceID, void(*LeftEarbudFunc)(unsigned short deviceID, bool connected));
 
 /**
  *  Registration for HearThrough setting change event.
@@ -1001,7 +1004,6 @@ LIBRARY_API ButtonEvent* Jabra_GetSupportedButtonEvents(unsigned short deviceID)
 LIBRARY_API void Jabra_FreeButtonEvents(ButtonEvent *eventsSupported);
 
 /** Registration for GNP button events i.e remote MMI.
-*  @param[in]   : deviceID: Id for specific device
 *  @param[in]   : ButtonGNPEventFunc: Callback method to recieve GNP Button events/Remote MMI events. Can be NULL if not used.
 *  @return      : NA
 */
@@ -1157,8 +1159,9 @@ LIBRARY_API void Jabra_FreeFirmwareInfo(Jabra_FirmwareInfo* firmwareInfo);
 
 /** Get the file path of the downloaded file
  *  @param[in]   : deviceID: Id for specific device
- *  @param[in]   : version: Version for which file download needs to be initiated.
+ *  @param[in]   : version: Version for which the path is required.
  *  @return      : firmwareFilePath: firmware file path of the device.
+ *  Note		 : Call Jabra_DownloadFirmware first to ensure that data is current
  *  Note         : As Memory is allocated through SDK for firmwareFilePath, memory needs to be freed by calling Jabra_FreeString API.
  */
 LIBRARY_API char* Jabra_GetFirmwareFilePath(unsigned short deviceID, const char* version);
@@ -1302,7 +1305,7 @@ LIBRARY_API void Jabra_FreeCharArray(const char** arrPtr);
  */
 LIBRARY_API bool Jabra_IsUploadRingtoneSupported(unsigned short deviceID);
 
-/** Upload ringtone to device.
+/** Upload ringtone to device. For Mac and Linux only (for Windows use Jabra_UploadWavRingtone).
  *  @param[in] : deviceID : id for a specific device
  *  @param[in] : Audio file name to be uploaded
  *               The format supported is wav 16kHz in uncompressed format
@@ -1320,7 +1323,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_UploadRingtone(unsigned short deviceID, const
 typedef void(*UploadProgress)(unsigned short deviceID, Jabra_UploadEventStatus status, unsigned short percentage);
 
 /**
- * Registration for upload progress event.
+ * Registration for ringtone upload progress event.
  * @param[in] callback callback method, called during upload.
  */
 LIBRARY_API void Jabra_RegisterUploadProgress(UploadProgress const callback);

@@ -5,7 +5,7 @@ declare namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    const apiVersion = "2.0.beta4";
+    const apiVersion = "2.0.beta5";
     /**
      * Contains information about installed components.
      */
@@ -65,12 +65,12 @@ declare namespace jabra {
          */
         browserGroupId?: string;
         /**
-         * The browser's unique identifier for the input (e.g. microphone) part of the Jabra device (page orgin specific).
+         * The browser's unique identifier for the input (e.g. microphone) part of the Jabra device (page origin specific).
          * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
          */
         browserAudioInputId?: string;
         /**
-        * The browser's unique identifier for an output (e.g. speaker) part of the Jabra device (page orgin specific).
+        * The browser's unique identifier for an output (e.g. speaker) part of the Jabra device (page origin specific).
         * Only available when calling getDevices/getActiveDevice with includeBrowserMediaDeviceInfo argument set to true.
         */
         browserAudioOutputId?: string;
@@ -81,7 +81,7 @@ declare namespace jabra {
         browserLabel?: string;
     }
     /**
-     * A combination of a media stream and information of the assoicated device from the view of the browser.
+     * A combination of a media stream and information of the associated device from the view of the browser.
      */
     interface MediaStreamAndDeviceInfoPair {
         stream: MediaStream;
@@ -179,7 +179,7 @@ declare namespace jabra {
      */
     type ColorType = [number, number, number];
     /**
-     * The log level curently used internally in this api facade. Initially this is set to show errors and
+     * The log level currently used internally in this api facade. Initially this is set to show errors and
      * warnings until a logEvent (>=0.5) changes this when initializing the extension or when the user
      * changes the log level. Available in the API for testing only - do not use this in normal applications.
      */
@@ -317,7 +317,7 @@ declare namespace jabra {
     *
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     *
-    * Note: Subsequetly, if this method appears to succed use the isDeviceSelectedForInput function to check
+    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;

@@ -74,17 +74,22 @@ document.addEventListener('DOMContentLoaded', function () {
   let scrollErrorArea = true;
   let scrollLogArea = true;
 
+  let errors = new BoundedQueue(1000);
+  let messages = new BoundedQueue(1000);
+  let logs = new BoundedQueue(1000);
+
   // Help text for command followed by help for parameters:
   const commandTxtHelp = {
     getDevices: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     setActiveDeviceId: ["", "id: integer"],
-    setMmiFocus: ["", "type: RemoteMmiType", "capture: boolean"],
-    setRemoteMmiLightAction: ["", "type: RemoteMmiType", "color: hex-string", "effect: RemoteMmiSequence"],
+    _setActiveDeviceId: ["", "id: integer"],
+    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType", "capture: boolean"],
+    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType", "color: 6 digit hex-string", "effect: RemoteMmiSequence"],
     setBusyLight: ["", "busy: boolean"],
     trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
     isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
-    getUserDeviceMediaExt: ["", "constraints?: MediaStreamConstraints (JSON)"],
+    getUserDeviceMediaExt: ["Cause browser to access the microphone and devlog events to start (if supported)", "constraints?: MediaStreamConstraints (JSON)"],
 
     init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with most events/errors!!"],
     shutdown: ["De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API."],
@@ -556,7 +561,13 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       txt = "error object: " + JSON.stringify(err, null, 2);
     }
-    errorArea.value = errorArea.value + "\n" + txt;
+
+    errors.push(txt);
+    updateErrorArea();
+  }
+
+  function updateErrorArea() {
+    errorArea.value = errors.getAll().join("\n");
     if (scrollErrorArea) {
       errorArea.scrollTop = errorArea.scrollHeight;
     }
@@ -564,33 +575,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function addStatusMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? msg : "Status: " + JSON.stringify(msg, null, 2);
-    if (messageFilterAllows(txt)) {
-      messageArea.value = messageArea.value + "\n" + txt;
-      if (scrollMessageArea) {
-        messageArea.scrollTop = messageArea.scrollHeight;
-      }
-    }
+    messages.push(txt);
+    updateMessageArea();
   }
 
   function addResponseMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? "response string: " + msg : "response object: " + JSON.stringify(msg, null, 2);
-    if (messageFilterAllows(txt)) {
-      messageArea.value = messageArea.value + "\n" + txt;
-      if (scrollMessageArea) {
-        messageArea.scrollTop = messageArea.scrollHeight;
-      }
-    }
+    messages.push(txt);
+    updateMessageArea();
   }
 
   function addEventMessage(msg) {
     let txt = (typeof msg === 'string' || msg instanceof String) ? "event string: " + msg : "event object: " + JSON.stringify(msg, null, 2);
-    if (messageFilterAllows(txt)) {
-      messageArea.value = messageArea.value + "\n" + txt;
-      if (scrollMessageArea) {
+    messages.push(txt);
+    updateMessageArea();
+  }
+
+  function updateMessageArea() {
+    messageArea.value = messages.getAll().filter(txt => messageFilterAllows(txt)).join("\n");
+    if (scrollMessageArea) {
         messageArea.scrollTop = messageArea.scrollHeight;
-      }
     }
   }
+
+  messageFilter.oninput = () => {
+    updateMessageArea();
+  };
 
   // Copy console output to log area:
   var console = window.console
@@ -606,18 +616,25 @@ document.addEventListener('DOMContentLoaded', function () {
           original.apply(console, arguments);
 
           let txt = replaceStr.apply(this, arguments);
-          if (logFilterAllows(txt)) {
-            logArea.value = logArea.value + "\n" + txt;
-            if (scrollLogArea) {
-              logArea.scrollTop = logArea.scrollHeight;
-            }
-          }
+          logs.push(txt);
+          updateLogArea();
         }
     }
     var methods = ['log', 'warn', 'error']
     for (var i = 0; i < methods.length; i++)
         intercept(methods[i])
   }
+
+  function updateLogArea() {
+    logArea.value = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    if (scrollLogArea) {
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+  }
+
+  logFilter.oninput = () => {
+    updateLogArea();
+  };
 
   function getChromeVersion () {     
     var raw = navigator.userAgent.match(/Chrom(e|ium)\/(([0-9]+\.?)*)/);

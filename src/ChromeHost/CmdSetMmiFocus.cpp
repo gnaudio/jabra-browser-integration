@@ -47,21 +47,23 @@ void CmdSetMmiFocus::Execute(const Request& request)
   RemoteMmiType type = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_TYPE, MMI_TYPE_ALL);
   bool capture = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_CAPTURE, true);
 
+  const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+
   Jabra_ReturnCode retv;
   bool captured = false;
   if (capture) { // Take focus with no filtering and high priority:
-    retv = Jabra_GetRemoteMmiFocus(m_headsetIntegrationService->GetCurrentDeviceId(), type, (RemoteMmiInput)255, MMI_PRIORITY_HIGH);
+    retv = Jabra_GetRemoteMmiFocus(deviceId, type, (RemoteMmiInput)255, MMI_PRIORITY_HIGH);
     if (retv == Return_Ok) {
       captured = true;
     } else {
-      Jabra_IsRemoteMmiInFocus(m_headsetIntegrationService->GetCurrentDeviceId(), type, &captured);
+      Jabra_IsRemoteMmiInFocus(deviceId, type, &captured);
     }
   } else { // Release focus:
-    retv = Jabra_ReleaseRemoteMmiFocus(m_headsetIntegrationService->GetCurrentDeviceId(), type);
+    retv = Jabra_ReleaseRemoteMmiFocus(deviceId, type);
     if (retv == Return_Ok) {
       captured = false;
     } else {
-      Jabra_IsRemoteMmiInFocus(m_headsetIntegrationService->GetCurrentDeviceId(), type, &captured);
+      Jabra_IsRemoteMmiInFocus(deviceId, type, &captured);
     }
   }
 
@@ -71,7 +73,9 @@ void CmdSetMmiFocus::Execute(const Request& request)
     m_headsetIntegrationService->Error(request, "setmmifocus", {
       { JSON_KEY_COMMAND, request.message },
       { JSON_KEY_CAPTURED, captured },
-      { JSON_KEY_JABRA_ERRORCODE, retv }
+      { JSON_KEY_JABRA_RETURN_ERRORCODE, retv },
+	  { std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
+	  { std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }
     });
   }
 }

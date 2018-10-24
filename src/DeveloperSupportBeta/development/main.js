@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   jabra.addEventListener("reject", (event) => {
-    toastr.info("Accept call from the device");
+    toastr.info("Reject call from the device");
   });
 
   jabra.addEventListener("endcall", (event) => {
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     jabra.setActiveDeviceId(id).then(() => {
       toastr.info("Active device set to " + deviceSelector.options[deviceSelector.selectedIndex].text + " (id # " + id + ")");
-    }).then( (err) => {
+    }).catch( (err) => {
       toastr.info("Error setting active device " + err)
     });
   };

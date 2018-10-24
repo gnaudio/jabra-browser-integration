@@ -51,10 +51,14 @@ void CmdSetBusyLight::Execute(const Request& request)
   //	  m_headsetIntegrationService->Error(request, "Could not acquire device lock", {});
   // }
 
-  if ((retv=Jabra_SetBusylightStatus(m_headsetIntegrationService->GetCurrentDeviceId(), busy)) != Return_Ok) {
+  const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+
+  if ((retv=Jabra_SetBusylightStatus(deviceId, busy)) != Return_Ok) {
   	  m_headsetIntegrationService->Error(request, "setbusylight", { 
-        { JSON_KEY_JABRA_ERRORCODE, retv},
-        { JSON_KEY_COMMAND, request.message }
+        { JSON_KEY_JABRA_RETURN_ERRORCODE, retv},
+        { JSON_KEY_COMMAND, request.message },
+		{ std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
+		{ std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }
      });
   } else {
       m_headsetIntegrationService->Event(request, "setbusylight", {});

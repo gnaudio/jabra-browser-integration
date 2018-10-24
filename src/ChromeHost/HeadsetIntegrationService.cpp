@@ -389,6 +389,8 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
       LOG(plog::info) << "Received button translated notification with data " << work.data.translatedInData << " for device " << work.deviceID;
     }
 
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
+
     const EventMapper * mapper = buttonEventMappings[work.data];
     if (mapper) {
       const bool ringerStatus = GetRingerStatus(work.deviceID);
@@ -401,6 +403,7 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
 
        nlohmann::json eventData = { 
          { JSON_KEY_DEVICEID, work.deviceID }, 
+	     { JSON_KEY_ACTIVEDEVICE, isActiveDeviceEvent },
          { JSON_KEY_BUTTONINDATA, work.data.buttonInData }, 
          { JSON_KEY_TRANSLATEDINDATA, work.data.translatedInData },
          { JSON_KEY_RINGER_STATUS, ringerStatus },
@@ -426,7 +429,7 @@ void HeadsetIntegrationService::processButtonInDataTranslated(const ButtonInData
 
 void HeadsetIntegrationService::processDeviceAttached(const DeviceAttachedWork& work) {
  try {
-    unsigned short deviceId = work.basicDeviceInfo.deviceID;
+    const unsigned short deviceId = work.basicDeviceInfo.deviceID;
 
     IF_LOG(plog::debug) {
       LOG(plog::debug) << "Received device " << deviceId << " attached notification";
@@ -560,8 +563,11 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
 
 void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
  try {
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
+
     nlohmann::json eventData = nlohmann::json();
     eventData[JSON_KEY_DEVICEID] = work.deviceID;
+	eventData[JSON_KEY_ACTIVEDEVICE] = isActiveDeviceEvent;
     eventData[JSON_KEY_EVENT_JSON_VALUE] = nlohmann::json::parse(work.eventStr);
     g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
   } catch (const std::exception& e) {
@@ -575,7 +581,8 @@ void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
 
 void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
  try {
-    Event(Context::device(), EVENT_BUSY_LIGHT, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.busy), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
+    Event(Context::device(), EVENT_BUSY_LIGHT, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.busy), std::make_pair(JSON_KEY_DEVICEID, work.deviceID), std::make_pair(JSON_KEY_ACTIVEDEVICE, isActiveDeviceEvent) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processBusylight");
     g_thisHeadsetIntegrationService->Error(Context::device(), "busylight event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
@@ -587,7 +594,8 @@ void HeadsetIntegrationService::processBusylight(const BusylightWork& work) {
 
 void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSettingWork& work) {
  try {
-    Event(Context::device(), EVENT_HEARTHROUGH, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.status), std::make_pair(JSON_KEY_DEVICEID, work.deviceID) });
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
+    Event(Context::device(), EVENT_HEARTHROUGH, { std::make_pair(JSON_KEY_SIMPLE_VALUE, work.status), std::make_pair(JSON_KEY_DEVICEID, work.deviceID), std::make_pair(JSON_KEY_ACTIVEDEVICE, isActiveDeviceEvent) });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
     g_thisHeadsetIntegrationService->Error(Context::device(), "hearthorugh setting event failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
@@ -599,11 +607,13 @@ void HeadsetIntegrationService::processHearThroughSetting(const HearThroughSetti
 
 void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& work) {
  try {
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
     Event(Context::device(), EVENT_BATTERYSTATUS, {
       std::make_pair(JSON_KEY_BATTERY_LEVEL_PCT, work.status.levelInPercent),
       std::make_pair(JSON_KEY_BATTERY_CHARGING, work.status.charging),
       std::make_pair(JSON_KEY_BATTERY_LOW, work.status.batteryLow),            
-      std::make_pair(JSON_KEY_DEVICEID, work.deviceID) 
+      std::make_pair(JSON_KEY_DEVICEID, work.deviceID),
+	  std::make_pair(JSON_KEY_ACTIVEDEVICE, isActiveDeviceEvent)
     });
  } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processHearThroughSetting");
@@ -617,8 +627,10 @@ void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& wo
 void HeadsetIntegrationService::processGnpButtons(const GNPButtonWork& work) {
  try {
     // TODO: Revaluate - What should be done here and what should be returned really ?
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
     nlohmann::json eventData = nlohmann::json();
     eventData[JSON_KEY_DEVICEID] = work.deviceID;
+	eventData[JSON_KEY_ACTIVEDEVICE] = isActiveDeviceEvent;
     eventData[JSON_KEY_EVENT_JSON_VALUE] = work.buttonEntries; // TODO: Properly this needs to be mapped first to work or make sense?
     g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_GNPBUTTON, eventData);
   } catch (const std::exception& e) {
@@ -632,8 +644,10 @@ void HeadsetIntegrationService::processGnpButtons(const GNPButtonWork& work) {
 
 void HeadsetIntegrationService::processRemoteMmiWork(const RemoteMmiWork& work) {
   try {
+	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
     Event(Context::device(), EVENT_MMI, {          
       std::make_pair(JSON_KEY_DEVICEID, work.deviceID),
+	  std::make_pair(JSON_KEY_ACTIVEDEVICE, isActiveDeviceEvent),
       std::make_pair(JSON_KEY_TYPE, work.type),
       std::make_pair(JSON_KEY_ACTION, work.action),
     });
