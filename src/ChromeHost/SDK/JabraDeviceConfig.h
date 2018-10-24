@@ -273,7 +273,6 @@ LIBRARY_API DeviceSettings* Jabra_GetSettings(unsigned short deviceID);
  *  @param[in] : setting : Dynamic settings for the device.
  *  @return    : Return_Ok if setting is successful.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
          Return_ParameterFail if setting parameter is wrong.
          Device_Rebooted if the device rebooted after applying settings that required rebooting.
          Device_WriteFail if it fails to write to the device.
@@ -281,16 +280,17 @@ LIBRARY_API DeviceSettings* Jabra_GetSettings(unsigned short deviceID);
 LIBRARY_API Jabra_ReturnCode Jabra_SetSettings(unsigned short deviceID, DeviceSettings* setting);
 
 /** Restore factory settings to device.
+ *  Note that if used on a device connected via dongle (or directly via BT),
+ *  the pairing list in the device will be cleared,
+ *  and the connection to the device will be lost.
  *  @param[in] : deviceID: id for a specific device.
- *  @param[in] : bluetooth: flag to identify, whether called from BT pairing or not.
  *  @return    : Return_Ok if successful.
 				 Device_Unknown if deviceID is wrong.
-				 Device_NotLock if device is not locked.
 				 No_FactorySupported if device does not support factory reset.
 				 Device_WriteFail if it fails to write to the device.
 				 ProtectedSetting_Write if a setting is write protected
  */
-LIBRARY_API Jabra_ReturnCode Jabra_FactoryReset(unsigned short deviceID, bool bluetooth);
+LIBRARY_API Jabra_ReturnCode Jabra_FactoryReset(unsigned short deviceID);
 
 /** Free DeviceSettings structure
  *  @param[in] : setting: DeviceSettings structure pointer, which needs to be freed.
@@ -396,11 +396,10 @@ LIBRARY_API void Jabra_FreeFailedSettings(FailedSettings* setting);
 
 /** Checks if supports factory reset.
  *  @param[in] : deviceID: id for a specific device.
- *  @param[in] : bluetooth: flag to identify, whether called from BT pairing or not.
  *  @return    : true if device supports factory reset.
 				 false if device does not support factory reset.
  */
-LIBRARY_API bool Jabra_IsFactoryResetSupported(unsigned short deviceID, bool bluetooth);
+LIBRARY_API bool Jabra_IsFactoryResetSupported(unsigned short deviceID);
 
 /** Get list of invalid settings
  *  @param[in] : deviceID
