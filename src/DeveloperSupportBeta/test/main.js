@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Populate dropdown with api methods:
   function setupApiMethods(filtered) {
     function isFunction(obj) {
-      return !!(obj && obj.constructor && obj.call && obj.apply);
+      return !!(obj && obj.constructor && obj.call && obj.apply && !/^\s*class\s+/.test(obj.toString()));
     };
   
     
@@ -426,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Configure player to use stream
           player.srcObject =  value.stream;
+          player.muted = false;
 
           // Print prettyfied result:
           addResponseMessage({ stream: (value.stream ? "<MediaStream instance>" : value.stream), "deviceInfo": value.deviceInfo });
@@ -533,14 +534,17 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   clearMessageAreaBtn.onclick = () => {
+    messages.clear();
     messageArea.value="";
   };
 
   clearErrorAreaBtn.onclick = () => {
+    errors.clear();
     errorArea.value="";
   };
 
   clearlogAreaBtn.onclick = () => {
+    logs.clear();
     logArea.value="";
   };
 

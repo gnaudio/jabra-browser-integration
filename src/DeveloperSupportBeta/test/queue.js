@@ -22,6 +22,12 @@ class BoundedQueue {
       return this.backingArray.shift();
     }
 
+    // Empty queue.
+    clear() {
+      this.backingArray.length = 0;
+      return undefined;
+    }
+
     // Return array with all elements in queue in order.
     getAll() {
         return this.backingArray;
