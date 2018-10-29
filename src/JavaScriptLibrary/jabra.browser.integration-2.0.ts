@@ -252,7 +252,7 @@ namespace jabra {
         data: any;
 
         constructor(command: string, errmessage: string, data?: string) {
-            super("Command " + command +" failed with error  message" + errmessage + " and details: " + JSON.stringify(data || {}));
+            super("Command " + command +" failed with error  message " + errmessage + " and details: " + JSON.stringify(data || {}));
             this.command = command;
             this.errmessage = errmessage;
             this.data = data;
@@ -1343,11 +1343,14 @@ namespace jabra {
     };
 
     /**
-     * Helper that pass color array through and parses strings (as hex number) to color array.
+     * Helper that pass color array through and parses hex values as strings or numbers to color array.
      */
-    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number> {
+    function colorOrString(arg: ReadonlyArray<number> | number | string): ReadonlyArray<number> {
         if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String)))  {
             let combinedValue = parseInt(arg as string, 16);
+            return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
+        } else if (typeof arg == 'number') { // Fix for test app sending some integer-like strings as numbers.
+            let combinedValue = parseInt(arg.toString(), 16);
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
         } else if (Array.isArray(arg)) {
             if (arg.length !=3) {
