@@ -57,7 +57,7 @@ static void logQueued(Work * work) {
 
 HeadsetIntegrationService::HeadsetIntegrationService() 
    : workQueue(), hasPostAttachRegistrations(false), 
-     lastTimeCleanedDevLogEventStrMap(), timePartDevlogRegEx("\"(LocalTimeStamp|Seq.No)\":[^\,]+,")
+     lastTimeCleanedDevLogEventStrMap(), timePartDevlogRegEx("\"(LocalTimeStamp|Seq.No)\":[^,]+,")
 {
   g_thisHeadsetIntegrationService = this;
 
