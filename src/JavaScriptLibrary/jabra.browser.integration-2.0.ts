@@ -62,7 +62,6 @@ namespace jabra {
         browserextension_type: string;
     };
 
-    // TODO: Merge device and DeviceInfo.
     /**
      * Contains information about a device
      */
