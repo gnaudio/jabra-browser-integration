@@ -26,6 +26,15 @@ SOFTWARE.
 */
 
 #include "work.h"
+#include <chrono>
+
+Work::Work() : workId(++workCount)  {
+    auto timeDur = std::chrono::duration_cast< std::chrono::milliseconds >(
+      std::chrono::system_clock::now().time_since_epoch()
+    );
+
+    time = timeDur.count();
+}
 
 std::atomic<unsigned long> Work::workCount = 0;
 

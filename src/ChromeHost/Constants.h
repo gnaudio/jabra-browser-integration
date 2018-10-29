@@ -58,7 +58,7 @@ const char * const JSON_KEY_ACTIVEDEVICE = "activeDevice";
 const char * const JSON_KEY_DEVICENAME = "deviceName";
 
 const char * const JSON_KEY_SIMPLE_VALUE = "value";
-const char * const JSON_KEY_EVENT_JSON_VALUE = "event";
+const char * const JSON_KEY_JSON_MS_TIME = "TimeStampMs";
 
 const char * const JSON_KEY_BUTTONINDATA = "buttonInData";
 const char * const JSON_KEY_TRANSLATEDINDATA = "translatedInData";

@@ -28,6 +28,7 @@ SOFTWARE.
 #pragma once
 
 #include "stdafx.h"
+#include <regex>
 #include <functional>
 #include <utility>
 #include <mutex>
@@ -104,6 +105,9 @@ class HeadsetIntegrationService : public WorkProcessor
   std::vector<DeviceInfo> m_devices;
   unsigned short m_currentDeviceId;
   bool hasPostAttachRegistrations;
+
+  const std::regex timePartDevlogRegEx;
+  std::map<unsigned short, std::string> lastTimeCleanedDevLogEventStrMap;
 
   ExtraDeviceInfo getExtraDeviceInfo(const unsigned short deviceId);
 };
