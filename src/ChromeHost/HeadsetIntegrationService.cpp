@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <climits>
 #include "stdafx.h"
+#include <climits>
 #include "Context.h"
 #include "Util.h"
 #include "HeadsetIntegrationService.h"
@@ -56,7 +56,8 @@ static void logQueued(Work * work) {
 }
 
 HeadsetIntegrationService::HeadsetIntegrationService() 
-   : workQueue(), hasPostAttachRegistrations(false)
+   : workQueue(), hasPostAttachRegistrations(false), 
+     lastTimeCleanedDevLogEventStrMap(), timePartDevlogRegEx("\"(LocalTimeStamp|Seq.No)\":[^,]+,")
 {
   g_thisHeadsetIntegrationService = this;
 
@@ -563,13 +564,27 @@ void HeadsetIntegrationService::processDeviceDeAttached(const DeviceDeAttachedWo
 
 void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
  try {
-	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
+    std::string timeCleanedEventStr = std::regex_replace(work.eventStr, timePartDevlogRegEx, "");
+    std::string lastTimeCleanedDevLogEventStr = lastTimeCleanedDevLogEventStrMap[work.deviceID];
 
-    nlohmann::json eventData = nlohmann::json();
-    eventData[JSON_KEY_DEVICEID] = work.deviceID;
-	eventData[JSON_KEY_ACTIVEDEVICE] = isActiveDeviceEvent;
-    eventData[JSON_KEY_EVENT_JSON_VALUE] = nlohmann::json::parse(work.eventStr);
-    g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
+    // Only process if something other than event time/number has changed:
+    if (timeCleanedEventStr != lastTimeCleanedDevLogEventStr) {
+      bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);  
+
+      // Merge DevLog event json with additional properties of our own.
+      nlohmann::json eventData = nlohmann::json::parse(work.eventStr);
+      eventData[JSON_KEY_DEVICEID] = work.deviceID;
+      eventData[JSON_KEY_ACTIVEDEVICE] = isActiveDeviceEvent;
+      eventData[JSON_KEY_JSON_MS_TIME] = work.getTime();
+
+      g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_DEVLOG, eventData);
+
+      lastTimeCleanedDevLogEventStrMap[work.deviceID] = timeCleanedEventStr;
+    } else {
+      IF_LOG(plog::debug) {
+        LOG(plog::debug) << "Filtered out duplicated devlog event for device #" << work.deviceID << ": " << work.eventStr;
+      }
+    }
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processDevLog");
     g_thisHeadsetIntegrationService->Error(Context::device(), "processDevLog failed", { std::make_pair(JSON_KEY_EXCEPTION, e.what()) });
@@ -626,12 +641,13 @@ void HeadsetIntegrationService::processBatteryStatus(const BatteryStatusWork& wo
 
 void HeadsetIntegrationService::processGnpButtons(const GNPButtonWork& work) {
  try {
-    // TODO: Revaluate - What should be done here and what should be returned really ?
+    // TODO: Finish and evaluate - What should be done here and what should be returned really ?
 	bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);
     nlohmann::json eventData = nlohmann::json();
     eventData[JSON_KEY_DEVICEID] = work.deviceID;
 	eventData[JSON_KEY_ACTIVEDEVICE] = isActiveDeviceEvent;
-    eventData[JSON_KEY_EVENT_JSON_VALUE] = work.buttonEntries; // TODO: Properly this needs to be mapped first to work or make sense?
+    
+	// eventData[??] = work.buttonEntries; // TODO: Properly this needs to be mapped first to work or make sense?
     g_thisHeadsetIntegrationService->Event(Context::device(), EVENT_GNPBUTTON, eventData);
   } catch (const std::exception& e) {
     log_exception(plog::Severity::error, e, "in processGnpButtons");

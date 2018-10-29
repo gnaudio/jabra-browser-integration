@@ -32,7 +32,7 @@ namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    export const apiVersion = "2.0.beta5";
+    export const apiVersion = "2.0.beta6";
 
     /**
      * Is the current version a beta ?
@@ -62,7 +62,6 @@ namespace jabra {
         browserextension_type: string;
     };
 
-    // TODO: Merge device and DeviceInfo.
     /**
      * Contains information about a device
      */
@@ -188,7 +187,7 @@ namespace jabra {
     /**
      * Error status codes returned by SDK. Same as Jabra_ErrorStatus in native SDK.
      */
-    enum ErrorCodes {
+    export enum ErrorCodes {
         NoError = 0,
         SSLError = 1,
         CertError = 2,
@@ -214,7 +213,7 @@ namespace jabra {
     /**
      * Error return codes. Same as Jabra_ReturnCode in native SDK.
      */
-    enum ErroReturnCodes {
+    export enum ErrorReturnCodes {
        Return_Ok = 0,
        Device_Unknown = 1,
        Device_Invalid = 2,
@@ -247,13 +246,13 @@ namespace jabra {
     /**
      * Custom error returned by commands expecting results when failing.
      */
-    class CommandError extends Error {
+    export class CommandError extends Error {
         command: string;
         errmessage: string;
         data: any;
 
         constructor(command: string, errmessage: string, data?: string) {
-            super("Command " + command +" failed with error  message" + errmessage + " and details: " + JSON.stringify(data || {}));
+            super("Command " + command +" failed with error  message " + errmessage + " and details: " + JSON.stringify(data || {}));
             this.command = command;
             this.errmessage = errmessage;
             this.data = data;
@@ -312,7 +311,7 @@ namespace jabra {
     /**
      * Device feature codes.
      */
-    enum DeviceFeature {
+    export enum DeviceFeature {
         BusyLight = 1000,
         FactoryReset = 1001,
         PairingList = 1002,
@@ -336,7 +335,7 @@ namespace jabra {
     /**
      * A specification of a button for MMI capturing.
      */
-    enum RemoteMmiType {
+    export enum RemoteMmiType {
         MMI_TYPE_MFB       = 0,
         MMI_TYPE_VOLUP     = 1,
         MMI_TYPE_VOLDOWN   = 2,
@@ -361,9 +360,9 @@ namespace jabra {
     };
 
     /**
-     * A MMI efffect specification for light on, off or blinking in different tempo.
+     * A MMI effect specification for light on, off or blinking in different tempo.
      */
-    enum RemoteMmiSequence {
+    export enum RemoteMmiSequence {
         MMI_LED_SEQUENCE_OFF     = 0,
         MMI_LED_SEQUENCE_ON      = 1,
         MMI_LED_SEQUENCE_SLOW    = 2,
@@ -373,7 +372,7 @@ namespace jabra {
     /**
      * MMI button actions reported when button has focus.
      */
-    enum RemoteMmiActionInput {
+    export enum RemoteMmiActionInput {
         MMI_ACTION_UP            = 1,
         MMI_ACTION_DOWN          = 2,
         MMI_ACTION_TAP           = 4,
@@ -386,7 +385,7 @@ namespace jabra {
     /**
      * A 3 x 8 bit set of RGB colors. Numbers can be between 0-255.
      */
-    type ColorType = [number, number, number];
+    export type ColorType = [number, number, number];
 
     /**
      * The log level currently used internally in this api facade. Initially this is set to show errors and 
@@ -1052,11 +1051,11 @@ namespace jabra {
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select the active Jabra audio device 
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
-    * resolve to a object containing both a stream and the device info for the selected device.
+    * resolve to an object containing both a stream and the device info for the selected device.
     * 
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     * 
-    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check 
+    * Note: Subsequently, if this method appears to succeed use the isDeviceSelectedForInput function to check 
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     export function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair> {
@@ -1344,11 +1343,14 @@ namespace jabra {
     };
 
     /**
-     * Helper that pass color array through and parses strings (as hex number) to color array.
+     * Helper that pass color array through and parses hex values as strings or numbers to color array.
      */
-    function colorOrString(arg: ReadonlyArray<number> | string): ReadonlyArray<number> {
+    function colorOrString(arg: ReadonlyArray<number> | number | string): ReadonlyArray<number> {
         if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String)))  {
             let combinedValue = parseInt(arg as string, 16);
+            return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
+        } else if (typeof arg == 'number') { // Fix for test app sending some integer-like strings as numbers.
+            let combinedValue = parseInt(arg.toString(), 16);
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
         } else if (Array.isArray(arg)) {
             if (arg.length !=3) {

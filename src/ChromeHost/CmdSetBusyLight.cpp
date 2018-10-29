@@ -52,10 +52,16 @@ void CmdSetBusyLight::Execute(const Request& request)
   // }
 
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+  if (deviceId == USHRT_MAX)
+  {
+	  m_headsetIntegrationService->Error(request, "No device", {});
+    return;
+  }
 
   if ((retv=Jabra_SetBusylightStatus(deviceId, busy)) != Return_Ok) {
   	  m_headsetIntegrationService->Error(request, "setbusylight", { 
         { JSON_KEY_JABRA_RETURN_ERRORCODE, retv},
+        { JSON_KEY_ERROR_MESSAGE, "setbusylight failed" },
         { JSON_KEY_COMMAND, request.message },
 		{ std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
 		{ std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }

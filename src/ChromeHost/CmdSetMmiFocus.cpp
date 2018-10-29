@@ -48,6 +48,11 @@ void CmdSetMmiFocus::Execute(const Request& request)
   bool capture = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_CAPTURE, true);
 
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
+  if (deviceId == USHRT_MAX)
+  {
+	  m_headsetIntegrationService->Error(request, "No device", {});
+    return;
+  }
 
   Jabra_ReturnCode retv;
   bool captured = false;
@@ -72,10 +77,11 @@ void CmdSetMmiFocus::Execute(const Request& request)
   } else {
     m_headsetIntegrationService->Error(request, "setmmifocus", {
       { JSON_KEY_COMMAND, request.message },
+      { JSON_KEY_ERROR_MESSAGE, "setmmifocus failed" },
       { JSON_KEY_CAPTURED, captured },
       { JSON_KEY_JABRA_RETURN_ERRORCODE, retv },
-	  { std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
-	  { std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }
+	    { std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)) },
+	    { std::make_pair(JSON_KEY_ACTIVEDEVICE, true) }
     });
   }
 }

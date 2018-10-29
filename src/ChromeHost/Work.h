@@ -71,14 +71,16 @@ class Work {
   private:
   static std::atomic<unsigned long> workCount;
   const unsigned long workId;
+  long long time;
 
   public:
   unsigned long getWorkId() const { return workId; }
+  unsigned long long getTime() const { return time; }
 
   virtual void accept(WorkProcessor& visitor) const = 0;
   virtual void print(std::ostream& where) const = 0;
 
-  Work() : workId(++workCount) {}
+  Work();
 
   friend std::ostream& operator<<(std::ostream& out, const Work& work);
 };
@@ -102,7 +104,7 @@ class RequestWork : public Work {
   }
 
   virtual void print(std::ostream& os) const override {
-      os << "RequestWork[" << getWorkId() << "] " << request;
+      os << "RequestWork[" << getWorkId() << " @ " << getTime() << "] " << request;
   }
 };
 
@@ -129,7 +131,7 @@ class ButtonInDataTranslatedWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "ButtonInDataTranslatedWork[" << getWorkId() << "] " << deviceID << " ," << data.translatedInData << " , " << data.buttonInData;
+      os << "ButtonInDataTranslatedWork[" << getWorkId() << " @ " << getTime() << "] " << deviceID << " ," << data.translatedInData << " , " << data.buttonInData;
     }
 };
 
@@ -144,7 +146,7 @@ class DeviceAttachedWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "DeviceAttachedWork[" << getWorkId() << "] " << basicDeviceInfo.deviceID;
+      os << "DeviceAttachedWork[" << getWorkId() << " @ " << getTime() << "] " << basicDeviceInfo.deviceID;
     }
 };
 
@@ -157,7 +159,7 @@ class DeviceDeAttachedWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "DeviceDeAttachedWork[" << getWorkId() << "] " << deviceID;
+      os << "DeviceDeAttachedWork[" << getWorkId() << " @ " << getTime() << "] " << deviceID;
     }
 };
 
@@ -172,7 +174,7 @@ class DeviceDevLogWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "DeviceDevLogWork[" << getWorkId() << "] " << eventStr;
+      os << "DeviceDevLogWork[" << getWorkId() << " @ " << getTime() << "] " << eventStr;
     }
 };
 
@@ -187,7 +189,7 @@ class BusylightWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "BusylightWork[" << getWorkId() << "] " << busy;
+      os << "BusylightWork[" << getWorkId() << " @ " << getTime() << "] " << busy;
     }
 };
 
@@ -202,7 +204,7 @@ class HearThroughSettingWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "HearThroughSettingWork[" << getWorkId() << "] " << status;
+      os << "HearThroughSettingWork[" << getWorkId() << " @ " << getTime() << "] " << status;
     }
 };
 
@@ -217,7 +219,7 @@ class BatteryStatusWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "BatteryStatusWork[" << getWorkId() << "] level=" << status.levelInPercent << ", charging= " << status.charging << ", low= " << status.batteryLow;
+      os << "BatteryStatusWork[" << getWorkId() << " @ " << getTime() << "] level=" << status.levelInPercent << ", charging= " << status.charging << ", low= " << status.batteryLow;
     }
 };
 
@@ -232,7 +234,7 @@ class GNPButtonWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "GNPButtonWork[" << getWorkId() << "] buttonEntries=" << buttonEntries;
+      os << "GNPButtonWork[" << getWorkId() << " @ " << getTime() << "] buttonEntries=" << buttonEntries;
     }
 };
 
@@ -250,7 +252,7 @@ class RemoteMmiWork : public DeviceWork {
     }
 
     void print(std::ostream& os) const override {
-      os << "GNPButtonWork[" << getWorkId() << "], type= " << type << " , action= " << action;
+      os << "GNPButtonWork[" << getWorkId() << " @ " << getTime() << "], type= " << type << " , action= " << action;
     }
 };
 

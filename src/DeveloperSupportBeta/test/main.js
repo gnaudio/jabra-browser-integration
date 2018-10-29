@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Populate dropdown with api methods:
   function setupApiMethods(filtered) {
     function isFunction(obj) {
-      return !!(obj && obj.constructor && obj.call && obj.apply);
+      return !!(obj && obj.constructor && obj.call && obj.apply && !/^\s*class\s+/.test(obj.toString()));
     };
   
     
@@ -233,47 +233,49 @@ document.addEventListener('DOMContentLoaded', function () {
     if (event && event.message === "devlog") {
       devLogStatus.style = "display: block";
 
-      let boomArmEvent = event.data.event["Boom Position Guidance OK"];
+      let boomArmEvent = event.data["Boom Position Guidance OK"];
       if (boomArmEvent !== undefined) {
           boomArm = (boomArmEvent.toString().toLowerCase() === "true");
           boomArmStatus.innerText = boomArm;
       }
   
-      let txLevelEvent = event.data.event["TX Acoustic Logging Level"];
+      let txLevelEvent = event.data["TX Acoustic Logging Level"];
       if (txLevelEvent !== undefined) {
           txDb = parseInt(txLevelEvent);
           txStatus.innerText = txDb.toString()+"db";
       }
 
-      let txPeakLevelEvent = event.data.event["TX Acoustic Logging Peak"];
+      let txPeakLevelEvent = event.data["TX Acoustic Logging Peak"];
       if (txPeakLevelEvent !== undefined) {
           txPeakDb = parseInt(txPeakLevelEvent);
           txPeakStatus.innerText = txPeakDb.toString()+"db";
       }
 
-      let rxLevelEvent = event.data.event["RX Acoustic Logging Level"];
+      let rxLevelEvent = event.data["RX Acoustic Logging Level"];
       if (rxLevelEvent !== undefined) {
           rxDb = parseInt(rxLevelEvent);
           rxStatus.innerText = rxDb.toString()+"db";
       }
 
-      let rxPeakLevelEvent = event.data.event["RX Acoustic Logging Peak"];
+      let rxPeakLevelEvent = event.data["RX Acoustic Logging Peak"];
       if (rxPeakLevelEvent !== undefined) {
           rxPeakDb = parseInt(rxPeakLevelEvent);
           rxPeakStatus.innerText = rxPeakDb.toString()+"db";
       }
 
-      let txSpeechEvent = event.data.event["Speech_Analysis_TX"];
+      let txSpeechEvent = event.data["Speech_Analysis_TX"];
       if (txSpeechEvent !== undefined) {
           txSpeech = (txSpeechEvent.toString().toLowerCase() === "true");
           txSpeechStatus.innerText = txSpeech.toString();
       }
 
-      let rxSpeechEvent = event.data.event["Speech_Analysis_RX"];
+      let rxSpeechEvent = event.data["Speech_Analysis_RX"];
       if (rxSpeechEvent !== undefined) {
           rxSpeech = (rxSpeechEvent.toString().toLowerCase() === "true");
           rxSpeechStatus.innerText = rxSpeech.toString();
       }
+
+      // let timeStamp = new Date(event.data["TimeStampMs"]);
     }
   }
 
@@ -426,6 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Configure player to use stream
           player.srcObject =  value.stream;
+          player.muted = false;
 
           // Print prettyfied result:
           addResponseMessage({ stream: (value.stream ? "<MediaStream instance>" : value.stream), "deviceInfo": value.deviceInfo });
@@ -533,14 +536,17 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   clearMessageAreaBtn.onclick = () => {
+    messages.clear();
     messageArea.value="";
   };
 
   clearErrorAreaBtn.onclick = () => {
+    errors.clear();
     errorArea.value="";
   };
 
   clearlogAreaBtn.onclick = () => {
+    logs.clear();
     logArea.value="";
   };
 
@@ -607,16 +613,19 @@ document.addEventListener('DOMContentLoaded', function () {
   if (console) {
     function replaceStr(str, ...placeholders) {
       var count = 0;
-      // return str;
-      return str.replace(/%s/g, () => placeholders[count++]);
+      return (str && (typeof str === 'string') || (str instanceof String)) ? str.replace(/%s/g, () => placeholders[count++]): str;
     }
     function intercept(method){
         var original = console[method]
         console[method] = function() {
           original.apply(console, arguments);
 
-          let txt = replaceStr.apply(this, arguments);
-          logs.push(txt);
+          let v = replaceStr.apply(this, arguments);
+          if ((typeof v === 'string') || (v instanceof String)) {
+            logs.push(v);
+          } else if (v !== null && v !== undefined) {
+            logs.push(v.toString())
+          }
           updateLogArea();
         }
     }

@@ -79,7 +79,7 @@ void CmdSetActiveDevice::Execute(const Request& request)
   unsigned short id = GetArgumentId(request);
 
   if (request.message == commandStr2) {
-    if (id != USHRT_MAX) { // New command without compatabilioty - with event when finished.
+    if (id != USHRT_MAX) { // New command without compatability - with event when finished.
       if (!m_headsetIntegrationService->SetCurrentDeviceId(id)) {
        m_headsetIntegrationService->Error(request, commandStr2, {
          { JSON_KEY_COMMAND, request.message },
