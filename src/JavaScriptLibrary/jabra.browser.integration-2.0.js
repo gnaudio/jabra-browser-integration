@@ -100,41 +100,41 @@ var jabra;
         ErrorCodes[ErrorCodes["Device_ReadFail"] = 17] = "Device_ReadFail";
         ErrorCodes[ErrorCodes["Device_NotReady"] = 18] = "Device_NotReady";
         ErrorCodes[ErrorCodes["FilePartiallyCompatible"] = 19] = "FilePartiallyCompatible";
-    })(ErrorCodes || (ErrorCodes = {}));
+    })(ErrorCodes = jabra.ErrorCodes || (jabra.ErrorCodes = {}));
     ;
     /**
      * Error return codes. Same as Jabra_ReturnCode in native SDK.
      */
-    let ErroReturnCodes;
-    (function (ErroReturnCodes) {
-        ErroReturnCodes[ErroReturnCodes["Return_Ok"] = 0] = "Return_Ok";
-        ErroReturnCodes[ErroReturnCodes["Device_Unknown"] = 1] = "Device_Unknown";
-        ErroReturnCodes[ErroReturnCodes["Device_Invalid"] = 2] = "Device_Invalid";
-        ErroReturnCodes[ErroReturnCodes["Not_Supported"] = 3] = "Not_Supported";
-        ErroReturnCodes[ErroReturnCodes["Return_ParameterFail"] = 4] = "Return_ParameterFail";
-        ErroReturnCodes[ErroReturnCodes["ProtectedSetting_Write"] = 5] = "ProtectedSetting_Write";
-        ErroReturnCodes[ErroReturnCodes["No_Information"] = 6] = "No_Information";
-        ErroReturnCodes[ErroReturnCodes["NetworkRequest_Fail"] = 7] = "NetworkRequest_Fail";
-        ErroReturnCodes[ErroReturnCodes["Device_WriteFail"] = 8] = "Device_WriteFail";
-        ErroReturnCodes[ErroReturnCodes["Device_ReadFails"] = 9] = "Device_ReadFails";
-        ErroReturnCodes[ErroReturnCodes["No_FactorySupported"] = 10] = "No_FactorySupported";
-        ErroReturnCodes[ErroReturnCodes["System_Error"] = 11] = "System_Error";
-        ErroReturnCodes[ErroReturnCodes["Device_BadState"] = 12] = "Device_BadState";
-        ErroReturnCodes[ErroReturnCodes["FileWrite_Fail"] = 13] = "FileWrite_Fail";
-        ErroReturnCodes[ErroReturnCodes["File_AlreadyExists"] = 14] = "File_AlreadyExists";
-        ErroReturnCodes[ErroReturnCodes["File_Not_Accessible"] = 15] = "File_Not_Accessible";
-        ErroReturnCodes[ErroReturnCodes["Firmware_UpToDate"] = 16] = "Firmware_UpToDate";
-        ErroReturnCodes[ErroReturnCodes["Firmware_Available"] = 17] = "Firmware_Available";
-        ErroReturnCodes[ErroReturnCodes["Return_Async"] = 18] = "Return_Async";
-        ErroReturnCodes[ErroReturnCodes["Invalid_Authorization"] = 19] = "Invalid_Authorization";
-        ErroReturnCodes[ErroReturnCodes["FWU_Application_Not_Available"] = 20] = "FWU_Application_Not_Available";
-        ErroReturnCodes[ErroReturnCodes["Device_AlreadyConnected"] = 21] = "Device_AlreadyConnected";
-        ErroReturnCodes[ErroReturnCodes["Device_NotConnected"] = 22] = "Device_NotConnected";
-        ErroReturnCodes[ErroReturnCodes["CannotClear_DeviceConnected"] = 23] = "CannotClear_DeviceConnected";
-        ErroReturnCodes[ErroReturnCodes["Device_Rebooted"] = 24] = "Device_Rebooted";
-        ErroReturnCodes[ErroReturnCodes["Upload_AlreadyInProgress"] = 25] = "Upload_AlreadyInProgress";
-        ErroReturnCodes[ErroReturnCodes["Download_AlreadyInProgress"] = 26] = "Download_AlreadyInProgress";
-    })(ErroReturnCodes || (ErroReturnCodes = {}));
+    let ErrorReturnCodes;
+    (function (ErrorReturnCodes) {
+        ErrorReturnCodes[ErrorReturnCodes["Return_Ok"] = 0] = "Return_Ok";
+        ErrorReturnCodes[ErrorReturnCodes["Device_Unknown"] = 1] = "Device_Unknown";
+        ErrorReturnCodes[ErrorReturnCodes["Device_Invalid"] = 2] = "Device_Invalid";
+        ErrorReturnCodes[ErrorReturnCodes["Not_Supported"] = 3] = "Not_Supported";
+        ErrorReturnCodes[ErrorReturnCodes["Return_ParameterFail"] = 4] = "Return_ParameterFail";
+        ErrorReturnCodes[ErrorReturnCodes["ProtectedSetting_Write"] = 5] = "ProtectedSetting_Write";
+        ErrorReturnCodes[ErrorReturnCodes["No_Information"] = 6] = "No_Information";
+        ErrorReturnCodes[ErrorReturnCodes["NetworkRequest_Fail"] = 7] = "NetworkRequest_Fail";
+        ErrorReturnCodes[ErrorReturnCodes["Device_WriteFail"] = 8] = "Device_WriteFail";
+        ErrorReturnCodes[ErrorReturnCodes["Device_ReadFails"] = 9] = "Device_ReadFails";
+        ErrorReturnCodes[ErrorReturnCodes["No_FactorySupported"] = 10] = "No_FactorySupported";
+        ErrorReturnCodes[ErrorReturnCodes["System_Error"] = 11] = "System_Error";
+        ErrorReturnCodes[ErrorReturnCodes["Device_BadState"] = 12] = "Device_BadState";
+        ErrorReturnCodes[ErrorReturnCodes["FileWrite_Fail"] = 13] = "FileWrite_Fail";
+        ErrorReturnCodes[ErrorReturnCodes["File_AlreadyExists"] = 14] = "File_AlreadyExists";
+        ErrorReturnCodes[ErrorReturnCodes["File_Not_Accessible"] = 15] = "File_Not_Accessible";
+        ErrorReturnCodes[ErrorReturnCodes["Firmware_UpToDate"] = 16] = "Firmware_UpToDate";
+        ErrorReturnCodes[ErrorReturnCodes["Firmware_Available"] = 17] = "Firmware_Available";
+        ErrorReturnCodes[ErrorReturnCodes["Return_Async"] = 18] = "Return_Async";
+        ErrorReturnCodes[ErrorReturnCodes["Invalid_Authorization"] = 19] = "Invalid_Authorization";
+        ErrorReturnCodes[ErrorReturnCodes["FWU_Application_Not_Available"] = 20] = "FWU_Application_Not_Available";
+        ErrorReturnCodes[ErrorReturnCodes["Device_AlreadyConnected"] = 21] = "Device_AlreadyConnected";
+        ErrorReturnCodes[ErrorReturnCodes["Device_NotConnected"] = 22] = "Device_NotConnected";
+        ErrorReturnCodes[ErrorReturnCodes["CannotClear_DeviceConnected"] = 23] = "CannotClear_DeviceConnected";
+        ErrorReturnCodes[ErrorReturnCodes["Device_Rebooted"] = 24] = "Device_Rebooted";
+        ErrorReturnCodes[ErrorReturnCodes["Upload_AlreadyInProgress"] = 25] = "Upload_AlreadyInProgress";
+        ErrorReturnCodes[ErrorReturnCodes["Download_AlreadyInProgress"] = 26] = "Download_AlreadyInProgress";
+    })(ErrorReturnCodes = jabra.ErrorReturnCodes || (jabra.ErrorReturnCodes = {}));
     ;
     /**
      * Custom error returned by commands expecting results when failing.
@@ -148,6 +148,7 @@ var jabra;
             this.name = 'CommandError';
         }
     }
+    jabra.CommandError = CommandError;
     ;
     ;
     /**
@@ -179,7 +180,7 @@ var jabra;
         DeviceFeature[DeviceFeature["PreferredSoftphoneListInDevice"] = 1015] = "PreferredSoftphoneListInDevice";
         DeviceFeature[DeviceFeature["VoiceAssistant"] = 1016] = "VoiceAssistant";
         DeviceFeature[DeviceFeature["PlayRingtone"] = 1017] = "PlayRingtone";
-    })(DeviceFeature || (DeviceFeature = {}));
+    })(DeviceFeature = jabra.DeviceFeature || (jabra.DeviceFeature = {}));
     ;
     /**
      * A specification of a button for MMI capturing.
@@ -207,10 +208,10 @@ var jabra;
         RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT3"] = 18] = "MMI_TYPE_DOT3";
         RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT4"] = 19] = "MMI_TYPE_DOT4";
         RemoteMmiType[RemoteMmiType["MMI_TYPE_ALL"] = 255] = "MMI_TYPE_ALL";
-    })(RemoteMmiType || (RemoteMmiType = {}));
+    })(RemoteMmiType = jabra.RemoteMmiType || (jabra.RemoteMmiType = {}));
     ;
     /**
-     * A MMI efffect specification for light on, off or blinking in different tempo.
+     * A MMI effect specification for light on, off or blinking in different tempo.
      */
     let RemoteMmiSequence;
     (function (RemoteMmiSequence) {
@@ -218,7 +219,7 @@ var jabra;
         RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_ON"] = 1] = "MMI_LED_SEQUENCE_ON";
         RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_SLOW"] = 2] = "MMI_LED_SEQUENCE_SLOW";
         RemoteMmiSequence[RemoteMmiSequence["MMI_LED_SEQUENCE_FAST"] = 3] = "MMI_LED_SEQUENCE_FAST";
-    })(RemoteMmiSequence || (RemoteMmiSequence = {}));
+    })(RemoteMmiSequence = jabra.RemoteMmiSequence || (jabra.RemoteMmiSequence = {}));
     ;
     /**
      * MMI button actions reported when button has focus.
@@ -232,7 +233,7 @@ var jabra;
         RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_PRESS"] = 16] = "MMI_ACTION_PRESS";
         RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_LONG_PRESS"] = 32] = "MMI_ACTION_LONG_PRESS";
         RemoteMmiActionInput[RemoteMmiActionInput["MMI_ACTION_X_LONG_PRESS"] = 64] = "MMI_ACTION_X_LONG_PRESS";
-    })(RemoteMmiActionInput || (RemoteMmiActionInput = {}));
+    })(RemoteMmiActionInput = jabra.RemoteMmiActionInput || (jabra.RemoteMmiActionInput = {}));
     ;
     /**
      * The log level currently used internally in this api facade. Initially this is set to show errors and
@@ -870,11 +871,11 @@ var jabra;
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select the active Jabra audio device
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
-    * resolve to a object containing both a stream and the device info for the selected device.
+    * resolve to an object containing both a stream and the device info for the selected device.
     *
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     *
-    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check
+    * Note: Subsequently, if this method appears to succeed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints) {

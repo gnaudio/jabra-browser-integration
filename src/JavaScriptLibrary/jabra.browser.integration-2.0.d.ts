@@ -92,6 +92,72 @@ declare namespace jabra {
      */
     type EventName = "mute" | "unmute" | "device attached" | "device detached" | "acceptcall" | "endcall" | "reject" | "flash" | "online" | "offline" | "linebusy" | "lineidle" | "redial" | "key0" | "key1" | "key2" | "key3" | "key4" | "key5" | "key6" | "key7" | "key8" | "key9" | "keyStar" | "keyPound" | "keyClear" | "Online" | "speedDial" | "voiceMail" | "LineBusy" | "outOfRange" | "intoRange" | "pseudoAcceptcall" | "pseudoEndcall" | "button1" | "button2" | "button3" | "volumeUp" | "volumeDown" | "fireAlarm" | "jackConnection" | "jackDisConnection" | "qdConnection" | "qdDisconnection" | "headsetConnection" | "headsetDisConnection" | "devlog" | "busylight" | "hearThrough" | "batteryStatus" | "gnpButton" | "mmi" | "error";
     /**
+     * Error status codes returned by SDK. Same as Jabra_ErrorStatus in native SDK.
+     */
+    enum ErrorCodes {
+        NoError = 0,
+        SSLError = 1,
+        CertError = 2,
+        NetworkError = 3,
+        DownloadError = 4,
+        ParseError = 5,
+        OtherError = 6,
+        DeviceInfoError = 7,
+        FileNotAccessible = 8,
+        FileNotCompatible = 9,
+        Device_NotFound = 10,
+        Parameter_fail = 11,
+        Authorization_failed = 12,
+        FileNotAvailable = 13,
+        ConfigParseError = 14,
+        SetSettings_Fail = 15,
+        Device_Reboot = 16,
+        Device_ReadFail = 17,
+        Device_NotReady = 18,
+        FilePartiallyCompatible = 19
+    }
+    /**
+     * Error return codes. Same as Jabra_ReturnCode in native SDK.
+     */
+    enum ErrorReturnCodes {
+        Return_Ok = 0,
+        Device_Unknown = 1,
+        Device_Invalid = 2,
+        Not_Supported = 3,
+        Return_ParameterFail = 4,
+        ProtectedSetting_Write = 5,
+        No_Information = 6,
+        NetworkRequest_Fail = 7,
+        Device_WriteFail = 8,
+        Device_ReadFails = 9,
+        No_FactorySupported = 10,
+        System_Error = 11,
+        Device_BadState = 12,
+        FileWrite_Fail = 13,
+        File_AlreadyExists = 14,
+        File_Not_Accessible = 15,
+        Firmware_UpToDate = 16,
+        Firmware_Available = 17,
+        Return_Async = 18,
+        Invalid_Authorization = 19,
+        FWU_Application_Not_Available = 20,
+        Device_AlreadyConnected = 21,
+        Device_NotConnected = 22,
+        CannotClear_DeviceConnected = 23,
+        Device_Rebooted = 24,
+        Upload_AlreadyInProgress = 25,
+        Download_AlreadyInProgress = 26
+    }
+    /**
+     * Custom error returned by commands expecting results when failing.
+     */
+    class CommandError extends Error {
+        command: string;
+        errmessage: string;
+        data: any;
+        constructor(command: string, errmessage: string, data?: string);
+    }
+    /**
      * Event type for call backs.
      */
     interface Event {
@@ -166,13 +232,25 @@ declare namespace jabra {
         MMI_TYPE_ALL = 255
     }
     /**
-     * A MMI efffect specification for light on, off or blinking in different tempo.
+     * A MMI effect specification for light on, off or blinking in different tempo.
      */
     enum RemoteMmiSequence {
         MMI_LED_SEQUENCE_OFF = 0,
         MMI_LED_SEQUENCE_ON = 1,
         MMI_LED_SEQUENCE_SLOW = 2,
         MMI_LED_SEQUENCE_FAST = 3
+    }
+    /**
+     * MMI button actions reported when button has focus.
+     */
+    enum RemoteMmiActionInput {
+        MMI_ACTION_UP = 1,
+        MMI_ACTION_DOWN = 2,
+        MMI_ACTION_TAP = 4,
+        MMI_ACTION_DOUBLE_TAP = 8,
+        MMI_ACTION_PRESS = 16,
+        MMI_ACTION_LONG_PRESS = 32,
+        MMI_ACTION_X_LONG_PRESS = 64
     }
     /**
      * A 3 x 8 bit set of RGB colors. Numbers can be between 0-255.
@@ -313,11 +391,11 @@ declare namespace jabra {
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select the active Jabra audio device
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
-    * resolve to a object containing both a stream and the device info for the selected device.
+    * resolve to an object containing both a stream and the device info for the selected device.
     *
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     *
-    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check
+    * Note: Subsequently, if this method appears to succeed use the isDeviceSelectedForInput function to check
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;

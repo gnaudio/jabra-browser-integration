@@ -188,7 +188,7 @@ namespace jabra {
     /**
      * Error status codes returned by SDK. Same as Jabra_ErrorStatus in native SDK.
      */
-    enum ErrorCodes {
+    export enum ErrorCodes {
         NoError = 0,
         SSLError = 1,
         CertError = 2,
@@ -214,7 +214,7 @@ namespace jabra {
     /**
      * Error return codes. Same as Jabra_ReturnCode in native SDK.
      */
-    enum ErroReturnCodes {
+    export enum ErrorReturnCodes {
        Return_Ok = 0,
        Device_Unknown = 1,
        Device_Invalid = 2,
@@ -247,7 +247,7 @@ namespace jabra {
     /**
      * Custom error returned by commands expecting results when failing.
      */
-    class CommandError extends Error {
+    export class CommandError extends Error {
         command: string;
         errmessage: string;
         data: any;
@@ -312,7 +312,7 @@ namespace jabra {
     /**
      * Device feature codes.
      */
-    enum DeviceFeature {
+    export enum DeviceFeature {
         BusyLight = 1000,
         FactoryReset = 1001,
         PairingList = 1002,
@@ -336,7 +336,7 @@ namespace jabra {
     /**
      * A specification of a button for MMI capturing.
      */
-    enum RemoteMmiType {
+    export enum RemoteMmiType {
         MMI_TYPE_MFB       = 0,
         MMI_TYPE_VOLUP     = 1,
         MMI_TYPE_VOLDOWN   = 2,
@@ -361,9 +361,9 @@ namespace jabra {
     };
 
     /**
-     * A MMI efffect specification for light on, off or blinking in different tempo.
+     * A MMI effect specification for light on, off or blinking in different tempo.
      */
-    enum RemoteMmiSequence {
+    export enum RemoteMmiSequence {
         MMI_LED_SEQUENCE_OFF     = 0,
         MMI_LED_SEQUENCE_ON      = 1,
         MMI_LED_SEQUENCE_SLOW    = 2,
@@ -373,7 +373,7 @@ namespace jabra {
     /**
      * MMI button actions reported when button has focus.
      */
-    enum RemoteMmiActionInput {
+    export enum RemoteMmiActionInput {
         MMI_ACTION_UP            = 1,
         MMI_ACTION_DOWN          = 2,
         MMI_ACTION_TAP           = 4,
@@ -386,7 +386,7 @@ namespace jabra {
     /**
      * A 3 x 8 bit set of RGB colors. Numbers can be between 0-255.
      */
-    type ColorType = [number, number, number];
+    export type ColorType = [number, number, number];
 
     /**
      * The log level currently used internally in this api facade. Initially this is set to show errors and 
@@ -1052,11 +1052,11 @@ namespace jabra {
     /**
     * Replacement for mediaDevices.getUserMedia that makes a best effort to select the active Jabra audio device 
     * to be used for the microphone. Unlike getUserMedia this method returns a promise that
-    * resolve to a object containing both a stream and the device info for the selected device.
+    * resolve to an object containing both a stream and the device info for the selected device.
     * 
     * Optional, additional non-audio constrains (like f.x. video) can be specified as well.
     * 
-    * Note: Subsequetly, if this method appears to succeed use the isDeviceSelectedForInput function to check 
+    * Note: Subsequently, if this method appears to succeed use the isDeviceSelectedForInput function to check 
     * if the browser did in fact choose a Jabra device for the microphone.
     */
     export function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair> {
