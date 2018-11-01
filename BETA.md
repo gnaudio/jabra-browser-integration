@@ -119,6 +119,6 @@ to diagnose errors.
 Logging for javascript components can be seen in the browser developer console for the application and for the background page of the extension (a link is provided under chrome
 extensions when developer mode is selected). The log level (how much is being logged) can be controlled by right-clicking on the extension and selecting options.
 
-Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "debug", "error", "warning". 
+Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "fatal", "error", "warning", "info", "debug".
 
 

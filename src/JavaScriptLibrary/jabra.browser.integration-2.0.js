@@ -478,12 +478,12 @@ var jabra;
                     logger.error("Unexpected unknown eventName: " + eventName);
                 }
             }
-            /** Lookup any previous stored result target informaton for the request.
-            *   Does cleanup if target found (so can not be called twice for a request).
+            /** Lookup any previous stored result target information for the request.
+            *   Does cleanup if target found (so it can't be called twice for a request).
             *   Nb. requestId's are only provided by >= 0.5 extension and chromehost.
             */
             function identifyAndCleanupResultTarget(requestId) {
-                // Lookup any previous stored result target informaton for the request.
+                // Lookup any previous stored result target information for the request.
                 // Nb. requestId's are only provided by >= 0.5 extension and chromehost. 
                 let resultTarget;
                 if (requestId) {
@@ -535,7 +535,7 @@ var jabra;
     ;
     /**
      * Internal helper that returns an array of valid event keys that correspond to the event specificator
-     * and are know to exist in our event listener map.
+     * and are known to exist in our event listener map.
      */
     function getEvents(nameSpec) {
         if (Array.isArray(nameSpec)) {
@@ -891,6 +891,10 @@ var jabra;
         if (location.protocol !== 'https:') {
             logger.warn("This function needs to run under https for best UX experience (persisted permissions)");
         }
+        // Check input validity:
+        if (constraints !== undefined && constraints !== null && typeof constraints !== 'object') {
+            return Promise.reject(new Error("Optional constraints parameter must be an object"));
+        }
         /**
          * Utility method that combines constraints with ours taking precendence (deep).
          */
@@ -910,11 +914,11 @@ var jabra;
             }
         }
         // If we have the input device id already we can do a direct call to getUserMedia, otherwise we have to do
-        // an initial general call to getUserMedia just get access to looking up the input device and than a second
+        // an initial general call to getUserMedia just get access to looking up the input device and then a second
         // call to getUserMedia to make sure the Jabra input device is selected.
         return navigator.mediaDevices.getUserMedia(mergeConstraints({ audio: true }, constraints)).then((dummyStream) => {
             return _doGetActiveSDKDevice_And_BrowserDevice().then((deviceInfo) => {
-                // Shutdown initial dummy stream (not sure it is really required but lets be nice).
+                // Shutdown initial dummy stream (not sure it is really required but let's be nice).
                 dummyStream.getTracks().forEach((track) => {
                     track.stop();
                 });
