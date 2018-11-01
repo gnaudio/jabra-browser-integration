@@ -160,6 +160,9 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::Button3, true }, new SimpleEventMapper("button3") },
     { { Jabra_HidInput::Button3, false }, new SimpleEventMapper("button3") },
 
+    { { Jabra_HidInput::Redial, true }, new SimpleEventMapper("redial") },
+    { { Jabra_HidInput::Redial, false }, new SimpleEventMapper("redial") },
+
     { { Jabra_HidInput::VolumeUp, true }, new SimpleEventMapper("volumeUp") },
     { { Jabra_HidInput::VolumeUp, false }, new SimpleEventMapper("volumeUp") },
 
