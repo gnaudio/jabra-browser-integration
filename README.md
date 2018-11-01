@@ -72,7 +72,7 @@ Documentation about [deployment](docs/Deployment.md)
 
 ## Version information.
 
-For information about individual releases see [changelog](docs/CHANGELOG.md). For information about upcoming changes see also our [beta information page](BETA.md).
+For information about individual releases see [changelog](CHANGELOG.md). For information about upcoming changes see also our [beta information page](BETA.md).
 
 
 
