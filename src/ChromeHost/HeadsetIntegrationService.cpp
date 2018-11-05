@@ -787,9 +787,9 @@ ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned sho
   Map_Int_String * esns = Jabra_GetMultiESN(deviceId);
   if (esns) {
     for (int i=0; i < esns->length; ++i) {
-		if (esns->entries[i].value) {
-			electricSerialNumbers[esns->entries[i].key] = esns->entries[i].value;
-		}
+		  if (esns->entries[i].value) {
+			  electricSerialNumbers[esns->entries[i].key] = esns->entries[i].value ? esns->entries[i].value : "";
+		  }
     }
     Jabra_FreeMap(esns);
   }
@@ -797,7 +797,7 @@ ExtraDeviceInfo HeadsetIntegrationService::getExtraDeviceInfo(const unsigned sho
   // Firmware version:
   char firmwareChars[128];
   if (Jabra_GetFirmwareVersion(deviceId, firmwareChars, sizeof(firmwareChars)) != Return_Ok) {
-    firmwareChars[0];
+    firmwareChars[0]=0;
   }
 
   // Skype certification:

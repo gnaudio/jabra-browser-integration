@@ -8,6 +8,11 @@
 #include <stdexcept>
 
 /**
+ * Utf8 verification. Returns false if string is invalid.
+ */
+bool utf8string_check(unsigned char *s);
+
+/**
 * Helper to safely access a propery that may be null/unset in a json object.
 */
 template<typename T> T defaultValue(nlohmann::json obj, const typename nlohmann::json::object_t::key_type& key, const T& default_value) {
