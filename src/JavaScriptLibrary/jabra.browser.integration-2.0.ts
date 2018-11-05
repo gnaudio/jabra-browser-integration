@@ -474,11 +474,11 @@ namespace jabra {
                     event.data.direction &&
                     event.data.direction === "jabra-headset-extension-from-content-script") {
 
-                    let apiClientId = event.data.apiClientId || "";
+                    let eventApiClientId = event.data.apiClientId || "";
                     let requestId = event.data.requestId || "";
 
                     // Only accept responses from our own requests or from device.
-                    if (apiClientId === apiClientId || apiClientId === "") {
+                    if (apiClientId === eventApiClientId || eventApiClientId === "") {
                         logger.trace("Receiving event from content script: " + JSON.stringify(event.data));
 
                         // For backwards compatibility a blank message might be send as "na".
@@ -688,6 +688,12 @@ namespace jabra {
                 } else {
                     // No idea what target matches what request - give up.
                     resultTarget = undefined;
+                }
+
+                // Warn in case of likely memeory leak:
+                const mapSize = sendRequestResultMap.size;
+                if (mapSize > 10 && mapSize % 10 === 0) { // Limit warnings to every 10 size increases to avoid flooding:
+                    logger.warn("Memory leak found - Request result map is getting too large (size #" + mapSize + ")");
                 }
 
                 return resultTarget;
