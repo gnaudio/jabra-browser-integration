@@ -68,7 +68,7 @@ void NativeMessagingTransport::SendResponse(const Response& response)
 
   j["requestId"] = response.requestId;
   j["apiClientId"] = response.apiClientId;
-  std::string text = j.dump();
+  std::string text = j.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
 
   unsigned int len = text.length();
   std::cout << char(len >> 0)

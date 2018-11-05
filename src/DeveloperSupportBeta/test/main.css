@@ -147,7 +147,7 @@ textarea {
 }
 
 .filter {
-  width: 16em;
+  width: 12em;
 }
 
 label {
@@ -166,3 +166,6 @@ label {
   width:20em;
 }
 
+#enableLogging {
+  vertical-align:middle;
+}

@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const errorArea = document.getElementById('errorArea');
   const logArea = document.getElementById('logArea');
 
+  const enableLogging = document.getElementById('enableLogging');
+  const copyLog = document.getElementById('copyLog');
+  const copyMessages = document.getElementById('copyMessages');
+
   const installCheckResult = document.getElementById('installCheckResult');
   const clientlibVersionTxt = document.getElementById('clientlibVersionTxt');
   const otherVersionTxt = document.getElementById('otherVersionTxt');
@@ -604,6 +608,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  copyMessages.onclick = () => {
+    let clipText = messages.getAll().filter(txt => messageFilterAllows(txt)).join("\n");
+    navigator.clipboard.writeText(clipText)
+    .then(() => {})
+    .catch(err => {
+      addError("Could not copy to clipboard");
+    });
+  };
+
   messageFilter.oninput = () => {
     updateMessageArea();
   };
@@ -620,13 +633,15 @@ document.addEventListener('DOMContentLoaded', function () {
         console[method] = function() {
           original.apply(console, arguments);
 
-          let v = replaceStr.apply(this, arguments);
-          if ((typeof v === 'string') || (v instanceof String)) {
-            logs.push(v);
-          } else if (v !== null && v !== undefined) {
-            logs.push(v.toString())
+          if (enableLogging.checked) {
+            let v = replaceStr.apply(this, arguments);
+            if ((typeof v === 'string') || (v instanceof String)) {
+              logs.push(v);
+            } else if (v !== null && v !== undefined) {
+              logs.push(v.toString())
+            }
+            updateLogArea();
           }
-          updateLogArea();
         }
     }
     var methods = ['log', 'warn', 'error']
@@ -643,6 +658,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   logFilter.oninput = () => {
     updateLogArea();
+  };
+  
+  copyLog.onclick = () => {
+    let clipText = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    navigator.clipboard.writeText(clipText)
+    .then(() => {})
+    .catch(err => {
+      addError("Could not copy to clipboard");
+    });
   };
 
   function getChromeVersion () {     

@@ -114,9 +114,9 @@ struct BasicDeviceInfo {
 
     static std::string deviceConnectionToStr(DeviceConnectionType deviceconnection) {
 		switch(deviceconnection) {
-			case USB: return "USB";
-			case BT: return "BT";
-			default: return "?";
+			case USB: return std::string("USB");
+			case BT: return std::string("BT");
+			default: return std::string("?");
 		}
 	}
 

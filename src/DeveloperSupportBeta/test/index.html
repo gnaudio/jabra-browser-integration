@@ -5,6 +5,8 @@
   <title>Jabra Browser Api Test</title>
   <link href="main.css" rel="stylesheet" />
   <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
 <a href="https://github.com/gnaudio/jabra-browser-integration"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
@@ -77,7 +79,6 @@
             </td>
             <td>
                 <input type="checkbox" id="filterInternalsAndDeprecatedMethodsChk" value="true" title="Filter out internals/deprecated methods" checked />
-
             </td>
             <td>
                 <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function"/>
@@ -147,12 +148,12 @@
     <table>
         <tr>
             <td>
-              Message/events: <input id="clearMessageAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
-              <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" />
+              Message/events: <input id="clearMessageAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyMessages" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
+              <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" title="Filter messages" />
             </td>
             <td>&nbsp;</td>
             <td>
-              Errors: <input id="clearErrorAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" />
+              Errors: <input id="clearErrorAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />
             </td>
         </tr>
         <tr>
@@ -187,9 +188,9 @@
         </tr>
         <tr>
             <td colspan="3">
-                API/extension content page log:
-                <input id="clearlogAreaBtn" type="button" value="Clear" />&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" />&nbsp;&nbsp;
-                <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" />
+                API/extension content page log&nbsp;<input type="checkbox" id="enableLogging" value="true" title="Enable logging to this window" checked />:&nbsp;&nbsp;
+                <input id="clearlogAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyLog" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
+                <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" title="Filter log messages" />
                 <br/>
             </td>
         </tr>
