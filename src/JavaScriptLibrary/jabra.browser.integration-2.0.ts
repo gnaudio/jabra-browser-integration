@@ -848,12 +848,12 @@ namespace jabra {
     * Nb. This requires the button to be previously captured though setMMiFocus.
     * 
     * @param type The button that should be captured/released.
-    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param color An RGB array of 3x integers or a RGB number (with 0x or # prefix for hex).
     * @param effect What effect to apply to the button.
     * 
     * @returns A promise that is resolved once operation completes.
     */
-    export function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string, effect: RemoteMmiSequence | string): Promise<void> {
+    export function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string | number, effect: RemoteMmiSequence | string): Promise<void> {
         let typeVal = numberOrString(type);
         let colorVal = colorOrString(color);
         let effectVal = numberOrString(effect);
@@ -1015,7 +1015,7 @@ namespace jabra {
     };
 
     /**
-    * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
+    * Configure an audio html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
     export function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: DeviceInfo): Promise<boolean> {
@@ -1354,14 +1354,14 @@ namespace jabra {
     };
 
     /**
-     * Helper that pass color array through and parses hex values as strings or numbers to color array.
+     * Helper that pass color array through and converts values to color array.
      */
     function colorOrString(arg: ReadonlyArray<number> | number | string): ReadonlyArray<number> {
         if (arg !== "" && ((typeof arg === 'string') || ((arg as any) instanceof String)))  {
             let combinedValue = parseInt(arg as string, 16);
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
-        } else if (typeof arg == 'number') { // Fix for test app sending some integer-like strings as numbers.
-            let combinedValue = parseInt(arg.toString(), 16);
+        } else if (typeof arg == 'number') {
+            let combinedValue = arg;
             return [ (combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255 ];
         } else if (Array.isArray(arg)) {
             if (arg.length !=3) {

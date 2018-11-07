@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const player = document.getElementById('player');
 
+  const apiReference = document.getElementById('apiReference');
+  let apiReferenceWindow = undefined;
+
   let boomArmStatus = document.getElementById('boomArmStatus');
   let txStatus = document.getElementById('txStatus');
   let txPeakStatus = document.getElementById('txPeakStatus');
@@ -88,8 +91,8 @@ document.addEventListener('DOMContentLoaded', function () {
     getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     setActiveDeviceId: ["", "id: integer"],
     _setActiveDeviceId: ["", "id: integer"],
-    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType", "capture: boolean"],
-    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType", "color: 6 digit hex-string", "effect: RemoteMmiSequence"],
+    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType (integer)", "capture: boolean"],
+    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType (integer)", "color: RGB number (ex. #ffffff)", "effect: RemoteMmiSequence (integer)"],
     setBusyLight: ["", "busy: boolean"],
     trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
     isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
@@ -106,16 +109,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Helper for converting textual parameter values into the right type:
   function convertParam(value) {
+    let tValue = value.trim();
+    
+    // Remove leading zero from numbers to avoid intreprenting them as octal.
+    if (/0[0-9a-fA-F]+/.test(tValue)) {
+      while (tValue.startsWith("0")) tValue=tValue.substring(1);
+    }
+
+    // Re-intreprent # prefixed numbers as hex number
+    if (/#[0-9a-fA-F]+/.test(tValue)) {
+      tValue = "0x" + tValue.substring(1);
+    }
+
     // Peek and if we can find signs of non-string than evaluate it otherwise return as string.
-    if (value.trim().startsWith("[") 
-        || value.trim().startsWith("/") 
-        || value.trim().startsWith('"') 
-        || value.trim().startsWith("'") 
-        || value.trim().startsWith("{")
-        || value.trim().toLowerCase() === "true" 
-        || value.trim().toLowerCase() === "false"
-        || /^\d+$/.test(value.trim())) {
-      return eval(value); // Normally dangerous but since this is a test app it is acceptable.
+    if (tValue.startsWith("[") 
+        || tValue.startsWith("/") 
+        || tValue.startsWith('"') 
+        || tValue.startsWith("'") 
+        || tValue.startsWith("{")
+        || tValue.toLowerCase() === "true" 
+        || tValue.toLowerCase() === "false"
+        || !isNaN(tValue)) {
+      return eval(tValue); // Normally dangerous but since this is a test app it is acceptable.
     } else { // Assume string otherwise.
       return value;
     }
@@ -689,4 +704,31 @@ document.addEventListener('DOMContentLoaded', function () {
   // Update initial status texts.
   clientlibVersionTxt.innerHTML = jabra.apiVersion;
   browserAndOsVersionTxt.innerHTML = "Chrome v" + getChromeVersion() + ", " + getOS();
+
+  // Open Api reference with syntax highlightning in new window.
+  apiReference.onclick = () => {
+   fetch('../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts')
+    .then(response => response.text())
+    .then(text => {
+      let header = "<!DOCTYPE html><title>Jabra Typescript Api</title><link rel=\"stylesheet\" href=\"default.css\">" +
+                   "<script src=\"highlight.pack.js\"></script><script>hljs.initHighlightingOnLoad();</script>";
+
+      let html = header + "<pre><code class=\"typescript\">" + text + "</code></pre>";
+
+      if (apiReferenceWindow) {
+        let oldWindow = apiReferenceWindow;
+        apiReferenceWindow = undefined; 
+        oldWindow.close();
+      }
+
+      apiReferenceWindow = window.open("", "JabraTypescriptApi", "menubar=no;location=no;toolbar=no;status=no;personalbar=no");
+      if (apiReferenceWindow) {
+        apiReferenceWindow.document.open();
+        apiReferenceWindow.document.write(html);
+        apiReferenceWindow.document.close();
+        apiReferenceWindow.focus();
+      }
+    });
+  };
+
 }, false);
