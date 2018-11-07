@@ -39,10 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const messageFilter = document.getElementById('messageFilter');
   const logFilter = document.getElementById('logFilter');
+  const messagesCount = document.getElementById('messagesCount');
 
   const messageArea = document.getElementById('messageArea');
   const errorArea = document.getElementById('errorArea');
+
+  const errorsCount = document.getElementById('errorsCount');
+
   const logArea = document.getElementById('logArea');
+  const logCount = document.getElementById('logCount');
 
   const enableLogging = document.getElementById('enableLogging');
   const copyLog = document.getElementById('copyLog');
@@ -557,16 +562,19 @@ document.addEventListener('DOMContentLoaded', function () {
   clearMessageAreaBtn.onclick = () => {
     messages.clear();
     messageArea.value="";
+    messagesCount.innerText = "0";
   };
 
   clearErrorAreaBtn.onclick = () => {
     errors.clear();
     errorArea.value="";
+    errorsCount.innerText = "0";
   };
 
   clearlogAreaBtn.onclick = () => {
     logs.clear();
     logArea.value="";
+    logCount.innerText = "0";
   };
 
   function messageFilterAllows(str) {
@@ -592,7 +600,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateErrorArea() {
-    errorArea.value = errors.getAll().join("\n");
+    let filteredErrorsArray = errors.getAll();
+    errorsCount.innerText = filteredErrorsArray.length.toString();
+    errorArea.value = filteredErrorsArray.join("\n");
     if (scrollErrorArea) {
       errorArea.scrollTop = errorArea.scrollHeight;
     }
@@ -617,7 +627,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateMessageArea() {
-    messageArea.value = messages.getAll().filter(txt => messageFilterAllows(txt)).join("\n");
+    let filteredMessagesArray = messages.getAll().filter(txt => messageFilterAllows(txt));
+    messageArea.value = filteredMessagesArray.join("\n");
+    messagesCount.innerText = filteredMessagesArray.length.toString();
     if (scrollMessageArea) {
         messageArea.scrollTop = messageArea.scrollHeight;
     }
@@ -665,7 +677,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateLogArea() {
-    logArea.value = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    let filteredLogArray = logs.getAll().filter(txt => logFilterAllows(txt));
+    logCount.innerText = filteredLogArray.length.toString();
+    logArea.value =filteredLogArray.join("\n");
     if (scrollLogArea) {
       logArea.scrollTop = logArea.scrollHeight;
     }
@@ -676,7 +690,8 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   
   copyLog.onclick = () => {
-    let clipText = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    let filteredLogArray = logs.getAll().filter(txt => logFilterAllows(txt));
+    let clipText = filteredLogArray.join("\n");
     navigator.clipboard.writeText(clipText)
     .then(() => {})
     .catch(err => {
