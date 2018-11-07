@@ -2,6 +2,9 @@
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
+  const stressWaitInterval = 1000;
+  const maxQueueSize = 1000;
+
   const initSDKBtn = document.getElementById('initSDKBtn');
   const unInitSDKBtn = document.getElementById('unInitSDKBtn');
   const checkInstallBtn = document.getElementById('checkInstallBtn');
@@ -15,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const methodSelector = document.getElementById('methodSelector');
   const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
   const invokeApiBtn = document.getElementById('invokeApiBtn');
+  const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn');
 
   const txtParam1 = document.getElementById('txtParam1');
   const txtParam2 = document.getElementById('txtParam2');
@@ -86,9 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
   let scrollErrorArea = true;
   let scrollLogArea = true;
 
-  let errors = new BoundedQueue(1000);
-  let messages = new BoundedQueue(1000);
-  let logs = new BoundedQueue(1000);
+  let errors = new BoundedQueue(maxQueueSize);
+  let messages = new BoundedQueue(maxQueueSize);
+  let logs = new BoundedQueue(maxQueueSize);
+
+  let stressInvokeCount = undefined;
+  let stressInterval = undefined;
 
   // Help text for command followed by help for parameters:
   const commandTxtHelp = {
@@ -298,8 +305,6 @@ document.addEventListener('DOMContentLoaded', function () {
           rxSpeech = (rxSpeechEvent.toString().toLowerCase() === "true");
           rxSpeechStatus.innerText = rxSpeech.toString();
       }
-
-      // let timeStamp = new Date(event.data["TimeStampMs"]);
     }
   }
 
@@ -389,9 +394,54 @@ document.addEventListener('DOMContentLoaded', function () {
   // Display hints for initial selected value (if any):
   setupApiHelp();
 
-  // Call into user selected API method.
+  // Invoke API once:
   invokeApiBtn.onclick = () => {
-    const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
+    invokeSelectedApi(methodSelector.options[methodSelector.selectedIndex].value)
+  };
+
+  // Invoke API repeatedly:
+  stressInvokeApiBtn.onclick = () => {
+    let sucess = true;
+    if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
+      stopStressInvokeApi(sucess);
+      stressInvokeCount = undefined;
+    } else {
+      const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
+
+      stressInvokeCount = 1;
+      stressInvokeApiBtn.value = "Stop";
+      stressInterval = setInterval(() => {
+        if (sucess) {
+          try {
+            invokeSelectedApi(apiFuncName).then( () => {
+              stressInvokeApiBtn.value = "Stop (" + apiFuncName + " success count # " + stressInvokeCount + ")";
+              ++stressInvokeCount;
+            }).catch( () => {
+              stressInvokeApiBtn.value = "Stop (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
+              sucess = false;
+              stopStressInvokeApi(sucess);
+            });
+          } catch (err) {
+            stressInvokeApiBtn.value = "Stop (" + apiFuncName + " failed with exception at count # " + stressInvokeCount + ")";
+            sucess = false;
+            stopStressInvokeApi(sucess);
+          }
+        }
+      }, stressWaitInterval);
+    }
+  };
+
+  // Stop stress testing. Leave button with status if failure until repeated stop.
+  function stopStressInvokeApi(success) {
+    clearInterval(stressInterval);
+    if (success) {
+        stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
+    }
+    stressInterval = undefined;
+  }
+
+  // Call into user selected API method.
+  function invokeSelectedApi(apiFuncName) {
     const apiFunc = jabra[apiFuncName];
 
     let argsResolver = commandArgs[apiFuncName];
@@ -403,11 +453,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       let result = apiFunc.call(jabra, ...args);
-      commandEffect(apiFuncName, result).then(() => {});
+      return commandEffect(apiFuncName, result).then(() => {});
     } catch (err) {
       addError(err);
+      return Promise.reject(err);
     }
-  };
+  }
 
   // Update state with result from previously executed command and return promise with result.
   function commandEffect(apiFuncName, result) {
