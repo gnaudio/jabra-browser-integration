@@ -402,27 +402,27 @@ document.addEventListener('DOMContentLoaded', function () {
   // Invoke API repeatedly:
   stressInvokeApiBtn.onclick = () => {
     let sucess = true;
+    let stopped = false;
     if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
       stopStressInvokeApi(sucess);
-      stressInvokeCount = undefined;
+      stopped = true;
     } else {
       const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
-
       stressInvokeCount = 1;
       stressInvokeApiBtn.value = "Stop";
       stressInterval = setInterval(() => {
-        if (sucess) {
+        if (sucess && stressInterval) {
           try {
             invokeSelectedApi(apiFuncName).then( () => {
-              stressInvokeApiBtn.value = "Stop (" + apiFuncName + " success count # " + stressInvokeCount + ")";
+              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " success count # " + stressInvokeCount + ")";
               ++stressInvokeCount;
             }).catch( () => {
-              stressInvokeApiBtn.value = "Stop (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
+              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
               sucess = false;
               stopStressInvokeApi(sucess);
             });
           } catch (err) {
-            stressInvokeApiBtn.value = "Stop (" + apiFuncName + " failed with exception at count # " + stressInvokeCount + ")";
+            stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed with exception at count # " + stressInvokeCount + ")";
             sucess = false;
             stopStressInvokeApi(sucess);
           }
@@ -433,11 +433,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Stop stress testing. Leave button with status if failure until repeated stop.
   function stopStressInvokeApi(success) {
-    clearInterval(stressInterval);
+    if (stressInterval) {
+        clearInterval(stressInterval);
+        stressInterval = undefined;
+    }
     if (success) {
         stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
     }
-    stressInterval = undefined;
   }
 
   // Call into user selected API method.
