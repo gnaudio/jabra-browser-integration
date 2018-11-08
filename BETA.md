@@ -30,8 +30,9 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta7.msi) | Chromehost 2.0 Beta 7 |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta6.msi) | Chromehost 2.0 Beta 6 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta8.msi) | Chromehost 2.0 Beta 8 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta7.msi) | Chromehost 2.0 Beta 7 (deprecated) |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta6.msi) | Chromehost 2.0 Beta 6 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta5.msi) | Chromehost 2.0 Beta 5 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta4.msi) | Chromehost 2.0 Beta 4 (deprecated) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta3.msi) | Chromehost 2.0 Beta 3 (deprecated) |
