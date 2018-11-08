@@ -2,6 +2,9 @@
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
+  const stressWaitInterval = 1000;
+  const maxQueueSize = 1000;
+
   const initSDKBtn = document.getElementById('initSDKBtn');
   const unInitSDKBtn = document.getElementById('unInitSDKBtn');
   const checkInstallBtn = document.getElementById('checkInstallBtn');
@@ -15,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const methodSelector = document.getElementById('methodSelector');
   const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
   const invokeApiBtn = document.getElementById('invokeApiBtn');
+  const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn');
 
   const txtParam1 = document.getElementById('txtParam1');
   const txtParam2 = document.getElementById('txtParam2');
@@ -39,10 +43,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const messageFilter = document.getElementById('messageFilter');
   const logFilter = document.getElementById('logFilter');
+  const messagesCount = document.getElementById('messagesCount');
 
   const messageArea = document.getElementById('messageArea');
   const errorArea = document.getElementById('errorArea');
+
+  const errorsCount = document.getElementById('errorsCount');
+
   const logArea = document.getElementById('logArea');
+  const logCount = document.getElementById('logCount');
 
   const enableLogging = document.getElementById('enableLogging');
   const copyLog = document.getElementById('copyLog');
@@ -53,6 +62,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const otherVersionTxt = document.getElementById('otherVersionTxt');
 
   const player = document.getElementById('player');
+
+  const apiReference = document.getElementById('apiReference');
+  let apiReferenceWindow = undefined;
 
   let boomArmStatus = document.getElementById('boomArmStatus');
   let txStatus = document.getElementById('txStatus');
@@ -78,9 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
   let scrollErrorArea = true;
   let scrollLogArea = true;
 
-  let errors = new BoundedQueue(1000);
-  let messages = new BoundedQueue(1000);
-  let logs = new BoundedQueue(1000);
+  let errors = new BoundedQueue(maxQueueSize);
+  let messages = new BoundedQueue(maxQueueSize);
+  let logs = new BoundedQueue(maxQueueSize);
+
+  let stressInvokeCount = undefined;
+  let stressInterval = undefined;
 
   // Help text for command followed by help for parameters:
   const commandTxtHelp = {
@@ -88,8 +103,8 @@ document.addEventListener('DOMContentLoaded', function () {
     getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     setActiveDeviceId: ["", "id: integer"],
     _setActiveDeviceId: ["", "id: integer"],
-    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType", "capture: boolean"],
-    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType", "color: 6 digit hex-string", "effect: RemoteMmiSequence"],
+    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType (integer)", "capture: boolean"],
+    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType (integer)", "color: RGB number (ex. #ffffff)", "effect: RemoteMmiSequence (integer)"],
     setBusyLight: ["", "busy: boolean"],
     trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
     isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
@@ -106,16 +121,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Helper for converting textual parameter values into the right type:
   function convertParam(value) {
+    let tValue = value.trim();
+    
+    // Remove leading zero from numbers to avoid intreprenting them as octal.
+    if (/0[0-9a-fA-F]+/.test(tValue)) {
+      while (tValue.startsWith("0")) tValue=tValue.substring(1);
+    }
+
+    // Re-intreprent # prefixed numbers as hex number
+    if (/#[0-9a-fA-F]+/.test(tValue)) {
+      tValue = "0x" + tValue.substring(1);
+    }
+
     // Peek and if we can find signs of non-string than evaluate it otherwise return as string.
-    if (value.trim().startsWith("[") 
-        || value.trim().startsWith("/") 
-        || value.trim().startsWith('"') 
-        || value.trim().startsWith("'") 
-        || value.trim().startsWith("{")
-        || value.trim().toLowerCase() === "true" 
-        || value.trim().toLowerCase() === "false"
-        || /^\d+$/.test(value.trim())) {
-      return eval(value); // Normally dangerous but since this is a test app it is acceptable.
+    if (tValue.startsWith("[") 
+        || tValue.startsWith("/") 
+        || tValue.startsWith('"') 
+        || tValue.startsWith("'") 
+        || tValue.startsWith("{")
+        || tValue.toLowerCase() === "true" 
+        || tValue.toLowerCase() === "false"
+        || !isNaN(tValue)) {
+      return eval(tValue); // Normally dangerous but since this is a test app it is acceptable.
     } else { // Assume string otherwise.
       return value;
     }
@@ -278,8 +305,6 @@ document.addEventListener('DOMContentLoaded', function () {
           rxSpeech = (rxSpeechEvent.toString().toLowerCase() === "true");
           rxSpeechStatus.innerText = rxSpeech.toString();
       }
-
-      // let timeStamp = new Date(event.data["TimeStampMs"]);
     }
   }
 
@@ -369,9 +394,56 @@ document.addEventListener('DOMContentLoaded', function () {
   // Display hints for initial selected value (if any):
   setupApiHelp();
 
-  // Call into user selected API method.
+  // Invoke API once:
   invokeApiBtn.onclick = () => {
-    const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
+    invokeSelectedApi(methodSelector.options[methodSelector.selectedIndex].value)
+  };
+
+  // Invoke API repeatedly:
+  stressInvokeApiBtn.onclick = () => {
+    let sucess = true;
+    let stopped = false;
+    if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
+      stopStressInvokeApi(sucess);
+      stopped = true;
+    } else {
+      const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
+      stressInvokeCount = 1;
+      stressInvokeApiBtn.value = "Stop";
+      stressInterval = setInterval(() => {
+        if (sucess && stressInterval) {
+          try {
+            invokeSelectedApi(apiFuncName).then( () => {
+              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " success count # " + stressInvokeCount + ")";
+              ++stressInvokeCount;
+            }).catch( () => {
+              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
+              sucess = false;
+              stopStressInvokeApi(sucess);
+            });
+          } catch (err) {
+            stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed with exception at count # " + stressInvokeCount + ")";
+            sucess = false;
+            stopStressInvokeApi(sucess);
+          }
+        }
+      }, stressWaitInterval);
+    }
+  };
+
+  // Stop stress testing. Leave button with status if failure until repeated stop.
+  function stopStressInvokeApi(success) {
+    if (stressInterval) {
+        clearInterval(stressInterval);
+        stressInterval = undefined;
+    }
+    if (success) {
+        stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
+    }
+  }
+
+  // Call into user selected API method.
+  function invokeSelectedApi(apiFuncName) {
     const apiFunc = jabra[apiFuncName];
 
     let argsResolver = commandArgs[apiFuncName];
@@ -383,11 +455,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       let result = apiFunc.call(jabra, ...args);
-      commandEffect(apiFuncName, result).then(() => {});
+      return commandEffect(apiFuncName, result).then(() => {});
     } catch (err) {
       addError(err);
+      return Promise.reject(err);
     }
-  };
+  }
 
   // Update state with result from previously executed command and return promise with result.
   function commandEffect(apiFuncName, result) {
@@ -542,16 +615,19 @@ document.addEventListener('DOMContentLoaded', function () {
   clearMessageAreaBtn.onclick = () => {
     messages.clear();
     messageArea.value="";
+    messagesCount.innerText = "0";
   };
 
   clearErrorAreaBtn.onclick = () => {
     errors.clear();
     errorArea.value="";
+    errorsCount.innerText = "0";
   };
 
   clearlogAreaBtn.onclick = () => {
     logs.clear();
     logArea.value="";
+    logCount.innerText = "0";
   };
 
   function messageFilterAllows(str) {
@@ -577,7 +653,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateErrorArea() {
-    errorArea.value = errors.getAll().join("\n");
+    let filteredErrorsArray = errors.getAll();
+    errorsCount.innerText = filteredErrorsArray.length.toString();
+    errorArea.value = filteredErrorsArray.join("\n");
     if (scrollErrorArea) {
       errorArea.scrollTop = errorArea.scrollHeight;
     }
@@ -602,7 +680,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateMessageArea() {
-    messageArea.value = messages.getAll().filter(txt => messageFilterAllows(txt)).join("\n");
+    let filteredMessagesArray = messages.getAll().filter(txt => messageFilterAllows(txt));
+    messageArea.value = filteredMessagesArray.join("\n");
+    messagesCount.innerText = filteredMessagesArray.length.toString();
     if (scrollMessageArea) {
         messageArea.scrollTop = messageArea.scrollHeight;
     }
@@ -650,7 +730,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateLogArea() {
-    logArea.value = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    let filteredLogArray = logs.getAll().filter(txt => logFilterAllows(txt));
+    logCount.innerText = filteredLogArray.length.toString();
+    logArea.value =filteredLogArray.join("\n");
     if (scrollLogArea) {
       logArea.scrollTop = logArea.scrollHeight;
     }
@@ -661,7 +743,8 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   
   copyLog.onclick = () => {
-    let clipText = logs.getAll().filter(txt => logFilterAllows(txt)).join("\n");
+    let filteredLogArray = logs.getAll().filter(txt => logFilterAllows(txt));
+    let clipText = filteredLogArray.join("\n");
     navigator.clipboard.writeText(clipText)
     .then(() => {})
     .catch(err => {
@@ -689,4 +772,31 @@ document.addEventListener('DOMContentLoaded', function () {
   // Update initial status texts.
   clientlibVersionTxt.innerHTML = jabra.apiVersion;
   browserAndOsVersionTxt.innerHTML = "Chrome v" + getChromeVersion() + ", " + getOS();
+
+  // Open Api reference with syntax highlightning in new window.
+  apiReference.onclick = () => {
+   fetch('../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts')
+    .then(response => response.text())
+    .then(text => {
+      let header = "<!DOCTYPE html><title>Jabra Typescript Api</title><link rel=\"stylesheet\" href=\"default.css\">" +
+                   "<script src=\"highlight.pack.js\"></script><script>hljs.initHighlightingOnLoad();</script>";
+
+      let html = header + "<pre><code class=\"typescript\">" + text + "</code></pre>";
+
+      if (apiReferenceWindow) {
+        let oldWindow = apiReferenceWindow;
+        apiReferenceWindow = undefined; 
+        oldWindow.close();
+      }
+
+      apiReferenceWindow = window.open("", "JabraTypescriptApi", "menubar=no;location=no;toolbar=no;status=no;personalbar=no");
+      if (apiReferenceWindow) {
+        apiReferenceWindow.document.open();
+        apiReferenceWindow.document.write(html);
+        apiReferenceWindow.document.close();
+        apiReferenceWindow.focus();
+      }
+    });
+  };
+
 }, false);

@@ -33,7 +33,7 @@ var jabra;
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    jabra.apiVersion = "2.0.beta7";
+    jabra.apiVersion = "2.0.beta8";
     /**
      * Is the current version a beta ?
      */
@@ -669,7 +669,7 @@ var jabra;
     * Nb. This requires the button to be previously captured though setMMiFocus.
     *
     * @param type The button that should be captured/released.
-    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param color An RGB array of 3x integers or a RGB number (with 0x or # prefix for hex).
     * @param effect What effect to apply to the button.
     *
     * @returns A promise that is resolved once operation completes.
@@ -836,7 +836,7 @@ var jabra;
     }
     ;
     /**
-    * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
+    * Configure an audio html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
     function trySetDeviceOutput(audioElement, deviceInfo) {
@@ -1164,15 +1164,15 @@ var jabra;
     }
     ;
     /**
-     * Helper that pass color array through and parses hex values as strings or numbers to color array.
+     * Helper that pass color array through and converts values to color array.
      */
     function colorOrString(arg) {
         if (arg !== "" && ((typeof arg === 'string') || (arg instanceof String))) {
             let combinedValue = parseInt(arg, 16);
             return [(combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255];
         }
-        else if (typeof arg == 'number') { // Fix for test app sending some integer-like strings as numbers.
-            let combinedValue = parseInt(arg.toString(), 16);
+        else if (typeof arg == 'number') {
+            let combinedValue = arg;
             return [(combinedValue >> 16) & 255, (combinedValue >> 8) & 255, combinedValue & 255];
         }
         else if (Array.isArray(arg)) {

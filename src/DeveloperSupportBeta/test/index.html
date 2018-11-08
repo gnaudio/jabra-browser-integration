@@ -34,6 +34,9 @@
             </td>
             <td>&nbsp;&nbsp;&nbsp;</td>
             <td>
+                <input id="apiReference" type="button" value="Api reference" title="Lookup api reference documentation"/>
+            </td>
+            <td>
                 <input id="setupUserMediaPlaybackBtn" type="button" value="Setup user media playback" title="Activates microphone and speaker for playback - equivalent to call into getUserDeviceMediaExt followed by trySetDeviceOutput" disabled="true"/>
             </td>
             <td>
@@ -81,7 +84,10 @@
                 <input type="checkbox" id="filterInternalsAndDeprecatedMethodsChk" value="true" title="Filter out internals/deprecated methods" checked />
             </td>
             <td>
-                <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function"/>
+                <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function (1 time)"/>
+            </td>
+            <td>
+                &nbsp;&nbsp;<input id="stressInvokeApiBtn" type="button" value="Invoke repeatedly (stress test)" title="Stress test by invoking selected API function repeatedly"/>
             </td>
             <td>
                 <div id="methodHelp" class="methodHelp"></div>
@@ -148,12 +154,12 @@
     <table>
         <tr>
             <td>
-              Message/events: <input id="clearMessageAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyMessages" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
+              Message/events (<span id="messagesCount">0</span> entries): <input id="clearMessageAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyMessages" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
               <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" title="Filter messages" />
             </td>
             <td>&nbsp;</td>
             <td>
-              Errors: <input id="clearErrorAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />
+              Errors (<span id="errorsCount">0</span> entries): <input id="clearErrorAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />
             </td>
         </tr>
         <tr>
@@ -188,7 +194,7 @@
         </tr>
         <tr>
             <td colspan="3">
-                API/extension content page log&nbsp;<input type="checkbox" id="enableLogging" value="true" title="Enable logging to this window" checked />:&nbsp;&nbsp;
+                API/extension content page log (<span id="logCount">0</span> entries):&nbsp;<input type="checkbox" id="enableLogging" value="true" title="Enable logging to this window" checked />:&nbsp;&nbsp;
                 <input id="clearlogAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyLog" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
                 <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" title="Filter log messages" />
                 <br/>

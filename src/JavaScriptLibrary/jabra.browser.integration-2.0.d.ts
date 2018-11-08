@@ -5,7 +5,7 @@ declare namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    const apiVersion = "2.0.beta7";
+    const apiVersion = "2.0.beta8";
     /**
      * Contains information about installed components.
      */
@@ -327,12 +327,12 @@ declare namespace jabra {
     * Nb. This requires the button to be previously captured though setMMiFocus.
     *
     * @param type The button that should be captured/released.
-    * @param color An RGB array of 3 8 bit integers or a RGB hex string (without prefix).
+    * @param color An RGB array of 3x integers or a RGB number (with 0x or # prefix for hex).
     * @param effect What effect to apply to the button.
     *
     * @returns A promise that is resolved once operation completes.
     */
-    function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string, effect: RemoteMmiSequence | string): Promise<void>;
+    function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string | number, effect: RemoteMmiSequence | string): Promise<void>;
     /**
     * Get detailed information about the current active Jabra Device, including current status
     * and optionally also including related browser media device information.
@@ -379,7 +379,7 @@ declare namespace jabra {
     */
     function getInstallInfo(): Promise<InstallInfo>;
     /**
-    * Configure a <audio> html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
+    * Configure an audio html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
     * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
     */
     function trySetDeviceOutput(audioElement: HTMLMediaElement, deviceInfo: DeviceInfo): Promise<boolean>;

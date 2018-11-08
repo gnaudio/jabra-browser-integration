@@ -1,5 +1,4 @@
 ﻿body {
-  /* background: url("bg.png"); */
   background: #f0f0f0;
   font-family: Helvetica;
   margin:0;
@@ -8,13 +7,11 @@
 
 .wrapper {
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 1160px;
 }
 
 header {
   border-bottom: 1px solid #ccc;
-  /* color:white; */
-  /* text-shadow: 2px 2px rgba(0,0,0, 0.5); */
   padding: 25px;
 }
 
@@ -147,7 +144,7 @@ textarea {
 }
 
 .filter {
-  width: 12em;
+  width: 14em;
 }
 
 label {
