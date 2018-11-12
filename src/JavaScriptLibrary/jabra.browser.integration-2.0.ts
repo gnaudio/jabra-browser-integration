@@ -516,7 +516,7 @@ namespace jabra {
                                     event.data.data.version_jsapi = apiVersion;
                                 }
 
-                                // For install info also check if the full installation is consistant.
+                                // For install info also check if the full installation is consistent.
                                 if (normalizedMsg === "getinstallinfo") {
                                     event.data.data.installationOk = isInstallationOk(event.data.data);
                                 }
@@ -624,7 +624,7 @@ namespace jabra {
             );
 
             /**
-             * Helper that checks if the installation is consistant.
+             * Helper that checks if the installation is consistent.
              */
             function isInstallationOk(installInfo: InstallInfo): boolean {
                 let browserSdkVersions = [installInfo.version_browserextension, installInfo.version_chromehost, installInfo.version_jsapi];
@@ -690,7 +690,7 @@ namespace jabra {
                     resultTarget = undefined;
                 }
 
-                // Warn in case of likely memeory leak:
+                // Warn in case of likely memory leak:
                 const mapSize = sendRequestResultMap.size;
                 if (mapSize > 10 && mapSize % 10 === 0) { // Limit warnings to every 10 size increases to avoid flooding:
                     logger.warn("Memory leak found - Request result map is getting too large (size #" + mapSize + ")");
@@ -1086,7 +1086,7 @@ namespace jabra {
         }
 
         /**
-         * Utility method that combines constraints with ours taking precendence (deep). 
+         * Utility method that combines constraints with ours taking precedence (deep). 
          */
         function mergeConstraints(ours: MediaStreamConstraints, theirs?: MediaStreamConstraints): MediaStreamConstraints {
             if (theirs !== null && theirs !== undefined && typeof ours === 'object') {
@@ -1195,7 +1195,7 @@ namespace jabra {
             }
         }
             
-        // Find matchin pair input or output device.
+        // Find matching pair input or output device.
         function findMatchingMediaDevice(groupId: string, kind: string, src: MediaDeviceInfo[]): MediaDeviceInfo | undefined {
             return src.find(md => md.groupId == groupId && md.kind == kind);
         }
