@@ -596,14 +596,14 @@ namespace jabra {
 
             window.addEventListener("message", initState.eventCallback!);
 
-            sendCmd("logLevel", null, false);
-
             // Initial getversion and loglevel.
             setTimeout(
                 () => {
                     sendCmdWithResult("getversion", null, false).then((result) => {
                         let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                         logger.trace("getversion returned successfully with : " + resultStr);
+
+                        sendCmd("logLevel", null, false);
                     }).catch((error) => {
                         logger.error(error);
                     });

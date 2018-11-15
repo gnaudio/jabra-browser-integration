@@ -343,7 +343,7 @@ var jabra;
                                     }
                                     event.data.data.version_jsapi = jabra.apiVersion;
                                 }
-                                // For install info also check if the full installation is consistant.
+                                // For install info also check if the full installation is consistent.
                                 if (normalizedMsg === "getinstallinfo") {
                                     event.data.data.installationOk = isInstallationOk(event.data.data);
                                 }
@@ -421,12 +421,12 @@ var jabra;
                 }
             };
             window.addEventListener("message", initState.eventCallback);
-            sendCmd("logLevel", null, false);
             // Initial getversion and loglevel.
             setTimeout(() => {
                 sendCmdWithResult("getversion", null, false).then((result) => {
                     let resultStr = (typeof result === 'string' || result instanceof String) ? result : JSON.stringify(result, null, 2);
                     logger.trace("getversion returned successfully with : " + resultStr);
+                    sendCmd("logLevel", null, false);
                 }).catch((error) => {
                     logger.error(error);
                 });
@@ -440,7 +440,7 @@ var jabra;
                 }
             }, 5000);
             /**
-             * Helper that checks if the installation is consistant.
+             * Helper that checks if the installation is consistent.
              */
             function isInstallationOk(installInfo) {
                 let browserSdkVersions = [installInfo.version_browserextension, installInfo.version_chromehost, installInfo.version_jsapi];
@@ -504,7 +504,7 @@ var jabra;
                     // No idea what target matches what request - give up.
                     resultTarget = undefined;
                 }
-                // Warn in case of likely memeory leak:
+                // Warn in case of likely memory leak:
                 const mapSize = sendRequestResultMap.size;
                 if (mapSize > 10 && mapSize % 10 === 0) { // Limit warnings to every 10 size increases to avoid flooding:
                     logger.warn("Memory leak found - Request result map is getting too large (size #" + mapSize + ")");
@@ -745,6 +745,10 @@ var jabra;
     * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
     * Used internally by test tool - do not use otherwise.
     *
+    * Note: The active device is a global setting that affects all browser
+    * instances using the browser SDK. Unless changed specifically, the setting
+    * persist until browser is restarted or device is unplugged.
+    *
     * @deprecated Use setActiveDeviceId instead.
     */
     function _setActiveDeviceId(id) {
@@ -756,6 +760,10 @@ var jabra;
     ;
     /**
     * Select a new active device returning once selection is completed.
+    *
+    * Note: The active device is a global setting that affects all browser
+    * instances using the browser SDK. Unless changed specifically, the setting
+    * persist until browser is restarted or device is unplugged.
     *
     * @param id The id number of the new active device.
     * @returns A promise that is resolved once selection completes.
@@ -901,7 +909,7 @@ var jabra;
             return Promise.reject(new Error("Optional constraints parameter must be an object"));
         }
         /**
-         * Utility method that combines constraints with ours taking precendence (deep).
+         * Utility method that combines constraints with ours taking precedence (deep).
          */
         function mergeConstraints(ours, theirs) {
             if (theirs !== null && theirs !== undefined && typeof ours === 'object') {
@@ -1012,7 +1020,7 @@ var jabra;
                 return -1;
             }
         }
-        // Find matchin pair input or output device.
+        // Find matching pair input or output device.
         function findMatchingMediaDevice(groupId, kind, src) {
             return src.find(md => md.groupId == groupId && md.kind == kind);
         }

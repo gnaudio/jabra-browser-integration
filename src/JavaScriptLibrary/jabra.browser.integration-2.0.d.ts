@@ -357,11 +357,19 @@ declare namespace jabra {
     * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
     * Used internally by test tool - do not use otherwise.
     *
+    * Note: The active device is a global setting that affects all browser
+    * instances using the browser SDK. Unless changed specifically, the setting
+    * persist until browser is restarted or device is unplugged.
+    *
     * @deprecated Use setActiveDeviceId instead.
     */
     function _setActiveDeviceId(id: number | string): void;
     /**
     * Select a new active device returning once selection is completed.
+    *
+    * Note: The active device is a global setting that affects all browser
+    * instances using the browser SDK. Unless changed specifically, the setting
+    * persist until browser is restarted or device is unplugged.
     *
     * @param id The id number of the new active device.
     * @returns A promise that is resolved once selection completes.
