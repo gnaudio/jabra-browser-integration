@@ -5,7 +5,7 @@ declare namespace jabra {
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    const apiVersion = "2.0.beta8";
+    const apiVersion = "2.0.0";
     /**
      * Contains information about installed components.
      */
