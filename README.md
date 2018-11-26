@@ -41,10 +41,11 @@ may need to change their code when updating. Increases in minorVersion indicates
 >*Tip: Use the supplied typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools.* 
 
 Latest API versions are:
-| API file downloads | Description                                                 |
-| ----------------------------- | --------------------------------------- | 
-| [jabra.browser.integration-2.0.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js)  | Javascript API client file                 |
-| [jabra.browser.integration-2.0.d.ts](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts)  | Typescript definition file        |
+
+| API file downloads | Description |
+| ----------------------------- | --------------------------------------- |
+| [jabra.browser.integration-2.0.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js) | Javascript API client file |
+| [jabra.browser.integration-2.0.d.ts](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) | Typescript definition file |
 
 The library internally checks for dependencies – and will report this to the app using the library. An example: When trying to initialize Jabra library the promise might fail wih an error “You need to use this Extension and then reload this page” if the browser extension is missing.
 
