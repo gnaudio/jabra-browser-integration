@@ -4,22 +4,34 @@
   <meta charset="UTF-8" />
   <title>Playback example with Jabra device auto selection</title>
   <link href="main.css" rel="stylesheet" />
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
 <a href="https://github.com/gnaudio/jabra-browser-integration"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
 <header>
   <div class="wrapper center">
     <h1 class="title">Jabra Device Selection</h1>
-    <p>Simple audio playback with autoselection of Jabra device</p>
+    <p>Simple audio playback with auto selection of Jabra device</p>
   </div>
 </header>
 <section id="section">
+  <div id="subTitles">
+        <p id="subTitle1"></p>
+        <p id="subTitle2"></p>
+  </div>
+
   <div class="wrapper">
     <audio id="player" muted autoplay></audio>
-    <button id="unmuteButton">Start loopback playback</button>
+    <button id="startPlayback" disabled="true">Start loopback playback</button>
 
     <div id="inputStat"></div>
     <div id="outputStat"></div>
+    <br/>
+    <div>
+      <br/>
+      <i><small>Note: You must have your Jabra device connected prior to loading this page. If missing, connect device and reload page by pressing F5.</small></i>
+    </div>
     <br/>
   </div>
 </section>
@@ -28,38 +40,7 @@
     <p>GN Audio A/S</p>
   </div>
 </footer>
-<script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-1.2.js"></script>
-<script type="text/javascript">
-  let inputStat = document.getElementById("inputStat");
-  let outputStat = document.getElementById("outputStat");
-  var player = document.getElementById('player');
-  var unmuteButton = document.getElementById('unmuteButton');
-  var deviceInfo = null;
-  var self = this;
-
-  unmuteButton.addEventListener('click', function() {
-    player.muted = false;
-    jabra.trySetDeviceOutput(player, self.deviceInfo).then(success => {
-      outputStat.innerText = success ? "Jabra output device '" + self.deviceInfo.label + "' sucessfully selected" : "Jabra output device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
-    }).catch(err => {
-      outputStat.innerText = err.name + ": " + err.message;
-    });
-  });
-
-
-  jabra.getUserDeviceMediaExt({}).then( streamAndDeviceInfo => {
-    var stream = streamAndDeviceInfo.stream;
-    var deviceInfo = streamAndDeviceInfo.deviceInfo;
-    self.deviceInfo = deviceInfo;
-    inputStat.innerText = jabra.isDeviceSelectedForInput(stream, self.deviceInfo) ? "Jabra input device '" + self.deviceInfo.label + "' sucessfully selected" : "Jabra input device '" + self.deviceInfo.label + "' could not be selected automatically in your browser - please do manually"
-    player.srcObject = stream;
-  }).catch(err => {
-    if (err.name === "NotFoundError") {
-      inputStat.innerText = "Input device not accessible/found";
-    } else {
-      inputStat.innerText = err.name + ": " + err.message;
-    }
-  });
-</script>
+<script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
+<script type="text/javascript" src="main.js"></script>
 </body>
 </html>

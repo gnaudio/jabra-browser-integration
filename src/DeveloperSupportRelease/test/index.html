@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jabra Browser Api Test</title>
+  <link href="main.css" rel="stylesheet" />
+  <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+<a href="https://github.com/gnaudio/jabra-browser-integration"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<header>
+  <div class="wrapper center">
+    <h1 class="title">Jabra Browser API Test</h1>
+    <p><span>Testing client API v</span><span id="clientlibVersionTxt"></span><span id="otherVersionTxt"></span></p>
+    <p><span id="browserAndOsVersionTxt"></span></p>
+  </div>
+</header>
+<section id="section">
+  <div id="subTitles">
+        <p id="subTitle1"></p>
+        <p id="subTitle2"></p>
+  </div>
+  
+  <div class="wrapper">
+    <table>
+        <tr> 
+            <td>
+                <input id="initSDKBtn" type="button" value="Init" title="Initialize API and subscribe to ALL events (must be called prior to anything else) - Alias for init call followed by addEventListener call with catch all /.*/ argument"/>
+            </td>
+            <td>
+                <input id="unInitSDKBtn" type="button" value="UnInit" disabled="true" title="De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API - Alias for shutdown call"/>
+            </td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td>
+                <input id="apiReference" type="button" value="Api reference" title="Lookup api reference documentation"/>
+            </td>
+            <td>
+                <input id="setupUserMediaPlaybackBtn" type="button" value="Setup user media playback" title="Activates microphone and speaker for playback - equivalent to call into getUserDeviceMediaExt followed by trySetDeviceOutput" disabled="true"/>
+            </td>
+            <td>
+                <input id="checkInstallBtn" type="button" value="CheckInstall" title="Alias for call into getInstallInfo" disabled="true"/>
+            </td>
+            <td>
+                 <div id="installCheckResult" class="installCheck"></div>
+            </td>
+        </tr>   
+    </table>
+      
+    <br/>
+    <audio id="player" muted autoplay></audio>
+    <br/>
+    
+    <table>
+        <tr>
+            <td>
+                <input id="devicesBtn" type="button" value="Get Devices" title="Alias for call into getDevices" disabled="true"/>
+            </td>
+            <td>
+                <div>   
+                    <select id="deviceSelector"> 
+                    </select>   
+                </div>   
+            </td>
+            <td>
+                 <input id="changeActiveDeviceBtn" type="button" value="Set as active" title="Select active device using special backwards compatible call into _setActiveDeviceId_deprecated" disabled="true"/>
+            </td>
+        </tr>
+    </table>
+
+    <p>&nbsp;</p>
+        
+    <table>
+        <tr>
+            <td>
+                <label for="methodSelector">Select API call to invoke:</label>
+            </td>
+            <td>
+                <select id="methodSelector">                  
+                </select>
+            </td>
+            <td>
+                <input type="checkbox" id="filterInternalsAndDeprecatedMethodsChk" value="true" title="Filter out internals/deprecated methods" checked />
+            </td>
+            <td>
+                <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function (1 time)"/>
+            </td>
+            <td>
+                &nbsp;&nbsp;<input id="stressInvokeApiBtn" type="button" value="Invoke repeatedly (stress test)" title="Stress test by invoking selected API function repeatedly"/>
+            </td>
+            <td>
+                <div id="methodHelp" class="methodHelp"></div>
+            </td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td>
+                Parameter 1
+            </td>
+            <td>
+                Parameter 2
+            </td>
+            <td>
+                Parameter 3
+            </td>
+            <td>
+                Parameter 4
+            </td>
+            <td>
+                Parameter 5
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" class="param" id="txtParam1" />
+            </td>
+            <td>
+                <input type="text" class="param" id="txtParam2" />
+            </td>
+            <td>
+                <input type="text" class="param" id="txtParam3" />
+            </td>
+            <td>
+                <input type="text" class="param" id="txtParam4" />
+            </td>
+            <td>
+                <input type="text" class="param" id="txtParam5" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span id="param1Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param2Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param3Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param4Hint" class="paramHint"></span>
+            </td>
+            <td>
+                <span id="param5Hint" class="paramHint"></span>
+            </td>
+        </tr>
+    </table>
+
+    <br/>
+
+    <table>
+        <tr>
+            <td>
+              Message/events (<span id="messagesCount">0</span> entries): <input id="clearMessageAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollMessageAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyMessages" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
+              <label for="messageFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="messageFilter" title="Filter messages" />
+            </td>
+            <td>&nbsp;</td>
+            <td>
+              Errors (<span id="errorsCount">0</span> entries): <input id="clearErrorAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleScrollErrorAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <textarea id="messageArea" rows="25" cols="100"></textarea>
+            </td>
+            <td>&nbsp;</td>
+            <td>
+              <textarea id="errorArea" rows="25" cols="60"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr>   
+            <td colspan="3">
+                <span id="devLogStatus" class="devLogStatus" style="display:none">
+                    <br/>
+                    Devlog status&nbsp;&nbsp;
+                    <label for="boomArmStatus">Boom arm:</label>&nbsp;<span id="boomArmStatus">?</span>&nbsp;,
+                    <label for="txStatus">Tx:</label>&nbsp;<span id="txStatus">?</span>&nbsp;,
+                    <label for="txPeakStatus">Tx peak:</label>&nbsp;<span id="txPeakStatus">?</span>&nbsp;,
+                    <label for="rxStatus">Rx:</label>&nbsp;<span id="rxStatus">?</span>&nbsp;,
+                    <label for="rxPeakStatus">Rx peak:</label>&nbsp;<span id="rxPeakStatus">?</span>&nbsp;,
+                    <label for="txSpeechStatus">Tx speech:</label>&nbsp;<span id="txSpeechStatus">?</span>&nbsp;,
+                    <label for="rxSpeechStatus">Rx speech:</label>&nbsp;<span id="rxSpeechStatus">?</span>                    
+                    <br/>
+                    <br/>
+                    <br/>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                API/extension content page log (<span id="logCount">0</span> entries):&nbsp;<input type="checkbox" id="enableLogging" value="true" title="Enable logging to this window" checked />:&nbsp;&nbsp;
+                <input id="clearlogAreaBtn" type="button" value="Clear" title="Clear text"/>&nbsp;<input id="toggleLogAreaBtn" type="button" value="Scroll ON" title="Toggle text scrolling on/off" />&nbsp;<input id="copyLog" type="button" value="Copy" title="Copy to clipboard" />&nbsp;&nbsp;
+                <label for="logFilter">Filter: </label>&nbsp;<input type="text" class="filter" id="logFilter" title="Filter log messages" />
+                <br/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+              <textarea id="logArea" rows="15" cols="160"></textarea>
+              <br/>
+              Nb. See also: 
+              1) Extension background page console log.
+              2) Native chromehost log file.
+              3) Native SDK log file.
+            </td>
+        </tr>
+    </table>         
+  </div>
+</section>
+<footer>
+  <div class="wrapper center">
+    <p>GN Audio A/S</p>
+  </div>
+</footer>
+<script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script type="text/javascript" src="queue.js"></script>
+<script type="text/javascript" src="main.js"></script>
+</body>
+</html>
