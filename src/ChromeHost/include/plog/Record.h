@@ -164,7 +164,7 @@ namespace plog
         {
             using namespace plog::detail;
 
-            m_message << data;
+            m_message << &data;
             return *this;
         }
 

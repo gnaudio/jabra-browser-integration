@@ -30,8 +30,8 @@ SOFTWARE.
 #include <exception>
 #include <iostream>
 #include <cstdlib>
-#include "logger.h"
-#include "meta.h"
+#include "Logger.h"
+#include "Meta.h"
 
 using namespace std;
 

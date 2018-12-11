@@ -135,7 +135,7 @@ struct BasicDeviceInfo {
 							  usbDevicePath(source.usbDevicePath ? source.usbDevicePath : ""),
 							  parentInstanceId(source.parentInstanceId ? source.parentInstanceId : ""),
 							  errStatus(source.errStatus),
-							  isBTPaired(source.isBTPaired),
+							  isBTPaired(source.isDongle),
 							  dongleName(source.dongleName ? source.dongleName : ""),
 							  variant(source.variant ? source.variant : ""),
 							  serialNumber(source.serialNumber ? source.serialNumber : ""),

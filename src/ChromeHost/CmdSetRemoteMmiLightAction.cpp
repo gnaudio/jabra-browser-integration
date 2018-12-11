@@ -46,7 +46,7 @@ bool CmdSetRemoteMmiLightAction::CanExecute(const Request& request)
 
 void CmdSetRemoteMmiLightAction::Execute(const Request& request)
 {
-  RemoteMmiType type = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_TYPE, MMI_TYPE_ALL);
+  RemoteMmiType type = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_TYPE, MMI_TYPE_VOLUP);
   RemoteMmiSequence effect = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT, MMI_LED_SEQUENCE_OFF);
   nlohmann::json colorArray = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_COLOR, nlohmann::json::array());
 

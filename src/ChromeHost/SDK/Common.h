@@ -112,19 +112,19 @@ typedef struct _DeviceInfo
 {
 	unsigned short deviceID;
 	unsigned short productID;
+	unsigned short vendorID;
 	char* deviceName;
 	char* usbDevicePath;
 	char* parentInstanceId;
 	Jabra_ErrorStatus errStatus;
-	bool isBTPaired;
+	bool isDongle;
 	char* dongleName;
 	char* variant;
 	char* serialNumber;
     bool isInFirmwareUpdateMode;
     DeviceConnectionType deviceconnection;
-#if __APPLE__
     unsigned long connectionId;
-#endif
+    unsigned short parentDeviceId;
 }Jabra_DeviceInfo;
 
 // This structure represents each button event type info. For example: Tap (00), Press(01), Double Tap(02) etc.
@@ -293,7 +293,8 @@ typedef enum _DeviceFeature {
     Logging = 1014,
     PreferredSoftphoneListInDevice = 1015,
     VoiceAssistant = 1016,
-    PlayRingtone=1017
+    PlayRingtone=1017,
+	SetDateTime = 1018
 } DeviceFeature;
 
 /* This structure represents the product registration info*/
@@ -369,17 +370,18 @@ typedef struct _audioFileParams {
     /* audio file format allowed */
     AUDIO_FILE_FORMAT audioFileType;
     /* number of channels present */
-    int numChannels;
+    unsigned int numChannels;
     /* bits per sample */
-    int bitsPerSample;
+    unsigned int bitsPerSample;
     /* sample rate of the audio */
-    int sampleRate;
+    unsigned int sampleRate;
     /* maximum file size allowed */
-    int maxFileSize;
+    unsigned int maxFileSize;
 } Jabra_AudioFileParams;
 
 /**
- * Types of remote MMIs.
+ * Types of remote MMIs, use Jabra_GetRemoteMmiTypes to determine the types
+ * supported for the device in question.
  * @note RemoteMMIv2 only.
  */
 typedef enum _RemoteMmiType {
@@ -403,32 +405,47 @@ typedef enum _RemoteMmiType {
   MMI_TYPE_LISTEN_IN = 17,
   MMI_TYPE_DOT3      = 18,
   MMI_TYPE_DOT4      = 19,
-  MMI_TYPE_ALL       = 255
+  SEPERATOR_FOR_MMI_TYPE = 128, /* not to be used */
+  MMI_TYPE_BUSYLIGHT = SEPERATOR_FOR_MMI_TYPE
 } RemoteMmiType;
 
 /**
- * Remote MMI sequences to use for setting the output.
+ * Remote MMI sequences, used to identify supported output LEDs (as a bitmask)
+ * and for setting the output LEDs (single bit).
  * @note RemoteMMIv2 only.
  */
 typedef enum _RemoteMmiSequence {
-  MMI_LED_SEQUENCE_OFF     = 0,
-  MMI_LED_SEQUENCE_ON      = 1,
-  MMI_LED_SEQUENCE_SLOW    = 2,
-  MMI_LED_SEQUENCE_FAST    = 3
+  MMI_LED_SEQUENCE_OFF     = 0x01,
+  MMI_LED_SEQUENCE_ON      = 0x02,
+  MMI_LED_SEQUENCE_SLOW    = 0x04,
+  MMI_LED_SEQUENCE_FAST    = 0x08
 } RemoteMmiSequence;
 
 /**
  * Remote MMI priorities.
- * @todo add more info.
  * @note RemoteMMIv2 only.
  */
 typedef enum _RemoteMmiPriority {
-  MMI_PRIORITY_LOW     = 0x10,
-  MMI_PRIORITY_HIGH    = 0x30
+  /**
+   * Used for remote MMIs that does not support priority.
+   */
+  MMI_PRIORITY_NONE    = 0x00,
+  /**
+   * Get remote MMI focus if device doesn't use it or no function is assigned
+   * to the button.
+   */
+  MMI_PRIORITY_LOW     = 0x01,
+  /**
+   * Get remote MMI focus unconditionally, this can remove important
+   * functionality from the device.
+   */
+  MMI_PRIORITY_HIGH    = 0x02
 } RemoteMmiPriority;
 
 /**
- * Remote MMI action to apply to the MMI output.
+ * Remote MMI action to use in Jabra_SetRemoteMmiAction for setting the MMI
+ * output LED(s). Only single bit value of RemoteMmiSequence can be specified
+ * as parameter RemoteMmiActionOutput to Jabra_SetRemoteMmiAction.
  * @note RemoteMMIv2 only.
  */
 typedef struct _RemoteMmiActionOutput {
@@ -439,7 +456,7 @@ typedef struct _RemoteMmiActionOutput {
 } RemoteMmiActionOutput;
 
 /**
- * Supported remote MMI outputs.
+ * Supported remote MMI output LED colours.
  * @note RemoteMMIv2 only.
  */
 typedef struct _RemoteMmiOutput {
@@ -450,16 +467,19 @@ typedef struct _RemoteMmiOutput {
 
 /**
  * Remote MMI input actions.
+ * Remote MMI input, used to identify supported input actions (as a bitmask)
+ * and for reporting input events via the RemoteMmiCallback callback (as single bit).
  * @note RemoteMMIv2 only.
  */
 typedef enum _RemoteMmiInput {
-  MMI_ACTION_UP            = 1,
-  MMI_ACTION_DOWN          = 2,
-  MMI_ACTION_TAP           = 4,
-  MMI_ACTION_DOUBLE_TAP    = 8,
-  MMI_ACTION_PRESS         = 16,
-  MMI_ACTION_LONG_PRESS    = 32,
-  MMI_ACTION_X_LONG_PRESS  = 64
+  MMI_ACTION_NONE          = 0x00,
+  MMI_ACTION_UP            = 0x01,
+  MMI_ACTION_DOWN          = 0x02,
+  MMI_ACTION_TAP           = 0x04,
+  MMI_ACTION_DOUBLE_TAP    = 0x08,
+  MMI_ACTION_PRESS         = 0x10,
+  MMI_ACTION_LONG_PRESS    = 0x20,
+  MMI_ACTION_X_LONG_PRESS  = 0x40
 } RemoteMmiInput;
 
 /**
@@ -467,9 +487,15 @@ typedef enum _RemoteMmiInput {
  * @note RemoteMMIv2 only.
  */
 typedef struct _RemoteMmiDefinition {
+  /** supported type */
   RemoteMmiType type;
-  RemoteMmiPriority priority;
-  RemoteMmiInput input;
+  /** mask of supported priorities. */
+  RemoteMmiPriority priorityMask;
+  /** mask of supported output LED sequences. */
+  RemoteMmiSequence sequenceMask;
+  /** mask of supported inputs. */
+  RemoteMmiInput inputMask;
+  /** supported output LED colours. */
   RemoteMmiOutput output;
 } RemoteMmiDefinition;
 
@@ -484,6 +510,24 @@ typedef struct _PanicListType
     Jabra_PanicListDevType * panicList; /* array with dynamic length 1..x */
 }Jabra_PanicListType;
 
+
+// Definition of behavior of the internal DeviceCatalogue
+typedef struct {
+	const char* preloadZipFile; // full path of zip file to preload (same as Jabra_PreloadDeviceInfo(), which will be deprecated, may be null
+	unsigned delayInSecondsBeforeStartingRefresh; // when refreshing data for existing devices, wait this time before going online to erduce the risk of cache locks and reduce the CPU load at startup. Default: 30s
+	bool refreshAtConnect; // when a device is connected, update device data in the background (using delayInSecondsBeforeStartingRefresh). Default: true
+	bool refreshAtStartup; // at SDK startup, update data for all previously connected devices in the background (using delayInSecondsBeforeStartingRefresh). Default: true.
+	int refreshScope; // when refreshing, what should be in scope:  0: nothing (= block refreshes), 1:all previously connected devices. Default: 1
+    bool fetchDataForUnknownDevicesInTheBackground; // if true: when an unknown device connects, data is updated in the background (ignoring the delay in delayInSecondsBeforeStartingRefresh), and an update notification is delivered to the onDeviceDataUpdated callback. If false: device data is fetched synchronously (as before). Default: false.
+    void(*onDeviceDataUpdated)(unsigned short deviceID); // if not null: called when data for a connected device is (partially or fully) updated.
+} DeviceCatalogue_params;
+
+// Parameters for configuring the SDK at initialization
+typedef struct _Config_params{
+	DeviceCatalogue_params* deviceCatalogue_params; // optional config for the device catalogue. May be null.
+	void* reserved1; // for internal Jabra use
+	void* reserved2; // for internal Jabra use
+} Config_params;
 /****************************************************************************/
 /*                           EXPORTED FUNCTIONS                             */
 /****************************************************************************/
@@ -510,6 +554,7 @@ LIBRARY_API void Jabra_SetAppID(const char* inAppID);
  *  @param[in]   : ButtonInDataRawHidFunc: Callback method. Called on new input data. Raw HID. Low-level. Can be NULL if not used.
  *  @param[in]   : ButtonInDataTranslatedFunc: Callback method. Called on new input data. High-level. Can be NULL if not used.
  *  @param[in]   : instance: Optional instance number. Can be 0 if not used.
+ *  @param[in]	  : configParams: optional configuration of various SDK lib behavior. May be null.
  *  @return      : True if library initialization is successful.
 				   False if library initilaization is not successful. One reason could be that the library is already initialized.
     Note         : AppID must be set before the library initialization is called. If not the initialization fails.
@@ -519,7 +564,8 @@ LIBRARY_API bool Jabra_Initialize(void(*FirstScanForDevicesDoneFunc)(void),
 	void(*DeviceRemovedFunc)(unsigned short deviceID),
 	void(*ButtonInDataRawHidFunc)(unsigned short deviceID, unsigned short usagePage, unsigned short usage, bool buttonInData),
 	void(*ButtonInDataTranslatedFunc)(unsigned short deviceID, Jabra_HidInput translatedInData, bool buttonInData),
-	unsigned int instance
+	unsigned int instance,
+	Config_params* configParams
 	);
 
 /** Library uninitialize
@@ -1010,6 +1056,16 @@ LIBRARY_API void Jabra_FreeButtonEvents(ButtonEvent *eventsSupported);
 LIBRARY_API void Jabra_RegisterForGNPButtonEvent(
 	void(*ButtonGNPEventFunc)(unsigned short deviceID, ButtonEvent *buttonEvent));
 
+/**
+ * Checks if firmware lock is enabled. If the firmware lock is enabled it is
+ * not possible to upgrade nor downgrade the firmware. In this situation the
+ * firmware can only be changed to the same version e.g. if you want to
+ * change the language.
+ * @param[in] deviceID id for a device.
+ * @return true if firmware lock is enabled otherwise false.
+ */
+LIBRARY_API bool Jabra_IsFirmwareLockEnabled(unsigned short deviceID);
+
 /** Checks if setting protection is enabled.
 *  @param[in] : deviceID: id for a device.
 *  @return    : true if setting protection is enabled otherwise false.
@@ -1174,13 +1230,13 @@ LIBRARY_API char* Jabra_GetFirmwareFilePath(unsigned short deviceID, const char*
  * is available NULL is returned.
  * @note the list must be freed by calling Jabra_FreeFirmwareInfoList API.
  */
-Jabra_FirmwareInfoList* Jabra_GetAllFirmwareInformation(unsigned short deviceID, const char* authorizationId);
+LIBRARY_API Jabra_FirmwareInfoList* Jabra_GetAllFirmwareInformation(unsigned short deviceID, const char* authorizationId);
 
 /**
  * Frees the list of firmware information structure.
  * @param[in] firmwareInfolist Jabra_FirmwareInfoList structure to be freed.
  */
-void Jabra_FreeFirmwareInfoList(Jabra_FirmwareInfoList* firmwareInfolist);
+LIBRARY_API void Jabra_FreeFirmwareInfoList(Jabra_FirmwareInfoList* firmwareInfolist);
 
 /** Downloads the specified firmware version file
  *  @param[in]   : deviceID: Id for specific device
@@ -1406,7 +1462,7 @@ LIBRARY_API Jabra_ReturnCode Jabra_UploadWavRingtone(unsigned short deviceID, co
  * @param[out] count number of items passed via @arg types.
  * @return Return_Ok list and count is valid.
  *         Return_ParameterFail in case of an incorrect parameter.
- *         Not_Supported the device does not support remote MMI.
+ *         Not_Supported the device does not support remote MMIv2.
  *         Device_Unknown the deviceID specified is not known.
  * @note RemoteMMIv2 only.
  */
@@ -1433,10 +1489,14 @@ LIBRARY_API void Jabra_FreeRemoteMmiTypes(RemoteMmiDefinition* types);
 LIBRARY_API Jabra_ReturnCode Jabra_IsRemoteMmiInFocus(unsigned short deviceID, RemoteMmiType type, bool* isInFocus);
 
 /**
- * Gets the focus of the remote MMI specified.
+ * Gets the focus of the remote MMI specified. Once a remote MMI has focus,
+ * the normal functionality of the MMI (button/LED) is suppressed until
+ * Jabra_ReleaseRemoteMmiFocus is called. If only the LED output MMI
+ * functionality is required, action can be specified as MMI_ACTION_NONE.
  * @param[in] deviceID ID for the specific device.
  * @param[in] type type of remote MMI to get focus of.
- * @param[in] action action to get focus of.
+ * @param[in] action action to get focus of, acts as a filter/mask for the
+ * actions on the RemoteMmiCallback callback.
  * @param[in] priority priority of focus.
  * @return Return_Ok focus has been gotten successfully.
  *         Not_Supported the device does not support remote MMI.
@@ -1447,7 +1507,8 @@ LIBRARY_API Jabra_ReturnCode Jabra_IsRemoteMmiInFocus(unsigned short deviceID, R
 LIBRARY_API Jabra_ReturnCode Jabra_GetRemoteMmiFocus(unsigned short deviceID, RemoteMmiType type, RemoteMmiInput action, RemoteMmiPriority priority);
 
 /**
- * Releases the focus of the remote MMI specified. Note that focus on all actions are removed.
+ * Releases the focus of the remote MMI specified. Note that focus on all
+ * actions are removed.
  * @param[in] deviceID ID for the specific device.
  * @param[in] type of remote MMI to release focus of.
  * @return Return_Ok focus has been release successfully.
@@ -1459,17 +1520,24 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetRemoteMmiFocus(unsigned short deviceID, Re
 LIBRARY_API Jabra_ReturnCode Jabra_ReleaseRemoteMmiFocus(unsigned short deviceID, RemoteMmiType type);
 
 /**
- * Sets an action on the remote MMI.
+ * Sets an output action on the remote MMI. Note that Jabra_GetRemoteMmiFocus
+ * must be called once for the RemoteMmiType in question prior to setting the
+ * output action, else Return_ParameterFail is returned.
  * @param[in] deviceID ID for the specific device.
  * @param[in] type of remote MMI to set action of.
- * @param[in] action to set.
+ * @param[in] outputAction output LED action to set.
  * @return Return_Ok action has been set successfully.
  *         Not_Supported the device does not support remote MMI.
  *         Device_Unknown the deviceID specified is not known.
- *         Device_WriteFail if it fails to write to the device.
+ *         Device_WriteFail if it fails to write to the device e.g. if
+ *           Jabra_GetRemoteMmiFocus has not called prior to calling
+ *           Jabra_SetRemoteMmiAction.
+ *         Return_ParameterFail if an incorrect/unsupported parameter has been
+ *         passed or Jabra_GetRemoteMmiFocus has not been called for the
+ *         RemoteMmiType in question.
  * @note RemoteMMIv2 only.
  */
-LIBRARY_API Jabra_ReturnCode Jabra_SetRemoteMmiAction(unsigned short deviceID, RemoteMmiType type, RemoteMmiActionOutput action);
+LIBRARY_API Jabra_ReturnCode Jabra_SetRemoteMmiAction(unsigned short deviceID, RemoteMmiType type, RemoteMmiActionOutput outputAction);
 
 /**
  * Type definition of function pointer to use for Jabra_RegisterRemoteMmiCallBack.
@@ -1479,7 +1547,8 @@ typedef void(*RemoteMmiCallback)(unsigned short deviceID, RemoteMmiType type, Re
 
 /**
  * Register for remote MMI event callback.
- * @param[in] callback callback method, called when a remote MMI event is generated.
+ * @param[in] callback RemoteMmiCallback callback method, called when a remote
+ * MMI input event is generated.
  * @note RemoteMMIv2 only.
  */
 LIBRARY_API void Jabra_RegisterRemoteMmiCallback(RemoteMmiCallback const callback);
@@ -1521,6 +1590,8 @@ LIBRARY_API Jabra_ReturnCode Jabra_GetTimestamp(unsigned short deviceID, uint32_
  * Preloads the configuration cache with the content of the specified archive.
  * To get the full benefit, this should happen before calling Jabra_Initialize(), as that enables device connections and may initiate background updates of device data.
  * No existing data will be overwritten.
+ *
+ * Deprecated - please use the DeviceCatalogue_params for Jabra_Initialize
  *
  * @param[in]   zipFileName: Full path name of the ZIP archive to preload from
  * @return      True if preloading succeeds, false otherwise

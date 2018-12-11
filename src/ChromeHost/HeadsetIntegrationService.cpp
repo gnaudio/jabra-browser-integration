@@ -81,7 +81,7 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     new CmdSetRemoteMmiLightAction(this)
   };
 
-  buttonEventMappings = { // Note this is for button events only - there are other events not mentioned here:
+    std::map<ButtonHidInfo, EventMapper *> buttonEvents = { // Note this is for button events only - there are other events not mentioned here:
     { { Jabra_HidInput::Mute, true }, new SimpleEventMapper("mute") },
     { { Jabra_HidInput::Mute, false }, new SimpleEventMapper("unmute") },
 
@@ -181,7 +181,9 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     { { Jabra_HidInput::HeadsetConnection, true }, new SimpleEventMapper("headsetConnection") },
     { { Jabra_HidInput::HeadsetConnection, false }, new SimpleEventMapper("headsetDisConnection") }
   };
-
+    
+    buttonEventMappings.insert(buttonEvents.begin(),buttonEvents.end());
+    
   // Finally start worker thread to dispatch incomming work to visitor methods.
   workerThread = std::thread(&HeadsetIntegrationService::workerThreadRunner, this);
 }
@@ -241,7 +243,7 @@ bool HeadsetIntegrationService::Start()
 		    logQueued(work);
         g_thisHeadsetIntegrationService->workQueue.enqueue(work);
       },
-      0
+      0, NULL
     )) {
       return false;
     }

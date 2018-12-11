@@ -64,9 +64,9 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetOffHook(
   bool offHook
 );
 
-/** Set Ringer
+/** Set Ringer (ringtone in headset) and ringing (ringing LED if available)
  *  @param[in] : deviceID: Id for a specific device
- *  @param[in] : ringer: Boolean value to set Ringer On/Off
+ *  @param[in] : ringer: Boolean value to set Ringer On/Off and ringing LED On/Off - Not all device have a LED for ringing
  *  @return    : Return_Ok if success.
 				 Device_Unknown if deviceID is wrong.
 				 Not_Supported if HID is not supported.

@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "stdafx.h"
 #include "CmdGetInstallInfo.h"
-#include "meta.h"
+#include "Meta.h"
 
 CmdGetInstallInfo::CmdGetInstallInfo(HeadsetIntegrationService* headsetIntegrationService)
 {
