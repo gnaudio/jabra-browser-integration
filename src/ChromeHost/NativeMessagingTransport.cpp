@@ -126,7 +126,7 @@ void NativeMessagingTransport::Start()
     } 
 
     IF_LOG(plog::debug) {
-      LOG(plog::debug) << "Received message from extension: " << j;
+      LOG(plog::debug) << "Received message from extension: " << j.dump(4);
     }
 
     try {
