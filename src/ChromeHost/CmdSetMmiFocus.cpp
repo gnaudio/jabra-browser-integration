@@ -44,7 +44,7 @@ bool CmdSetMmiFocus::CanExecute(const Request& request)
 
 void CmdSetMmiFocus::Execute(const Request& request)
 {
-  RemoteMmiType type = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_TYPE, MMI_TYPE_VOLUP);
+  RemoteMmiType type = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_TYPE, MMI_TYPE_MFB);
   bool capture = defaultValue(request.args, SET_MMIFOCUS_COMMAND_ARG_CAPTURE, true);
 
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
