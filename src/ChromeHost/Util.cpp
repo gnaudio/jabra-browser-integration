@@ -65,7 +65,7 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
   dest["deviceConnection"] = src.basicInfo.deviceconnection;
   
   if (src.basicInfo.deviceconnection == "BT") {
-    dest["isBTPaired"] = src.basicInfo.isBTPaired;
+    dest["isDongle"] = src.basicInfo.isDongle;
   }
 
   if ( src.extendedInfo.firmwareVersion.length() > 0) {

@@ -10,7 +10,7 @@
 /**
  * Utf8 verification. Returns false if string is invalid.
  */
-bool utf8string_check(unsigned char *s);
+static bool utf8string_check(unsigned char *s);
 
 /**
 * Helper to safely access a propery that may be null/unset in a json object.

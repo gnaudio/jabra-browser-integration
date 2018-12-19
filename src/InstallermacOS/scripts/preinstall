@@ -1,0 +1,5 @@
+#! /bin/sh
+
+echo "Removing previous installation"
+CHROMEHOST_FOLDER=/Library/Google/Chrome/NativeMessagingHosts
+( [ -d  ${CHROMEHOST_FOLDER} ] && sudo rm -v "${CHROMEHOST_FOLDER}"/* ) && echo "Files deleted successfully" || echo "Files to delete not found"

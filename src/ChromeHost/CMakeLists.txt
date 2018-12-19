@@ -6,11 +6,19 @@ file(GLOB sources *.cpp)
 include_directories(SDK
                     include)
 
-add_compile_options(-std:c++14)
+add_compile_options(-std=c++14)
 
 if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi")
   set(CMAKE_CXX_FLAGS_RELEASE "/MT /Zi")
+endif()
+
+if(APPLE)
+  set(CMAKE_VERBOSE_MAKEFILE ON) 
+  SET(CMAKE_SKIP_BUILD_RPATH  TRUE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)  
+  set(CMAKE_INSTALL_RPATH "@executable_path/./")
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

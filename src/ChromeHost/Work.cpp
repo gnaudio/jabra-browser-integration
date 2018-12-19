@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "work.h"
+#include "Work.h"
 #include <chrono>
 
 Work::Work() : workId(++workCount)  {
@@ -36,7 +36,7 @@ Work::Work() : workId(++workCount)  {
     time = timeDur.count();
 }
 
-std::atomic<unsigned long> Work::workCount = 0;
+std::atomic<unsigned long> Work::workCount {0};
 
 std::ostream& operator<<(std::ostream& out, const Work& work) {
     work.print(out);

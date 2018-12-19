@@ -97,20 +97,23 @@ struct Optional {
 struct BasicDeviceInfo {
 	unsigned short deviceID;
 	unsigned short productID;
+	unsigned short vendorID;
 	std::string deviceName;
 	std::string usbDevicePath;
 	std::string parentInstanceId;
 	Jabra_ErrorStatus errStatus;
-	bool isBTPaired;
+	bool isDongle;
 	std::string dongleName;
 	std::string variant;
 	std::string serialNumber;
     bool isInFirmwareUpdateMode;
     std::string deviceconnection;
+	unsigned long connectionId;
+    unsigned short parentDeviceId;
 
     private:
-	BasicDeviceInfo() : deviceID(-1), productID(-1), errStatus(Device_NotFound), isBTPaired(false), isInFirmwareUpdateMode(false),
-		                deviceconnection("") {}
+	BasicDeviceInfo() : deviceID(-1), productID(-1), vendorID(-1), errStatus(Device_NotFound), isDongle(false), isInFirmwareUpdateMode(false),
+		                deviceconnection(""),connectionId(-1),parentDeviceId(-1) {}
 
     static std::string deviceConnectionToStr(DeviceConnectionType deviceconnection) {
 		switch(deviceconnection) {
@@ -131,16 +134,19 @@ struct BasicDeviceInfo {
 	explicit BasicDeviceInfo(Jabra_DeviceInfo source) 
 							: deviceID(source.deviceID),
 							  productID(source.productID),
+							  vendorID(source.vendorID),
 							  deviceName(source.deviceName ? source.deviceName : ""),
 							  usbDevicePath(source.usbDevicePath ? source.usbDevicePath : ""),
 							  parentInstanceId(source.parentInstanceId ? source.parentInstanceId : ""),
 							  errStatus(source.errStatus),
-							  isBTPaired(source.isBTPaired),
+							  isDongle(source.isDongle),
 							  dongleName(source.dongleName ? source.dongleName : ""),
 							  variant(source.variant ? source.variant : ""),
 							  serialNumber(source.serialNumber ? source.serialNumber : ""),
 							  isInFirmwareUpdateMode(source.isInFirmwareUpdateMode),
-							  deviceconnection(deviceConnectionToStr(source.deviceconnection)) {}
+							  deviceconnection(deviceConnectionToStr(source.deviceconnection)),
+							  connectionId(source.connectionId),
+							  parentDeviceId(source.parentDeviceId) {}
 
 	/**
 	* Empty device information for non-existing device.

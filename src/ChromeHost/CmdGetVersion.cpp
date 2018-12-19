@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "stdafx.h"
 #include "CmdGetVersion.h"
-#include "meta.h"
+#include "Meta.h"
 
 CmdGetVersion::CmdGetVersion(HeadsetIntegrationService* headsetIntegrationService)
 {

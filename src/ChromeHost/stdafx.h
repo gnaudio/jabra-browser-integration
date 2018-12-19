@@ -14,7 +14,7 @@
 #include "SDK/JabraNativeHid.h"
 #include "SDK/JabraDeviceConfig.h"
 #include "Constants.h"
-#include "logger.h"
+#include "Logger.h"
 #include "Context.h"
 #include "Types.h"
 
