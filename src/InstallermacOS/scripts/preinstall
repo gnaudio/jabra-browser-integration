@@ -1,5 +1,27 @@
 #! /bin/sh
+#Package version to be installed
+CURRENT_PKG_VERSION=2.0
 
+# Installed package version
+INSTALLED_PKG_VERSION=$(pkgutil --pkg-info com.jabra.chromehost | grep version | cut -d: -f2)
+
+# Check if any version exists, if the pacakge never installed, then installed version will be empty
+if [ ! $INSTALLED_PKG_VERSION]
+then
+echo "No package has been installed, version is empty"
+exit 0
+fi
+
+#  compare the current version against installed version
+if [ $CURRENT_PKG_VERSION = $INSTALLED_PKG_VERSION ] || [ $CURRENT_PKG_VERSION \> $INSTALLED_PKG_VERSION ]
+then
+#Proceed ffor the installation only if the current package verion is greater than or equal to the installed package version
 echo "Removing previous installation"
 CHROMEHOST_FOLDER=/Library/Google/Chrome/NativeMessagingHosts
-( [ -d  ${CHROMEHOST_FOLDER} ] && sudo rm -v "${CHROMEHOST_FOLDER}"/* ) && echo "Files deleted successfully" || echo "Files to delete not found"
+([ -d  ${CHROMEHOST_FOLDER} ] && sudo rm -v "${CHROMEHOST_FOLDER}"/* ) && echo "Files deleted successfully" || echo "Files to delete not found"
+else
+#aborting the installation as downgrade is not allowed
+echo "Aborting the installation as the installed package has higher version, downgrade is not allowed"
+# return with error level 1
+exit 1
+fi
