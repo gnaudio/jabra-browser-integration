@@ -66,7 +66,7 @@ void configureLogging() {
 		// just use a subfolder under home dir.
 		const char * const homePath = getenv("HOME");
 		logPath = string(homePath ? homePath : "");
-		ogPath = logPath.append("/JabraSDK");
+		logPath = logPath.append("/JabraSDK");
 	#endif
   }
 
