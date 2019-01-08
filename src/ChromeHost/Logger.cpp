@@ -54,9 +54,9 @@ void configureLogging() {
 		logPath = logPath.append("\\JabraSDK");
 	#elif  __APPLE__
     char * homePath = getenv("HOME");
+    char buf[PATH_MAX];
     if(homePath == NULL) {
       //For some reason the home directory is not found. So try getting the current working dir and create the log file
-      char buf[PATH_MAX];
       homePath = getcwd(buf,PATH_MAX);
     }
     logPath = string(homePath ? homePath : "");
