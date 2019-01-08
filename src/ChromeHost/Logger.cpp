@@ -1,6 +1,7 @@
 #include "Logger.h"
 #include <string>
 #include <iostream>
+#include <unistd.h>
 #include <plog/Log.h>
 #include "stdafx.h"
 
@@ -45,20 +46,27 @@ void configureLogging() {
   // log destinaton.
   const char * const resPath = std::getenv("LIBJABRA_RESOURCE_PATH");
   string logPath(resPath ? resPath : "");
-  
+
   if (logPath.empty()) {
 	#ifdef _WIN32
 		const char * const appDataPath = getenv("APPDATA");
 		logPath = string(appDataPath ? appDataPath : "");
 		logPath = logPath.append("\\JabraSDK");
 	#elif  __APPLE__
-		logPath = string("~/Library/Application Support/JabraSDK");
+    char * homePath = getenv("HOME");
+    char buf[PATH_MAX];
+    if(homePath == NULL) {
+      //For some reason the home directory is not found. So try getting the current working dir and create the log file
+      homePath = getcwd(buf,PATH_MAX);
+    }
+    logPath = string(homePath ? homePath : "");
+		logPath = logPath.append("/Library/Application Support/JabraSDK");
 	#elif  __linux__
 		// Unlike SDK we don't support syslog for linux so
 		// just use a subfolder under home dir.
 		const char * const homePath = getenv("HOME");
 		logPath = string(homePath ? homePath : "");
-		logPath = string("/JabraSDK");
+		logPath = logPath.append("/JabraSDK");
 	#endif
   }
 
@@ -66,7 +74,7 @@ void configureLogging() {
 	#ifdef _WIN32
 		logPath = logPath.append("\\");
 	#else
-		logPath = logPath.append("//");
+		logPath = logPath.append("/");
 	#endif
   }
 
