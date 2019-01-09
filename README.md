@@ -63,6 +63,10 @@ The library internally checks for dependencies – and will report this to the a
 | macOS (El Capitan/Sierra)     | JabraChromeHost2.0.dmg | *coming soon* |
 | macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
 
+## CI builds
+
+macOS:
+![macOS CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS)
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
