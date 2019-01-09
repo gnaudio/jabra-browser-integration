@@ -60,7 +60,7 @@ The library internally checks for dependencies – and will report this to the a
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.msi) | Chromehost 2.0 |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix to allow beta testing |
-| macOS (El Capitan/Sierra)     | JabraChromeHost2.0.dmg | *coming soon* |
+| macOS (El Capitan/Sierra)     | [JabraChromeHost2.0.dmg](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0.0.dmg) | Chromehost 2.0 |
 | macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
 
 ## CI builds
