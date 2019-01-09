@@ -69,6 +69,14 @@ The library internally checks for dependencies – and will report this to the a
 
 ![macOS CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS)
 
+
+[Windows](https://gnaudio.visualstudio.com/jabra-browser-integration/_build?definitionId=139):
+
+![Windows CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-Windows)
+
+
+
+
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
 * [Library api test](https://gnaudio.github.io/jabra-browser-integration/release/test/) - advanced test page that allows detailed testing of individual API calls)
