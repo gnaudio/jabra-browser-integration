@@ -65,7 +65,8 @@ The library internally checks for dependencies – and will report this to the a
 
 ## CI builds
 
-macOS:
+[macOS](https://gnaudio.visualstudio.com/jabra-browser-integration/_build?definitionId=138):
+
 ![macOS CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS)
 
 ## Development tools/demos
