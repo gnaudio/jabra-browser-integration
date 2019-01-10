@@ -51,6 +51,15 @@ to enable clients to synchronize **(breaking change)**.
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
 * Beta support
 
+2.0 Release for MAC
+* Supports the released Chrome Extension 2.0 and JavaScript Library 2.0
+* Logging to files similar to native SDK.
+Note: 
+* There is a difference in native SDK version of Chromehost 2.0 for Win and Mac. Native SDK version of Win is v1.4.0.10 and Mac is v1.7.0.0
+* Chromehost source is updated to support native SDK v1.7.0.0
+* Remote MMI (MMIV2) for Jabra Engage 50 device is not supported in MAC.
+
+
 0.51 Added the following:
 * Security fix to allow being called from beta browser extensions
 
