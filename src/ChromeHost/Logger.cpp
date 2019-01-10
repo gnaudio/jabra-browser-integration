@@ -1,7 +1,9 @@
 #include "Logger.h"
 #include <string>
 #include <iostream>
+#ifdef  __APPLE__
 #include <unistd.h>
+#endif
 #include <plog/Log.h>
 #include "stdafx.h"
 
