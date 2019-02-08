@@ -148,9 +148,13 @@ canvas {
 }
 
 .configStep {
-    font-size: 16px;
+    font-size: 20px;
     color: darkblue;
-    margin-top:0;
+}
+
+.configStepNumber {
+    font-size: 30px;
+    vertical-align: middle;
 }
 
 #error {

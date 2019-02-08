@@ -25,26 +25,26 @@
     </tr>
     <tr>
         <td colspan="3">
-          <p class="configStep">Step 1:</p>
-          <p id="configureText">Use Chrome and install the Jabra browser extension and native chromehost downloads mentioned <a href="https://github.com/gnaudio/jabra-browser-integration/blob/master/README.md">here</a>.</p>
+          <div class="configStep">Step <span class="configStepNumber">&#x2460;</span></div>
+          <p id="configureText">Use Google Chrome and install the Jabra Browser Integration Extension and native Chromehost downloads mentioned <a href="https://github.com/gnaudio/jabra-browser-integration/blob/master/README.md">here</a>. This provides basic call control for all Jabra devices.</p>
         </td>
     </tr>
     <tr>
         <td colspan="3">
-          <p class="configStep">Step 2:</p>
-          <p id="configureText">Attach a single Jabra engage 50 device to your computer (removing any other devices) and make sure it is the default device used for both audio and microphone.</p>
+          <div class="configStep">Step <span class="configStepNumber">&#x2461;</span></div>
+          <p id="configureText">For a complete demo with analytics (background noise, crosstalk etc) please use a single <b><a href="https://www.jabra.com/business/office-headsets/jabra-engage/jabra-engage-50">Jabra Engage 50 device</a></b> (Other Jabra devices will work but only with call-control). Attach the device to your computer (removing any other Jabra devices) and make sure it is the default device used for both audio and microphone.</p>
           <p>Nb. Default audio device is set by your operating system, while default microphone is configured in Chrome under Settings > Show Advanced Settings > Content Settings.</p>
         </td>
     </tr>
     <tr>
       <td colspan="3">
-        <p class="configStep">Step 3:</p>
-        <p id="configureText">Create an <a href="https://aws.amazon.com/connect/">amazon connect</a> account if you don't have one already. Ask your amazon connect administrator to whitelist <q id="urlText">this domain</q> as an approved origin under Application Integration in your <a href="https://console.aws.amazon.com/connect/">amazon connect administrator console</a> <b>OR</b> copy this webpage and related files to a webserver serving a white listed domain for Your amazon connect account and re-launch this page (refer to <a href="https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease/amazonconnectclient">github</a> amazon example source folder for the files used for this page).</p>
+        <div class="configStep">Step <span class="configStepNumber">&#x2462;</span></div>
+        <p id="configureText">Create an <a href="https://aws.amazon.com/connect/">Amazon Connect</a> instance if you don't have one already. Ask your Amazon connect administrator to whitelist <b><q id="urlText">this domain</q></b> as an approved origin under Application Integration in your <a href="https://console.aws.amazon.com/connect/">amazon connect administrator console</a> <b>OR</b> copy this webpage and related files to a webserver serving a white listed domain for your Amazon Connect instance and re-launch this page (refer to <a href="https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease/amazonconnectclient">Github Amazon example source folder</a> for the files used for this page).</p>
       </td>
     </tr>
     <tr>
         <td colspan="3">
-          <p class="configStep">Step 4:</p>
+          <div class="configStep">Step <span class="configStepNumber">&#x2463;</span></div>
           <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator and click on go:</p>
         </td>
       </tr>
@@ -55,8 +55,8 @@
             <input id="cppAccountUrl" class="configInput" name="cppAccountUrl" placeholder="https://your-amazon-connect-domain/connect/ccp#" type="url" width="80" required/>
             <br/>
             <br/>
-            <label for="quickPhoneNumber">Quick call number:&nbsp;</label>
-            <input id="quickPhoneNumber" class="configInput" name="quickPhoneNumber" type="tel" placeholder="+45123456" width="16" required/>
+            <label for="quickPhoneNumber">Quick call number (for easy outbound calls using headset):&nbsp;</label>
+            <input id="quickPhoneNumber" class="configInput" name="quickPhoneNumber" type="tel" placeholder="+4512345678" width="16" required/>
             <br/>
             <br/>
             <button id="configureGo" type="submit">&nbsp;&nbsp;GO&nbsp;&nbsp;</button>
@@ -86,7 +86,8 @@
             <img class="addOnHeaderLogo" src="jabra-logo-vector.svg" alt="Jabra GN" height="24" />
           </div>
           <div class="addOnBody">
-            <section class="section">
+            <!-- Auto selection is hidden until amazon connect streams support it -->
+            <section class="section" style="display: none">
               <h1>Headset selection</h1>
               <img id="expandHeadSetSelected" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
               <img id="collapseHeadSetSelected" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />

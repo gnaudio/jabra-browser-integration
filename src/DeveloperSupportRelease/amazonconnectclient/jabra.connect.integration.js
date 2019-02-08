@@ -744,6 +744,6 @@ let quickPhoneNumber = quickPhoneNumberParam ? decodeURI(quickPhoneNumberParam) 
 if (cppUrl && quickPhoneNumber) {
     run(cppUrl, quickPhoneNumber);
 } else {
-    urlText.textContent = window.location.hostname + ":" + window.location.port;
+    urlText.textContent = "https://" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
     configurationParent.style.display = "inline";
 }
