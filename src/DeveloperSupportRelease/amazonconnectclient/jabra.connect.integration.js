@@ -748,8 +748,3 @@ if (cppUrl && quickPhoneNumber) {
     urlText.textContent = window.location.hostname + ":" + window.location.port;
     configurationParent.style.display = "inline";
 }
-
-// run('https://jabra.awsapps.com/connect/ccp#/');
-
-// https://jabra.awsapps.com/connect/ccp#/
-
