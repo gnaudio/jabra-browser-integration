@@ -126,7 +126,7 @@ function run(cppAccountUrl, quickPhoneNumber) {
     // Jabra library init with full installation check, focus setup and diagnostics of common problems:
     jabra.init().then(() => jabra.getInstallInfo()).then((installInfo) => {
         console.log("Jabra library initialized");
-        if (!installInfo.installationOk) {
+        if (installInfo.installationOk) {
           return Promise.resolve();
         } else {
           return Promise.reject(new Error("Browseer SDK Installation incomplete. Please (re)install"));
