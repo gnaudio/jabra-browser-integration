@@ -133,9 +133,8 @@ function run(cppAccountUrl, quickPhoneNumber) {
         }
     }).then(() => {
         console.log("Jabra Installation check succeded");
-        return setFocus();
-    }).then(() => {
-        console.log("MMI focus successfully captured");
+        // Try to get focus, ignoring focus errors since device might not have been attached yet.
+        setFocus().catch(() => {});
     }).catch((err) => {
         if (err.name === "CommandError" && err.errmessage === "Unknown cmd" && err.command === "getinstallinfo" ) {
             showError("Your browser SDK installation is incomplete, out of date or corrupted. Please (re)install");
