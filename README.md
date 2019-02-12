@@ -21,7 +21,7 @@ The following desktop operating systems are supported:
 | ----------------- | ------------------ | 
 | Windows 64 bit    | Windows 7 or newer | 
 | Windows 32 bit    | Windows 7 or newer | 
-| macOS             | El Capitan/Sierra  | 
+| macOS             | El Capitan or newer| 
 
 ### Browser support
 Google Chrome web browser - stable channel - 32 bit and 64 bit.
@@ -60,8 +60,8 @@ The library internally checks for dependencies – and will report this to the a
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.msi) | Chromehost 2.0 |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix to allow beta testing |
-| macOS (El Capitan/Sierra)     | [JabraChromeHost2.0.dmg](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0.0.dmg) | Chromehost 2.0 |
-| macOS (El Capitan/Sierra)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
+| macOS (El Capitan or newer)     | [JabraChromeHost2.0.dmg](https://github.com/gnaudio/jabra-browser-integration/blob/master/downloads/JabraChromeHost2.0.0.dmg) | Chromehost 2.0 |
+| macOS (El Capitan or newer)     | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
 
 ## CI builds
 
