@@ -1,0 +1,184 @@
+@font-face {
+    font-family: "GNElliotWeb-Bold";
+    src: url("GNElliotWeb-Bold.ttf");
+}
+
+@font-face {
+    font-family: "GNElliotWeb-Regular";
+    src: url("GNElliotWeb-Regular.ttf");
+}
+
+
+#jabraContainerDiv {
+    background-color: #333333;
+    border: 0px solid rgba(255,255,255,0.18);
+    font-family: "GNElliotWeb-Regular";
+    font-size: 14px;
+}
+
+.rightSideIcon {
+    display: block;
+    float: right;
+}
+
+.lastRightSideIcon {
+    display: block;
+    float: right;
+    padding-right: 16px;
+}
+
+.section > h1 {
+    font-family: "GNElliotWeb-Bold";
+    font-size: 16px;
+    display: inline;
+    vertical-align: middle;
+}
+
+body {
+	margin: 0;
+}
+
+.overall {
+    border: 0px;
+    border: 0px;
+    margin: 0px;
+}
+
+.addOnHeader {
+    height: 50px;
+    width: 100%;
+    display:table-cell;
+    vertical-align: middle;
+    color: #F2F2F2;
+    padding-left: 16px;
+    padding-bottom: 0px;
+    border: 0px;
+    margin: 0px;
+}
+
+.section {
+    padding-bottom: 16px;
+}
+
+.addOnHeaderLogo {
+	margin-left: auto;
+	margin-right: auto;
+    display: block;
+}
+
+.addOnBody {
+    color: #F2F2F2;
+    padding-left: 16px;
+    padding-top: 16px;
+    background-color: #666666 ;  
+}
+
+#barParent {
+    width: 240px;
+    background-color: grey;
+}
+
+#noiseBar {
+    width: 0%;
+    height: 4px;
+    background-color: green;
+}
+
+#exposureBar {
+    width: 0%;
+    height: 4px;
+    background-color: white;
+}
+
+canvas {
+  position: relative;
+  left: -4px;
+}
+
+.collapseIcon {
+    vertical-align: middle;
+}
+
+.expandIcon {
+    vertical-align: middle;
+}
+
+.overviewLegend {
+    padding: 6px;
+    vertical-align: middle;
+}
+
+.overviewLegends {
+    width: 150px;
+}
+
+.column {
+    float: left;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#ccpUrlField {
+    width: 100%;
+}
+
+#configurationParent {
+    font-family: "GNElliotWeb-Regular";
+    font-size: 14px;
+}
+
+#configureHeading {
+    font-size: 30px;
+}
+
+#configureTest {
+    font-size: 20px;
+    padding: 0 0px 0px 0;
+    margin-top:0;
+}
+
+.configHeaderLogo {
+    float: left;
+    padding: 0 10px 10px 0;
+    height: 30px;
+}
+
+.configStep {
+    font-size: 20px;
+    color: darkblue;
+}
+
+.configStepNumber {
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+#error {
+    font-family: "GNElliotWeb-Bold";
+    color: darkred;
+    font-size: 14px;
+}
+
+#cppAccountUrl {
+    width: 60em;
+}
+
+#quickPhoneNumber {
+    width: 16em;
+}
+
+#elasticsearchHost {
+    width: 60em;
+}
+
+input:optional {
+    border: 1px solid darkgray;
+}
+
+input:required {
+    border: 1px solid red;
+}
