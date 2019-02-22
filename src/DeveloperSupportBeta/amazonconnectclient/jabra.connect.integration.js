@@ -69,6 +69,9 @@ const silenceLabel = document.getElementById('silenceLabel');
 
 // The run method contains the actual demo.
 function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
+    /** @type {jabra.InstallInfo} */
+    let installInfo = undefined;
+
     /** @type {connect.Contact} */
     let activeContact = undefined;
 
@@ -77,8 +80,6 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
     /** @type {jabra.DeviceInfo} */
     let activeDevice = undefined;
-
-    let hasFocus = false;
 
     let lastNoiseDate = undefined;
     let lastExposureDate = undefined;
@@ -96,9 +97,64 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     let crossTalkTotal = 0;
     let silenceTotal = 0;
 
+    let boomArmEventsReceived = false;
+    let timesBoomArmMisaligned = 0;
+    let boomArmLastStatus = undefined;
+
+    let muteDuringCallCount = 0;
+    let muteStatus = false;
+
+    let volUpDownAdjustDuringCallCount = 0;
+
+    let callConnectedTime = undefined;
+    let callEndedTime = undefined;
+
     let inCall = undefined;
 
+    let audioExposureList = [];
+    let backgroundNoiseList = [];
+
     const silenceMinDurationMs = 1000;
+
+    let lastReportToElasticSearchCloud = undefined;
+
+    // Utility to calulate time weighted average for exposure or backround noise
+    // from list of {db, ts} entries and a terminating time for last entry.
+    // Optionally data before a giving time can be thrown away.
+    function weightedTimeAvg(dbTimestampList, endTime, sinceTime = undefined) {
+        if (dbTimestampList.length > 1) {
+            // Filer out unwanted elements and convert to time duration array:
+            let dbTimedList = dbTimestampList.filter((currentValue) => !sinceTime || currentValue.ts>sinceTime).map( (currentValue, index, array) => {
+                let nextTimeStamp = index+1<array.length ? array[index+1].ts : endTime;
+                let delta = nextTimeStamp-currentValue.ts;
+                if (delta<0) {
+                    throw new Exception("timestamps not increasing / endTime wrong.")
+                }
+                return {
+                    db: currentValue.db,
+                    delta: delta
+                };
+            });
+
+            // Calculate average seperately for dividend and divisor parts:
+            let dividendAndDivisor = dbTimedList.reduce( (acc, currValue) => {
+                return {
+                    sum: acc.sum + currValue.db * currValue.delta,
+                    time: acc.time + currValue.delta
+                }
+            }, {
+                sum: 0.0,
+                time: 0.0
+            });
+
+            // Return result
+            return dividendAndDivisor.time !== 0.0 ? dividendAndDivisor.sum / dividendAndDivisor.time : 0;
+        } else if (dbTimestampList.length == 1) {
+            return dbTimestampList[0].db;
+        } else {
+            return undefined;
+        }
+    }
 
     function showError(msg) {
       error.style.display = "inline";
@@ -137,36 +193,112 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     }
  
     function reportToElasticSearchCloud() {
-        if (es_client) { // Report only if enabled.
+        if (es_client && activeContact) { // Report only if enabled and contact is active
+            let timeThisReport = new Date().getTime();
+
             let deviceInfo = activeDevice ? {
-                        'deviceName': activeDevice.deviceName,
-                        'FW': activeDevice.firmwareVersion,
-                        'ESN': activeDevice.serialNumber,
-                        'SfBcert': activeDevice.skypeCertified.toString() 
+                'deviceName': activeDevice.deviceName,
+                'firmwareVersion': activeDevice.firmwareVersion,
+                'serialNumber': activeDevice.serialNumber,
+                'skypeCertified': activeDevice.skypeCertified,
+                'productID': activeDevice.productID,
+                'variant': activeDevice.variant
             } : undefined;
 
-            let callInfo = activeAgent && activeContact ? {
-                        'agentName': activeAgent.getName(),
-                        'callerPhoneNumber' : activeContact.getInitialConnection().getEndpoint().phoneNumber
+            let environment = installInfo && navigator ? {
+                'versionChromehost': installInfo.version_chromehost,
+                'versionNativeSDK': installInfo.version_nativesdk,
+                'version_browserextension' : installInfo.version_browserextension,
+                'version_jsapi' : installInfo.version_jsapi,
+                'platform' : navigator.platform,
+                'userAgent': navigator.userAgent
+            } : undefined;
 
-            } : undefined;                
+            let callInfo = undefined;
+            if (activeAgent) {
+                callInfo = {
+                    'agentName': activeAgent.getName(),
+                    'contactPhoneNumber' : activeContact.getInitialConnection().getEndpoint().phoneNumber
+                };
+                
+                if (callConnectedTime)
+                {
+                    callInfo["connectedTime"] = callConnectedTime.toISOString();
+                }
+
+                if (callEndedTime)
+                {
+                    callInfo["endedTime"] = callEndedTime.toISOString();
+                    callInfo["completed"] = true;
+                } else {
+                    callInfo["completed"] = false;
+                }
+            }
             
-            let analytics = txSpeechTotal || rxSpeechTotal || crossTalkTotal || silenceTotal ? {
-                        'txSpeechTotal': txSpeechTotal,
-                        'rxSpeechTotal': rxSpeechTotal,
-                        'crossTalkTotal': crossTalkTotal,
-                        'silenceTotal': silenceTotal
-            } : undefined;
+            let analytics = undefined;          
+            if (txSpeechTotal || rxSpeechTotal || crossTalkTotal || silenceTotal) {
+                let total = txSpeechTotal + rxSpeechTotal + crossTalkTotal + silenceTotal;
 
+                analytics = {
+                            'txSpeechTotal': txSpeechTotal,
+                            'rxSpeechTotal': rxSpeechTotal,
+                            'crossTalkTotal': crossTalkTotal,
+                            'silenceTotal': silenceTotal,
+
+                            'txSpeechPct' : (100.0 * txSpeechTotal) / total,
+                            'rxSpeechPct' : (100.0 * rxSpeechTotal) / total,
+                            'crossTalkPct' : (100.0 * crossTalkTotal) / total,
+                            'silencePct' : (100.0 * silenceTotal) / total
+                };
+
+            }
+           
+            // Dynamic status information:
+            let status = undefined;
+            {
+                status = {
+                    'muted' : muteStatus,
+                    'muteCount': muteDuringCallCount,
+                    // 'audioExposure' : weightedTimeAvg(audioExposureList, timeThisReport, lastReportToElasticSearchCloud),
+                    // 'backgroundNoise' : weightedTimeAvg(backgroundNoiseList, timeThisReport, lastReportToElasticSearchCloud),
+                    'audioExposureAvg' : weightedTimeAvg(audioExposureList, timeThisReport),
+                    'backgroundNoiseAvg' : weightedTimeAvg(backgroundNoiseList, timeThisReport),
+                    'volUpDownCount' : volUpDownAdjustDuringCallCount,
+                    'boomArm' : {}
+                }
+
+                let boomArmStatus = boomArmEventsReceived ? {
+                    'lastPositioned' : boomArmLastStatus,
+                    'timesMisaligned' : timesBoomArmMisaligned
+                } : undefined;
+
+                if (boomArmStatus) {
+                    status['boomArm'] = boomArmStatus;
+                }
+            }
+
+            // Use contact Id as key (and indexable propety) to allow interop with 
+            // connect stream index if needed:
+            let id = activeContact.getContactId();
+
+            // Setup request structure:
             let json = {
-                index: 'jabra',
-                type: 'calls',
-                id: activeContact ? activeContact.getContactId() : "outsidecallId",
+                index: 'jabra', // Use our own index.
+                type: 'jabraConnect', // Use our own type.
+                id: id,
                 body: {}
             };
 
+            // Also add key to same indexable property as connect does:
+            json.body["ContactId"] = id;
+
+            // Optionally add sections as data becomes available:
             if (deviceInfo) {
                 json.body["deviceInfo"] = deviceInfo;
+            }
+
+            if (environment) {
+                json.body["environment"] = environment;
             }
 
             if (callInfo) {
@@ -177,6 +309,11 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 json.body["analytics"] = analytics;
             }
 
+            if (status) {
+                json.body["status"] = status;
+            }
+
+            lastReportToElasticSearchCloud = timeThisReport;
             es_client.index(json).then((response) => {
                 console.log("Sucessfully send " + JSON.stringify(json) + " to ES");
             }).catch((err) => {
@@ -187,9 +324,10 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     }
 
     // Jabra library init with full installation check, focus setup and diagnostics of common problems:
-    jabra.init().then(() => jabra.getInstallInfo()).then((installInfo) => {
+    jabra.init().then(() => jabra.getInstallInfo()).then((_installInfo) => {
         console.log("Jabra library initialized");
-        if (installInfo.installationOk) {
+        installInfo = _installInfo;
+        if (_installInfo.installationOk) {
           return Promise.resolve();
         } else {
           return Promise.reject(new Error("Browseer SDK Installation incomplete. Please (re)install"));
@@ -253,7 +391,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 }
             }
             );
-        } else if (event.data.type === jabra.RemoteMmiType.MMI_TYPE_DOT4 && event.data.action === jabra.RemoteMmiActionInput.MMI_ACTION_UP) {
+        } else if (event.data.type === jabra.RemoteMmiType.MMI_TYPE_DOT4 && event.data.action === jabra.RemoteMmiActionInput.MMI_ACTION_UP && quickPhoneNumber) {
             let state = activeAgent.getState().type;
             if (state === connect.AgentStateType.ROUTABLE) {
                 var endpoint = connect.Endpoint.byPhoneNumber(quickPhoneNumber);
@@ -275,17 +413,28 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     jabra.addEventListener("devlog", (event) => {
         console.log("Got devlog event " + JSON.stringify(event));
 
+        let timeStamp = new Date(event.data["TimeStampMs"]);
+
         let boomArm = undefined;
         let boomArmEvent = event.data["Boom Position Guidance OK"];
         if (boomArmEvent !== undefined) {
             boomArm = (boomArmEvent.toString().toLowerCase() === "true");
+            boomArmEventsReceived = true;
+            if (!boomArm) {
+                ++timesBoomArmMisaligned;
+            }
             updateBoomArm(boomArm);
+            boomArmLastStatus = boomArm;
         }
 
         let txDb = undefined;
         let txLevelEvent = event.data["TX Acoustic Logging Level"];
         if (txLevelEvent !== undefined) {
             txDb = parseInt(txLevelEvent);
+            backgroundNoiseList.push({
+                db: txDb,
+                ts: timeStamp
+            });
             updateNoise(txDb);
         }
 
@@ -299,6 +448,10 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         let rxLevelEvent = event.data["RX Acoustic Logging Level"];
         if (rxLevelEvent !== undefined) {
             rxDb = parseInt(rxLevelEvent);
+            audioExposureList.push({
+                db: rxDb,
+                ts: timeStamp
+            });
             updateExposure(rxDb);
         }
 
@@ -321,7 +474,11 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         }
 
         if (inCall) {
-            let timeStamp = new Date(event.data["TimeStampMs"]);
+            let id = event.data["ID"];
+            if (id === "VOLDOWN TAP" || id === "VOLUP TAP") {
+                ++volUpDownAdjustDuringCallCount;
+            }
+
             updateOverview(timeStamp, txSpeech, rxSpeech);
         }
     });
@@ -741,6 +898,12 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         console.log(name);
         agent.onMuteToggle(function(m) {
             console.log("+++++++++ onRefresh On mute with muted = " + m.muted);
+
+            muteStatus = m.muted;
+            if (inCall) {
+                ++muteDuringCallCount;
+            }
+
             if (m.muted) {
                 jabra.mute();
             } else {
@@ -772,9 +935,11 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             inCall = false;
             jabra.onHook();
 
+            callEndedTime = new Date();
+
             reportToElasticSearchCloud();
 
-            updateOverview(new Date().getTime(), false, false, false);
+            updateOverview(callEndedTime.getTime(), false, false, false);
 
             lastTxSpeechOrStart = undefined;
             lastRxSpeechOrStart = undefined;
@@ -788,6 +953,19 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             rxSpeechTotal = 0;
             crossTalkTotal = 0;
             silenceTotal = 0;
+
+            callEndedTime = undefined;
+            callConnectedTime = undefined;
+
+            boomArmEventsReceived = false;
+            timesBoomArmMisaligned = 0;
+            boomArmLastStatus = undefined;
+
+            muteDuringCallCount = 0;
+            volUpDownAdjustDuringCallCount = 0;
+
+            audioExposureList = [];
+            backgroundNoiseList = [];
 
             jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT4, 0x000000, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_OFF);
         });
@@ -804,15 +982,20 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         contact.onConnected(function (contact) {
             console.log("+++++++++ onConnected");
             jabra.offHook();
+
+            audioExposureList = [];
+            backgroundNoiseList = [];
+
             inCall = true;
-            let timestamp = new Date().getTime();
+            callConnectedTime = new Date();
+            let timestamp = callConnectedTime.getTime();
             lastTxSpeechOrStart = timestamp;
             lastRxSpeechOrStart = timestamp;
 
-            reportToElasticSearchCloud();
+            // reportToElasticSearchCloud();
         });
     });
-}
+};
 
 // Check if we have the configuration setup:
 const urlParams = new URLSearchParams(window.location.search);
@@ -825,7 +1008,7 @@ let quickPhoneNumber = quickPhoneNumberParam ? decodeURI(quickPhoneNumberParam) 
 let elasticsearchHost = elasticsearchHostParam ? decodeURI(elasticsearchHostParam) : '';
 
 // Run demo if we have the required parts of the configuration - otherwise ask for configuration:
-if (cppUrl && quickPhoneNumber) {
+if (cppUrl) {
     run(cppUrl, quickPhoneNumber, elasticsearchHost);
 } else {
     urlText.textContent = "https://" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
