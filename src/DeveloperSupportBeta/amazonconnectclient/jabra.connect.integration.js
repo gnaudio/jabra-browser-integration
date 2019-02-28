@@ -122,7 +122,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     // from list of {db, ts} entries and a terminating time for last entry.
     // Optionally data before a giving time can be thrown away.
     function weightedTimeAvg(dbTimestampList, endTimeStamp, sinceTimeStamp = undefined) {
-        if (dbTimestampList.length > 1) {
+        if (dbTimestampList.length > 0) {
             // Filer out unwanted elements and convert to time duration array:
             let dbTimedList = dbTimestampList.filter((currentValue) => !sinceTimeStamp || currentValue.ts>sinceTimeStamp).map( (currentValue, index, array) => {
                 let nextTimeStamp = index+1<array.length ? array[index+1].ts : endTimeStamp;
@@ -135,6 +135,17 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                     delta: delta
                 };
             });
+
+            // Tempoary fix: return last value if filtered list becomes empty due to sinceTimeStamp.
+            //               which can happen if there were no events since last call.
+            // TODO: Need a better way to do this that is also more in line with method description.
+            if (dbTimedList.length == 0) {
+                let lastElement = dbTimestampList[dbTimestampList.length -1];
+                dbTimedList = [{
+                    db: lastElement.db,
+                    delta: endTimeStamp-lastElement.ts
+                }];
+            }
 
             // Calculate average seperately for dividend and divisor parts:
             let dividendAndDivisor = dbTimedList.reduce( (acc, currValue) => {
@@ -149,8 +160,6 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
             // Return result
             return dividendAndDivisor.time !== 0.0 ? dividendAndDivisor.sum / dividendAndDivisor.time : 0;
-        } else if (dbTimestampList.length == 1) {
-            return dbTimestampList[0].db;
         } else {
             return undefined;
         }
