@@ -67,6 +67,11 @@ const silenceOff = document.getElementById('silenceOff');
 const silenceOn = document.getElementById('silenceOn');
 const silenceLabel = document.getElementById('silenceLabel');
 
+const maxQueueSize = 1000;
+const silenceMinDurationMs = 1000;
+const cloudReportIntervalMs = 5000;
+const silenceUpdateIntervalMs = 1000;
+
 // The run method contains the actual demo.
 function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     /** @type {jabra.InstallInfo} */
@@ -121,17 +126,19 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
     let inCall = undefined;
 
-    const maxQueueSize = 1000;
-
+    /** @type {BoundedQueue */
     let audioExposureQueue =  new BoundedQueue(maxQueueSize);
+    
+    /** @type {BoundedQueue */
     let backgroundNoiseQueue = new BoundedQueue(maxQueueSize);
-
-    const silenceMinDurationMs = 1000;
-    const cloudReportIntervalMs = 5000;
-    const silenceUpdateIntervalMs = 1000;
 
     // Last time for live report.
     let lastReportLiveToElasticSearchCloud = undefined;
+
+    let lastCrossTalkReportTime = 0;
+    let lastTxSpeechReportTime = 0;
+    let lastRxSpeechReportTime = 0;
+    let lastSilenceReportTime = 0;
 
     // Utility to calulate time weighted average for exposure or backround noise
     // from list of {db, ts} entries and a terminating time for last entry.
@@ -244,6 +251,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             if (activeAgent) {
                 callInfo = {
                     'agentName': activeAgent.getName(),
+                    'agentUserName': activeAgent.getConfiguration().username,
                     'contactPhoneNumber' : activeContact.getInitialConnection().getEndpoint().phoneNumber
                 };
 
@@ -259,24 +267,48 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                     callInfo["endedTime"] = callEndedTime.toISOString();
                 }
             }
-            
-            let analytics = undefined;          
-            if (txSpeechTotal || rxSpeechTotal || crossTalkTotal || silenceTotal) {
-                let total = txSpeechTotal + rxSpeechTotal + crossTalkTotal + silenceTotal;
+
+            const crossTalkReportTime = crossTalkTotal+currentCrossTalkTime;
+            const txSpeechReportTime = txSpeechTotal+currentTxSpeechTime;
+            const rxSpeechReportTime = rxSpeechTotal+currentRxSpeechTime;
+            const silenceReportTime = silenceTotal+currentSilenceTime;
+
+            let analytics = undefined;    
+            if (crossTalkReportTime || txSpeechReportTime || rxSpeechReportTime || silenceReportTime) {
+                const total = crossTalkReportTime + txSpeechReportTime + rxSpeechReportTime + silenceReportTime;
 
                 analytics = {
-                            'txSpeechTotal': txSpeechTotal,
-                            'rxSpeechTotal': rxSpeechTotal,
-                            'crossTalkTotal': crossTalkTotal,
-                            'silenceTotal': silenceTotal,
+                    'txSpeechTotal': txSpeechReportTime,
+                    'rxSpeechTotal': rxSpeechReportTime,
+                    'crossTalkTotal': crossTalkReportTime,
+                    'silenceTotal': silenceReportTime,
 
-                            'txSpeechTotalPct' : (100.0 * txSpeechTotal) / total,
-                            'rxSpeechTotalPct' : (100.0 * rxSpeechTotal) / total,
-                            'crossTalkTotalPct' : (100.0 * crossTalkTotal) / total,
-                            'silenceTotalPct' : (100.0 * silenceTotal) / total
+                    'txSpeechTotalPct' : (100.0 * txSpeechReportTime) / total,
+                    'rxSpeechTotalPct' : (100.0 * rxSpeechReportTime) / total,
+                    'crossTalkTotalPct' : (100.0 * crossTalkReportTime) / total,
+                    'silenceTotalPct' : (100.0 * silenceReportTime) / total,
                 };
 
-            }
+                if (live) {
+                    const txSpeechIntervalTime = txSpeechReportTime - lastTxSpeechReportTime;
+                    const rxSpeechIntervalTime = rxSpeechReportTime - lastRxSpeechReportTime;
+                    const crossTalkIntervalTime = crossTalkReportTime - lastCrossTalkReportTime;
+                    const silenceIntervalTime = silenceReportTime - lastSilenceReportTime;
+
+                    const intervalTotal = txSpeechIntervalTime + rxSpeechIntervalTime + crossTalkIntervalTime + silenceIntervalTime;
+                 
+                    analytics['txSpeechNow'] = txSpeechIntervalTime;
+                    analytics['rxSpeechNow'] = rxSpeechIntervalTime;
+                    analytics['crossTalkNow'] =crossTalkIntervalTime;
+                    analytics['silenceNow'] = silenceIntervalTime;
+
+                    analytics['txSpeechNowPct'] = (100.0 * txSpeechIntervalTime) / intervalTotal;
+                    analytics['rxSpeechNowPct'] = (100.0 * rxSpeechIntervalTime) / intervalTotal;
+                    analytics['crossTalkNowPct'] = (100.0 * crossTalkIntervalTime) / intervalTotal;
+                    analytics['silenceNowPct'] = (100.0 * silenceIntervalTime) / intervalTotal;
+                }
+
+            }      
            
             // Dynamic status information:
             let status = undefined;
@@ -284,13 +316,17 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 status = {
                     'muted' : muteStatus,
                     'muteCount': muteDuringCallCount,
-                    'audioExposureNow' : weightedTimeAvg(audioExposureQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined),
-                    'backgroundNoiseNow' : weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined),
                     'audioExposureAvg' : weightedTimeAvg(audioExposureQueue, timeThisReport.getTime()),
                     'backgroundNoiseAvg' : weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime()),
                     'volUpDownCount' : volUpDownAdjustDuringCallCount,
                     'boomArm' : {}
                 }
+
+                if (live) {
+                    status['audioExposureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
+                    status['backgroundNoiseNow'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
+                }
+
 
                 let boomArmStatus = boomArmEventsReceived ? {
                     'lastPositioned' : boomArmLastStatus,
@@ -342,6 +378,12 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
             es_client.index(json).then((response) => {
                 lastReportLiveToElasticSearchCloud = timeThisReport;
+
+                lastTxSpeechReportTime = txSpeechReportTime;
+                lastRxSpeechReportTime = rxSpeechReportTime;
+                lastCrossTalkReportTime = crossTalkReportTime;
+                lastSilenceReportTime = silenceReportTime;            
+
                 console.log("Sucessfully send " + (live ? "live" : "historic") + " data " + JSON.stringify(json) + " to ES");
             }).catch((err) => {
                 console.error("Error " + err + " trying to send " + JSON.stringify(json) + " to ES");
@@ -508,6 +550,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         } else if (txSpeech === false && txSpeechStart !== undefined) {
             txSpeechTotal += currentTxSpeechTime;
             txSpeechStart = undefined;
+            currentTxSpeechTime = 0;
         }
 
         currentRxSpeechTime = rxSpeechStart ? Math.abs((timeStamp - rxSpeechStart)/1000) : 0;
@@ -516,6 +559,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         } else if (rxSpeech === false && rxSpeechStart !== undefined) {
             rxSpeechTotal += currentRxSpeechTime;
             rxSpeechStart = undefined;
+            currentRxSpeechTime = 0;
         }
 
         // Calculate derived dynamic status:
@@ -534,6 +578,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         } else if (crossTalk === false && crossTalkStart !== undefined) {
             crossTalkTotal += currentCrossTalkTime;
             crossTalkStart = undefined;
+            currentCrossTalkTime = 0;
         }
         
         // Update GUI if in call:
@@ -583,6 +628,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         } else if (!silence && silenceStart !== undefined) {
             silenceTotal += currentSilenceTime;
             silenceStart = undefined;
+            currentSilenceTime = 0;
         }
     }
 
@@ -962,6 +1008,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         });
         
         contact.onEnded(function (contact) {
+            // Nb. beware AWS calls this on both call ended and on contact available for unknown reasons.
             console.log("+++++++++ onEnded");
 
             callEndedTime = new Date();
@@ -1025,6 +1072,11 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             let timestamp = callConnectedTime.getTime();
             lastTxSpeechOrStart = timestamp;
             lastRxSpeechOrStart = timestamp;
+
+            lastCrossTalkReportTime = 0;
+            lastTxSpeechReportTime = 0;
+            lastRxSpeechReportTime = 0;
+            lastSilenceReportTime = 0;
 
             // Keep only last registered exposure/backgrond noise before call for reference.
             audioExposureQueue.clearAllButLast();

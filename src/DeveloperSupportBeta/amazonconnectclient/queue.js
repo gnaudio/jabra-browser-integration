@@ -22,6 +22,16 @@ class BoundedQueue extends Array {
       return this.backingArray.shift();
     }
 
+    // Lookup the first element (without poping)
+    peekFront() {
+      return this.backingArray.length>0 ? this.backingArray[0] : undefined;
+    }
+
+    // Lookup the last pushed element (without poping)
+    peekBack() {
+        return this.backingArray.length>0 ? this.backingArray[this.backingArray.length - 1] : undefined;
+    }
+
     // Remove all elements.
     clear() {
       this.backingArray.length = 0;
