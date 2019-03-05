@@ -86,6 +86,8 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     /** @type {jabra.DeviceInfo} */
     let activeDevice = undefined;
 
+    let devLogEventsReceived = false;
+
     let lastNoiseDate = undefined;
     let lastExposureDate = undefined;
     
@@ -274,7 +276,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             const silenceReportTime = silenceTotal+currentSilenceTime;
 
             let analytics = undefined;    
-            if (crossTalkReportTime || txSpeechReportTime || rxSpeechReportTime || silenceReportTime) {
+            if (devLogEventsReceived && (crossTalkReportTime || txSpeechReportTime || rxSpeechReportTime || silenceReportTime)) {
                 const total = crossTalkReportTime + txSpeechReportTime + rxSpeechReportTime + silenceReportTime;
 
                 analytics = {
@@ -316,17 +318,20 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 status = {
                     'muted' : muteStatus,
                     'muteCount': muteDuringCallCount,
-                    'audioExposureAvg' : weightedTimeAvg(audioExposureQueue, timeThisReport.getTime()),
-                    'backgroundNoiseAvg' : weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime()),
                     'volUpDownCount' : volUpDownAdjustDuringCallCount,
                     'boomArm' : {}
                 }
 
-                if (live) {
-                    status['audioExposureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
-                    status['backgroundNoiseNow'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
-                }
+                if (devLogEventsReceived) {
+                    status['audioExpoaudioExposureAvgsureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime());
+                    status['backgroundNoiseAvg'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime());
 
+                    if (live) {
+                        status['audioExposureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
+                        status['backgroundNoiseNow'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime(), lastReportLiveToElasticSearchCloud ? lastReportLiveToElasticSearchCloud.getTime() : undefined);
+                    }
+    
+                }
 
                 let boomArmStatus = boomArmEventsReceived ? {
                     'lastPositioned' : boomArmLastStatus,
@@ -481,6 +486,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
     jabra.addEventListener("devlog", (event) => {
         console.log("Got devlog event " + JSON.stringify(event));
+        devLogEventsReceived = true;
 
         let timeStamp = new Date(event.data["TimeStampMs"]);
 
@@ -1102,19 +1108,21 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             }, cloudReportIntervalMs);
 
             // Overview silence updates in absence of devlog events (silence)
-            let updateSilenceIntercal = setInterval(() => {
-                if (inCall) {
-                    calculateSilence(new Date().getTime());
-                } else if (callEndedTime) {
-                    calculateSilence(callEndedTime.getTime());
+            let updateSilenceInterval = setInterval(() => {
+                if (devLogEventsReceived) {
+                    if (inCall) {
+                        calculateSilence(new Date().getTime());
+                    } else if (callEndedTime) {
+                        calculateSilence(callEndedTime.getTime());
+                    }
+
+                    updateCallOverviewGui();
                 }
 
-                updateCallOverviewGui();
-
                 // Auto unsubscribe once call is finished and final update was made.
-                if (!inCall && updateSilenceIntercal) {
-                    clearInterval(updateSilenceIntercal);
-                    updateSilenceIntercal=undefined;
+                if (!inCall && updateSilenceInterval) {
+                    clearInterval(updateSilenceInterval);
+                    updateSilenceInterval=undefined;
                 }
             }, silenceUpdateIntervalMs);
         });
