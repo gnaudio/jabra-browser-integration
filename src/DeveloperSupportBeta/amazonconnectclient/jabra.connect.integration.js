@@ -9,6 +9,8 @@ const urlText = document.getElementById('urlText');
 const configureForm = document.getElementById('configureForm');
 const error = document.getElementById('error');
 
+const addOnHeaderText = document.getElementById('addOnHeaderText');
+
 const boomArmStatusText = document.getElementById('boomArmStatusText');
 const noiseBar = document.getElementById('noiseBar');
 const noiseKnown = document.getElementById('NoiseKnown');
@@ -323,6 +325,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 }
 
                 if (devLogEventsReceived) {
+                    status['volUpDownCount'] = volUpDownAdjustDuringCallCount;
                     status['audioExpoaudioExposureAvgsureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime());
                     status['backgroundNoiseAvg'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime());
 
@@ -415,7 +418,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         if (err.name === "CommandError" && err.errmessage === "Unknown cmd" && err.command === "getinstallinfo" ) {
             showError("Your browser SDK installation is incomplete, out of date or corrupted. Please (re)install");
         } else if (err.name === "NotFoundError") {
-            showError("Input device not accessible/found");
+            showError("Jabra input device not accessible/found");
         } else {
             showError(err.name + ": " + err.message);
         }
@@ -424,9 +427,12 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     function setupDevice() {
         return jabra.getActiveDevice().then((device) => {
             activeDevice = device;
+            addOnHeaderText.innerText = device.deviceName ? device.deviceName : "no device";
             return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT3, true).then( () => {
                 return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT4, true);
             });
+        }).catch( (err) => {
+            showError("Jabra input device not accessible/found");
         });
     }
 

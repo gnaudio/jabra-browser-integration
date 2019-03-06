@@ -64,6 +64,8 @@ body {
 	margin-left: auto;
 	margin-right: auto;
     display: block;
+    float: left;
+    padding: 0 20px 20px 0;
 }
 
 .addOnBody {
@@ -71,6 +73,11 @@ body {
     padding-left: 16px;
     padding-top: 16px;
     background-color: #666666 ;  
+}
+
+.addOnHeaderText {
+    font-family: "GNElliotWeb-Bold";
+    font-size: 16px;
 }
 
 #barParent {
