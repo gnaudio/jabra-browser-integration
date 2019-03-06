@@ -9,6 +9,7 @@ const urlText = document.getElementById('urlText');
 const configureForm = document.getElementById('configureForm');
 const error = document.getElementById('error');
 
+const addOnBody = document.getElementById('addOnBody');
 const addOnHeaderText = document.getElementById('addOnHeaderText');
 
 const boomArmStatusText = document.getElementById('boomArmStatusText');
@@ -88,8 +89,6 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     /** @type {jabra.DeviceInfo} */
     let activeDevice = undefined;
 
-    let devLogEventsReceived = false;
-
     let lastNoiseDate = undefined;
     let lastExposureDate = undefined;
     
@@ -143,6 +142,16 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     let lastTxSpeechReportTime = 0;
     let lastRxSpeechReportTime = 0;
     let lastSilenceReportTime = 0;
+    
+    // Checks if active device reports analytics data back:
+    function deviceHasLogging(device) {
+        return device && device.deviceFeatures && device.deviceFeatures.includes(jabra.DeviceFeature.Logging);
+    }
+
+    // Checks if active device allow button take over / lighting etc.:
+    function deviceHasMMIv2(device) {
+        return device && device.deviceFeatures && device.deviceFeatures.includes(jabra.DeviceFeature.RemoteMMIv2);
+    }
 
     // Utility to calulate time weighted average for exposure or backround noise
     // from list of {db, ts} entries and a terminating time for last entry.
@@ -232,6 +241,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     function reportLiveToElasticSearchCloud(live) {
         if (es_client && activeContact) { // Report only if enabled and contact is active
             let timeThisReport = new Date();
+            let loggingDevice = deviceHasLogging(activeDevice);
 
             let deviceInfo = activeDevice ? {
                 'deviceName': activeDevice.deviceName,
@@ -278,7 +288,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             const silenceReportTime = silenceTotal+currentSilenceTime;
 
             let analytics = undefined;    
-            if (devLogEventsReceived && (crossTalkReportTime || txSpeechReportTime || rxSpeechReportTime || silenceReportTime)) {
+            if (loggingDevice && (crossTalkReportTime || txSpeechReportTime || rxSpeechReportTime || silenceReportTime)) {
                 const total = crossTalkReportTime + txSpeechReportTime + rxSpeechReportTime + silenceReportTime;
 
                 analytics = {
@@ -319,14 +329,13 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             {
                 status = {
                     'muted' : muteStatus,
-                    'muteCount': muteDuringCallCount,
-                    'volUpDownCount' : volUpDownAdjustDuringCallCount,
-                    'boomArm' : {}
+                    'muteCount': muteDuringCallCount
                 }
 
-                if (devLogEventsReceived) {
+                if (loggingDevice) {
+                    status['boomArm'] = {};
                     status['volUpDownCount'] = volUpDownAdjustDuringCallCount;
-                    status['audioExpoaudioExposureAvgsureNow'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime());
+                    status['audioExposureAvg'] = weightedTimeAvg(audioExposureQueue, timeThisReport.getTime());
                     status['backgroundNoiseAvg'] = weightedTimeAvg(backgroundNoiseQueue, timeThisReport.getTime());
 
                     if (live) {
@@ -427,12 +436,21 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     function setupDevice() {
         return jabra.getActiveDevice().then((device) => {
             activeDevice = device;
-            addOnHeaderText.innerText = device.deviceName ? device.deviceName : "no device";
-            return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT3, true).then( () => {
-                return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT4, true);
-            });
-        }).catch( (err) => {
-            showError("Jabra input device not accessible/found");
+            addOnHeaderText.innerText = device.deviceName ? device.deviceName : "";
+            if (deviceHasMMIv2(activeDevice)) {
+                return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT3, true).then( () => {
+                    return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT4, true);
+                });
+            }
+            if (deviceHasLogging(activeDevice)) {
+                addOnBody.style.opacity = "1.0";
+                addOnBody.style.pointerEvents = "auto";
+            } else {
+                addOnBody.style.opacity = "0.5";
+                addOnBody.style.pointerEvents = "none";
+            }
+        }).catch( () => {
+            console.log("Error during device setup");
         });
     }
 
@@ -477,7 +495,9 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                 var endpoint = connect.Endpoint.byPhoneNumber(quickPhoneNumber);
                 activeAgent.connect(endpoint, {
                     success: () => {
-                        jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT4, 0x0000ff, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON);
+                        if (deviceHasMMIv2(activeDevice)) {
+                            jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT4, 0x0000ff, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON);
+                        }
                     },
                     failure: (jsonErr) => {
                         console.error ("Failed calling supervisor: " + JSON.stringify(jsonErr));
@@ -492,7 +512,6 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
     jabra.addEventListener("devlog", (event) => {
         console.log("Got devlog event " + JSON.stringify(event));
-        devLogEventsReceived = true;
 
         let timeStamp = new Date(event.data["TimeStampMs"]);
 
@@ -892,7 +911,9 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             lastNoiseDate = date;
         }
 
-        jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT3, color, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON);
+        if (deviceHasMMIv2(activeDevice)) {
+            jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT3, color, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON);
+        }
 
         noiseUnknown.style.display = "none";
         noiseKnown.style.display = "block";
@@ -1032,7 +1053,9 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             // Mark call as finished!
             inCall = false;
 
-            jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT4, 0x000000, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_OFF);
+            if (deviceHasMMIv2(activeDevice)) {
+              jabra.setRemoteMmiLightAction(jabra.RemoteMmiType.MMI_TYPE_DOT4, 0x000000, jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_OFF);
+            }
         });
         
         contact.onConnecting(function (contact) {
@@ -1046,6 +1069,8 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         
         contact.onConnected(function (contact) {
             console.log("+++++++++ onConnected");
+
+            const loggingDevice = deviceHasLogging(activeDevice);
 
             lastTxSpeechOrStart = undefined;
             lastRxSpeechOrStart = undefined;
@@ -1114,8 +1139,8 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             }, cloudReportIntervalMs);
 
             // Overview silence updates in absence of devlog events (silence)
-            let updateSilenceInterval = setInterval(() => {
-                if (devLogEventsReceived) {
+            if (loggingDevice) {
+                let updateSilenceInterval = setInterval(() => {
                     if (inCall) {
                         calculateSilence(new Date().getTime());
                     } else if (callEndedTime) {
@@ -1123,14 +1148,14 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
                     }
 
                     updateCallOverviewGui();
-                }
 
-                // Auto unsubscribe once call is finished and final update was made.
-                if (!inCall && updateSilenceInterval) {
-                    clearInterval(updateSilenceInterval);
-                    updateSilenceInterval=undefined;
-                }
-            }, silenceUpdateIntervalMs);
+                    // Auto unsubscribe once call is finished and final update was made.
+                    if (!inCall && updateSilenceInterval) {
+                        clearInterval(updateSilenceInterval);
+                        updateSilenceInterval=undefined;
+                    }
+                }, silenceUpdateIntervalMs);
+            }
         });
     });
 };
