@@ -1028,6 +1028,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
         console.log("+++++++++********* inside connect.contact(function (contact)");
         
         activeContact = contact;
+
         contact.onRefresh(function (contact) {
             console.log("+++++++++ onRefresh");
         });
@@ -1128,33 +1129,33 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
             reportLiveToElasticSearchCloud(false);
 
             // Live cloud reporting per time interval:
-            let cloudReportInterval = setInterval(() => {
-                reportLiveToElasticSearchCloud(true);
-
+            let cloudReportInterval = setInterval((activeContactOnSetup) => {
                 // Auto unsubscribe once call is finished and final report was made.
-                if (!inCall && cloudReportInterval) {
+                if (activeContactOnSetup !== activeContact || (!inCall && cloudReportInterval)) {
                     clearInterval(cloudReportInterval);
                     cloudReportInterval=undefined
+                } else {
+                    reportLiveToElasticSearchCloud(true);
                 }
-            }, cloudReportIntervalMs);
+            }, cloudReportIntervalMs, activeContact);
 
             // Overview silence updates in absence of devlog events (silence)
             if (loggingDevice) {
-                let updateSilenceInterval = setInterval(() => {
-                    if (inCall) {
-                        calculateSilence(new Date().getTime());
-                    } else if (callEndedTime) {
-                        calculateSilence(callEndedTime.getTime());
-                    }
-
-                    updateCallOverviewGui();
-
+                let updateSilenceInterval = setInterval((activeContactOnSetup) => {
                     // Auto unsubscribe once call is finished and final update was made.
-                    if (!inCall && updateSilenceInterval) {
+                    if (activeContactOnSetup !== activeContact || (!inCall && updateSilenceInterval)) {
                         clearInterval(updateSilenceInterval);
                         updateSilenceInterval=undefined;
+                    } else {
+                        if (inCall) {
+                            calculateSilence(new Date().getTime());
+                        } else if (callEndedTime) {
+                            calculateSilence(callEndedTime.getTime());
+                        }
+
+                        updateCallOverviewGui();
                     }
-                }, silenceUpdateIntervalMs);
+                }, silenceUpdateIntervalMs, activeContact);
             }
         });
     });
