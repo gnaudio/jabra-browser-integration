@@ -1,0 +1,218 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jabra Amazon Connect Demo</title>
+  <link href="jabra.connect.integration.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Demo configuration page starts here: -->
+  <table class="overall" id="configurationParent" style="display: none">
+    <tr>
+      <td colspan="3">
+        <p>
+          <img class="configHeaderLogo" src="jabra-logo-vector.svg" alt="Jabra GN" />
+          <span id="configureHeading">Jabra Amazon Connect Demo</span>
+        </p>
+      </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+        <h1>How to run this demo:</h1>
+    </tr>
+    <tr>
+        <td colspan="3">
+          <div class="configStep">Step <span class="configStepNumber">&#x2460;</span></div>
+          <p id="configureText">Use Google Chrome and install the Jabra Browser Integration Extension and native Chromehost downloads mentioned <a href="https://github.com/gnaudio/jabra-browser-integration/blob/master/README.md">here</a>. This provides basic call control (synchronized mute between Amazon Connect and headset indicators/buttons, etc.) for all Jabra USB devices.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+          <div class="configStep">Step <span class="configStepNumber">&#x2461;</span></div>
+          <p id="configureText">For a complete demo with analytics (background noise, crosstalk etc) please use a single <b><a href="https://www.jabra.com/business/office-headsets/jabra-engage/jabra-engage-50">Jabra Engage 50 device</a></b>. Attach the device to your computer (removing any other Jabra devices) and make sure it is the default device used for both audio and microphone.</p>
+          <p>Nb. Default audio device is set by your operating system. Default microphone can also be overridden in Chrome under Settings > Show Advanced Settings > Content Settings.</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan="3">
+        <div class="configStep">Step <span class="configStepNumber">&#x2462;</span></div>
+        <p id="configureText">Create an <a href="https://aws.amazon.com/connect/">Amazon Connect</a> instance if you don't have one already. Ask your Amazon Connect administrator to whitelist <b><q id="urlText">this domain</q></b> as an approved origin under Application Integration in your <a href="https://console.aws.amazon.com/connect/">Amazon Connect administrator console</a> <b>OR</b> copy this webpage and related files to a webserver serving a white listed domain for your Amazon Connect instance and re-launch this page (refer to <a href="https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportBeta/amazonconnectclient">Jabra Amazon example source folder in GitHub</a> for the files used for this page).</p>
+      </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+          <div class="configStep">Step <span class="configStepNumber">&#x2463;</span></div>
+          <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator, any phone number for easy outbound calls using the 4-dot button on the Jabra Engage 50 controller
+            and optionally an Elasticsearch v6.6 host for reporting:</p>
+        </td>
+      </tr>
+    <tr>
+        <td colspan="3">
+          <form id="configureForm" method="get">
+            <label for="cppAccountUrl">CppUrl:&nbsp;</label>
+            <input id="cppAccountUrl" class="configInput" name="cppAccountUrl" placeholder="https://your-amazon-connect-domain/connect/ccp#" type="url" width="80" required/>
+            <br/>
+            <br/>
+            <label for="quickPhoneNumber">Quick call number:&nbsp;</label>
+            <input id="quickPhoneNumber" class="configInput" name="quickPhoneNumber" placeholder="+4512345678" type="tel" width="16"/>
+            <br/>
+            <br/>
+            <label for="elasticsearchHost">ES host:&nbsp;</label>
+            <input id="elasticsearchHost" class="configInput" name="elasticsearchHost" placeholder="https://your-elasticsearch-host" type="url" width="80"/>
+            <br/>
+            <br/>
+            <button id="configureGo" type="submit">&nbsp;&nbsp;RUN&nbsp;&nbsp;</button>
+          </form>
+        </td>
+    </tr>
+  </table>
+
+  <!-- Main amazon example HTML starts here -->
+  <table class="overall" id="amazonParent" style="display: none">
+    <tr>
+      <td colspan="2">
+          <h1>Jabra Amazon Connect Demo</h1>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <div id="error"style="display: none"></div>
+        <div>&nbsp;</div>
+      </td>
+    </tr>
+    <tr>      
+      <td style="vertical-align:top">
+        <div style="height:465px;width:320px" id="containerDiv"></div>
+        <div>&nbsp;</div>
+      </td>
+      <td>
+        <div style="width:318px" id="jabraContainerDiv">
+          <div class="addOnHeader">
+            <img class="addOnHeaderLogo" src="jabra-logo-vector.svg" alt="Jabra GN" height="24" />
+            <span id ="addOnHeaderText" class="addOnHeaderText"></span>
+          </div>
+          <div id="addOnBody" class="addOnBody">
+            <!-- Auto selection is hidden until Amazon connect streams support it -->
+            <section class="section" style="display: none">
+              <h1>Headset selection</h1>
+              <img id="expandHeadSetSelected" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
+              <img id="collapseHeadSetSelected" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />
+              
+              <img class="lastRightSideIcon" src="Icon/Microphone/Enabled.svg" alt="Jabra Microphone ON" height="24" />
+              <img class="rightSideIcon" src="Icon/Speaker/Enabled.svg" alt="Jabra Speaker ON" height="24" />
+              <img id="noteHeadsetSelectionProblem" class="rightSideIcon" src="Icon/Important.svg" alt="Warning" height="24" style="display: none" />
+
+              <span id="headSetSelected">
+                <p>Your Jabra headset is selected as speaker and microphone</p>
+              </span>
+            </section>
+            
+            <section class="section">
+              <h1>Boom arm</h1>
+              <img id="expandBoomArm" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
+              <img id="collapseBoomArm" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />
+              
+              <img id="boomArmKnown" class="lastRightSideIcon" src="Icon/Boom arm.svg" alt="Jabra Boom arm" height="24" style="display: none"  />
+              <img id="boomArmUnknown" class="lastRightSideIcon" src="Icon/Boom arm unknown.svg" alt="Jabra Boom arm" height="24" style="display: block" />
+              <img id="noteBoomArmProblem" class="rightSideIcon" src="Icon/Important.svg" alt="Warning" height="24" style="display: none" />
+
+              <span id="boomArm">
+                <p id="boomArmStatusText">Position unknown, please wait</p>              
+              </span>
+            </section>            
+
+            <section class="section">
+              <h1>Background noise</h1>
+              <img id="expandBackgroundNoise" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
+              <img id="collapseBackgroundNoise" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />
+
+              <img id="NoiseKnown" class="lastRightSideIcon" src="Icon/Background noise.svg" alt="Jabra background noise" height="24" style="display: none" />
+              <img id="NoiseUnknown" class="lastRightSideIcon" src="Icon/Background noise unknown.svg" alt="Jabra background noise" height="24" style="display: block" />
+              <img id="noteNoiseProblem" class="rightSideIcon" src="Icon/Important.svg" alt="Warning" height="24" style="display: none" />
+              
+              <span id="backgroundNoise">
+                <br/>
+                <br/>
+                <div id="barParent">
+                  <div id="noiseBar"></div>
+                </div>
+                <br/>
+                <br/>                     
+                <canvas id="noiseChart" width="244" height="100"></canvas>
+              </span>
+            </section>
+
+            <section class="section">
+              <h1>Audio exposure</h1>
+              <img id="expandExposureNoise" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
+              <img id="collapseExposureNoise" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />
+
+              <img id="ExposureKnown" class="lastRightSideIcon" src="Icon/Background noise.svg" alt="Jabra exposure noise" height="24" style="display: none" />
+              <img id="ExposureUnknown" class="lastRightSideIcon" src="Icon/Background noise unknown.svg" alt="Jabra exposure noise" height="24" style="display: block" />
+              
+              <span id="exposure">
+                <br/>
+                <br/>
+                <div id="barParent">
+                  <div id="exposureBar"></div>
+                </div>
+                <br/>
+                <br/>                     
+                <canvas id="exposureChart" width="244" height="100"></canvas>
+              </span>
+            </section>
+
+            <section class="section">
+              <h1>Call overview</h1>
+              <img id="expandCallOverview" class="expandIcon" src="Icon/Expand.svg" alt="Click to collapse" height="24" style="display: none" />
+              <img id="collapseCallOverview" class="collapseIcon" src="Icon/Collapse.svg" alt="Click to expand" height="24" />
+
+              <span id="callOverview">
+                <br/>
+                <br/>
+                <div class = "row">
+                  <div class = "column overviewLegends">
+                    <div>
+                      <img id="agentTalkingOff" class="overviewLegend" src="Icon/Dots/Yellow.svg" alt="Yellow" height="8" />
+                      <img id="agentTalkingOn" class="overviewLegend" src="Icon/Dots/Yellow-selected.svg" alt="Yellow" height="8" style="display: none"/>
+                      <label id="agentTalkingLabel">Agent (You) talking</label>
+                    </div>
+
+                    <div>
+                      <img id="contactTalkingOff" class="overviewLegend" src="Icon/Dots/Green.svg" alt="Green" height="8" />
+                      <img id="contactTalkingOn" class="overviewLegend" src="Icon/Dots/Green-selected.svg" alt="Yellow" height="8" style="display: none"/>
+                      <label id="contactLabel">Contact talking</label>
+                    </div>
+
+                    <div>
+                      <img id="crossTalkOff" class="overviewLegend" src="Icon/Dots/Red.svg" alt="Red" height="8" />
+                      <img id="crossTalkOn" class="overviewLegend" src="Icon/Dots/Red-selected.svg" alt="Yellow" height="8" style="display: none"/>
+                      <label id="crossTalkLabel">Cross talk</label>
+                    </div>
+                    
+                    <div>
+                      <img id="silenceOff" class="overviewLegend" src="Icon/Dots/Grey.svg" alt="Grey" height="8" />
+                      <img id="silenceOn" class="overviewLegend" src="Icon/Dots/Grey-selected.svg" alt="Yellow" height="8" style="display: none"/>
+                      <label id="silenceLabel">Silence</label>
+                    </div>
+                  </div>
+                  <div class = "column">
+                      <canvas id="overviewChart" width="140" height="80"></canvas>
+                  </div>
+                </div>
+              </span>
+            </section>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
+  <script type="text/javascript" src="amazon-connect-v1.x.js"></script>
+  <script type="text/javascript" src="queue.js"></script>
+  <script type="text/javascript" src="Chart.min.js"></script>
+  <script type="text/javascript" src="elasticsearch.min.js"></script>
+  <script type="text/javascript" src="jabra.connect.integration.js"></script>
+</body>
+</html>
