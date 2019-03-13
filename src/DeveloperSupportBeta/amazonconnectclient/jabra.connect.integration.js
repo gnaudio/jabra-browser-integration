@@ -436,18 +436,20 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     function setupDevice() {
         return jabra.getActiveDevice().then((device) => {
             activeDevice = device;
-            addOnHeaderText.innerText = device.deviceName ? device.deviceName : "";
-            if (deviceHasMMIv2(activeDevice)) {
-                return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT3, true).then( () => {
-                    return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT4, true);
-                });
-            }
-            if (deviceHasLogging(activeDevice)) {
-                addOnBody.style.opacity = "1.0";
-                addOnBody.style.pointerEvents = "auto";
-            } else {
-                addOnBody.style.opacity = "0.5";
-                addOnBody.style.pointerEvents = "none";
+            if (device && device.deviceName) {
+                addOnHeaderText.innerText = device.deviceName ? device.deviceName : "";
+                if (deviceHasMMIv2(activeDevice)) {
+                    jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT3, true).then( () => {
+                        return jabra.setMmiFocus(jabra.RemoteMmiType.MMI_TYPE_DOT4, true);
+                    });
+                }
+                if (deviceHasLogging(activeDevice)) {
+                    addOnBody.style.opacity = "1.0";
+                    addOnBody.style.pointerEvents = "auto";
+                } else {
+                    addOnBody.style.opacity = "0.5";
+                    addOnBody.style.pointerEvents = "none";
+                }
             }
         }).catch( () => {
             console.log("Error during device setup");
