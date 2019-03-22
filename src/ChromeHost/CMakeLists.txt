@@ -26,7 +26,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_executable(jabrachromehost ${sources})
 
 if(UNIX AND NOT APPLE)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.so.1.0.11.1;.so.1;.so.2")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.so.1.0.11.1;.so.1;.so.2;.so.1.7.3.4")
 endif()
 
 find_library(LIBJABRA
@@ -34,6 +35,5 @@ find_library(LIBJABRA
              PATHS "${CMAKE_SOURCE_DIR}"
              PATH_SUFFIXES "SDKmacOS"
              PATH_SUFFIXES "SDKWindows"
-             PATH_SUFFIXES "SDKLinux/32-bit"
              PATH_SUFFIXES "SDKLinux/64-bit")
 target_link_libraries(jabrachromehost PUBLIC ${LIBJABRA})

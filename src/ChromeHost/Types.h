@@ -30,6 +30,7 @@ SOFTWARE.
 #include <string>
 #include <map>
 #include <vector>
+#include <limits.h>
 #include "json.hpp"
 #include "SDK/Common.h"
 
