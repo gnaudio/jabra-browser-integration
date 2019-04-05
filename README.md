@@ -124,7 +124,7 @@ For many editors and IDE's, the above typescript definition file can be used to 
 * [Library api test](https://gnaudio.github.io/jabra-browser-integration/release/test/) - advanced test page that allows detailed testing of individual API calls)
 * [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - demo page showing auto selection of jabra device with simple audio playback example
 * [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
-* [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and Amazon Connect integration
+* [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and [Amazon Connect](https://aws.amazon.com/connect) integration
 
 # Upgrading API from 1.2 to 2.0
 As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListener(nameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
@@ -168,13 +168,6 @@ jabra.addEventListener("unmute", (event) => {
  // Handle unmute event.
 });
 ```
-
-## Example use
-
-#### Amazon Connect
-[Amazon Connect](https://aws.amazon.com/connect) is a self-service, cloud-based contact center service that makes it easy for any business to deliver better customer service at lower cost.
-
-[Amazon Connect and Jabra devices](https://www.jabra.com/amazonconnect)
 
 ## Deployment
 
