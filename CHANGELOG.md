@@ -2,6 +2,14 @@
 
 Here are listed changes for (1) Javascript API, (2) Browser extension and (3) native chromehost installation. 
 
+# 2.1 Version
+
+## Browser extension changes:
+
+2.1 Added frames support. Enable use in salesforce apps etc.
+
+# 2.0 Version
+
 ## 1/3 Javascript API changes :
 
 2.0 Added/changed the following
@@ -59,8 +67,11 @@ Note:
 * Chromehost source is updated to support native SDK v1.7.0.0
 * Remote MMI (MMIV2) for Jabra Engage 50 device is not supported in MAC.
 
+# 0.51 Release
 
 0.51 Added the following:
 * Security fix to allow being called from beta browser extensions
+
+# 0.5 Release
 
 0.5 Original version with call control support.
