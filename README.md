@@ -176,8 +176,6 @@ jabra.addEventListener("unmute", (event) => {
 
 [Amazon Connect and Jabra devices](https://www.jabra.com/amazonconnect)
 
-How to add headset functionality to Amazon Connect: [Amazon Connect Guide](docs/JabraAmazonConnectGuide.md). *Note that this example has not been updated to use latest API (yet).*
-
 ## Deployment
 
 Documentation about [mass deployment](docs/Deployment.md)
