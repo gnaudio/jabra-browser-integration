@@ -76,7 +76,7 @@ The library internally checks for dependencies – and will report this to the a
 
 ## Getting started with using the API in your web applications
 
-First, make sure the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js) is included in your HTML page. 
+First, make sure the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js) is included in your HTML page (use a local copy - don't link directly). 
 
 Secondly, the library must be initialized using javascript like this:
 ```javascript
@@ -89,7 +89,7 @@ jabra.init().then(() => {
 
 ```
 Generally, you will also need to setup various
-event handlers, like for example for when the device has been attached or when the device has requested to be muted *(just be aware that some events are only send if the device is in a specific state. For example mute is only send when the device is off hook)*:
+event handlers, like for example for when a new Jabra device has been attached to the computer or when the device has requested to be muted *(just be aware that some events are only send if the device is in a specific state. For example mute is only send when the device is off hook)*:
 
 ```javascript
 jabra.addEventListener("device attached", (event) => {
@@ -110,7 +110,7 @@ jabra.offHook();
 ```
 
 Do consult the the
-[typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for examples}(https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) below for usage details.
+[typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for examples](https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) below for usage details.
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
