@@ -102,15 +102,22 @@ jabra.addEventListener("mute", (event) => {
 
 ```
 
-When issuing commands, this API only works with one (active/selected) jabra device at the time (only an issue if you have multiple Jabra devices connected at the same time). You can easily issue specific commands to the active device like this example:
+When issuing commands, this API only works with one (active/selected) jabra device at the time *(only an issue if you have multiple Jabra devices connected at the same time)*. You can easily issue specific commands to the active device like this example:
 
 ```javascript
 jabra.offHook();
 
 ```
 
-Do consult the the
-[typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for examples](https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) below for usage details.
+Importantly, please do consult the the
+[typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for the examples](https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) listed below for usage details. 
+
+
+For many editors and IDE's the above typescript definition file can be used to provide code completion and context sensitive help. For example for Visual Code, this requires top-level comment like this to your javascript source file:
+
+```javascript
+/// <reference path="<your-path-to-a-local-copy-here>/jabra.browser.integration-2.0.d.ts" />
+```
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
