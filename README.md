@@ -74,8 +74,43 @@ The library internally checks for dependencies – and will report this to the a
 
 ![Windows CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-Windows)
 
+## Getting started with using the API in your web applications
 
+First, make sure the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js) is included in your HTML page. 
 
+Secondly, the library must be initialized using javascript like this:
+```javascript
+jabra.init().then(() => {
+// Handle success
+
+}).catch((err) => {
+// Handle error
+});
+
+```
+Generally, you will also need to setup various
+event handlers, like for example for when the device has been attached or when the device has requested to be muted *(just be aware that some events are only send if the device is in a specific state. For example mute is only send when the device is off hook)*:
+
+```javascript
+jabra.addEventListener("device attached", (event) => {
+ // Handle new device 
+});
+
+jabra.addEventListener("mute", (event) => {
+ // Handle mute event.
+});
+
+```
+
+When issuing commands, this API only works with one (active/selected) jabra device at the time (only an issue if you have multiple Jabra devices connected at the same time). You can easily issue specific commands to the active device like this example:
+
+```javascript
+jabra.offHook();
+
+```
+
+Do consult the the
+[typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for examples}(https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) below for usage details.
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
