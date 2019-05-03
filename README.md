@@ -32,9 +32,9 @@ The solution consists of a Javascript API that webpages can consume, a chrome we
 ## Javascript/typescript API
 Developers must use the versioned JavaScript library file with the format `jabra.browser.integration.<majorVersion>.<minorVersion>.js` and the associated 
 [typescript *.d.ts](https://www.typescriptlang.org/) definition file which
-documents the API in details, including exactly what each API method expect for parameters and what each method returns.
+documents the API in detail, including exactly what each API method expect for parameters and what each method returns.
 
-These files adheres to semantic versioning
+These files adhere to semantic versioning
 so increases in majorVersion between releases indicate breaking changes so developers using the software
 may need to change their code when updating. Increases in minorVersion indicates that all changes are backwards compatible.
 
@@ -47,7 +47,7 @@ Latest API versions are:
 | [jabra.browser.integration-2.0.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js) | Javascript API client file |
 | [jabra.browser.integration-2.0.d.ts](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) | Typescript definition file |
 
-The library internally checks for dependencies – and will report this to the app using the library. An example: When trying to initialize Jabra library the promise might fail wih an error “You need to use this Extension and then reload this page” if the browser extension is missing.
+The library internally checks for dependencies – and will report this to the app using the library. An example: When trying to initialize Jabra library the promise might fail with an error “You need to use this Extension and then reload this page” if the browser extension is missing.
 
 *Notice that the latest API contains [breaking changes](CHANGELOG.md) compared with previous 1.2 version as evident from the change in major version. See upgrade section below for help on upgrading your client code.*
 
@@ -89,7 +89,7 @@ jabra.init().then(() => {
 
 ```
 Generally, you will also need to setup various
-event handlers, like for example for when a new Jabra device has been attached to the computer or when the device has requested to be muted *(just be aware that some events are only send if the device is in a specific state. For example mute is only send when the device is off hook)*:
+event handlers, like for example for when a new Jabra device has been attached to the computer or when the device has requested to be muted *(just be aware that some events are only send if the device is in a specific state. For example, mute is only send when the device is off hook)*:
 
 ```javascript
 jabra.addEventListener("device attached", (event) => {
@@ -109,11 +109,11 @@ jabra.offHook();
 
 ```
 
-Importantly, please do consult the the
+Importantly, please do consult the
 [typescript definition file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for a full description of how to use the API. See also the [source code for the examples](https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease) listed below for usage details. 
 
 
-For many editors and IDE's the above typescript definition file can be used to provide code completion and context sensitive help. For example for Visual Code, this requires top-level comment like this to your javascript source file:
+For many editors and IDE's, the above typescript definition file can be used to provide code completion and context sensitive help. For example for Visual Code, this requires top-level comment like this to your javascript source file:
 
 ```javascript
 /// <reference path="<your-path-to-a-local-copy-here>/jabra.browser.integration-2.0.d.ts" />
@@ -127,9 +127,9 @@ For many editors and IDE's the above typescript definition file can be used to p
 * [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and Amazon Connect integration
 
 # Upgrading API from 1.2 to 2.0
-As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
+As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListener(nameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
 
-The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example the changes made it easy to create our new API test tool. With the addition of typescript, the new API is also much easier to use ... and type safe.
+The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example, the changes made it easy to create our new API test tool. With the addition of typescript, the new API is also much easier to use ... and type safe.
 
 The example below shows how to convert old 1.2 code like this:
 
