@@ -7,21 +7,12 @@ This page contains information about current public beta's of the Jabra Browser 
 
 For general information about the library please refer to our [main documentation page](README.md)
 
-# Compatibility
-With the exception of the new 2.0 API component usage compared with the 1.2 API component and a beta-only security issue documented under the beta browser extension section below, everything in this release is backwards compatible with old version(s). This means that the updated browser extension and the updated chromehost will work in combination with older versions of other components.
-
-That said, it is highly recommended that you upgrade all components (API, browser extension and chrome host) to latest stable release. A full upgrade is needed for new features and bug fixes to work 100%. Rest assured, existing old features will continue to work when updating just one or two components while you wait for the rest to be updated at a later time. 
-
-We consider compatibility important because changes to API, browser extension and native chromehost are often pushed at different times in different channels. Thus, please report any compatibility issues if found!
-
 # BETA Documentation
 * [Typescript API definition/documentation](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts)
 * [Changelog](CHANGELOG.md)
 
 # BETA Javascript API
 * [Javascript API 2.0 file download link](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.js).
-
-Notice that this API contains [breaking changes](CHANGELOG.md) compared with previous 1.2 version as evident from the major version.
 
 *For the API we adheres to semantic versioning
 so increases in the major version component of the version number between releases indicate breaking changes where developers using the software
@@ -31,14 +22,6 @@ may need to change their code when updating. Increases in minor version indicate
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta8.msi) | Chromehost 2.0 Beta 8 |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta7.msi) | Chromehost 2.0 Beta 7 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta6.msi) | Chromehost 2.0 Beta 6 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta5.msi) | Chromehost 2.0 Beta 5 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta4.msi) | Chromehost 2.0 Beta 4 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta3.msi) | Chromehost 2.0 Beta 3 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta2.msi) | Chromehost 2.0 Beta 2 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta1.msi) | Chromehost 2.0 Beta 1 (deprecated) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix for allowing beta extension to work with old chrome host executable + allow downgrades. Otherwise same as 0.5 release. See note under web extension for details. |
 | macOS (El Capitan/Sierra)     | *coming soon* | |
 
 # WebExtension BETA
@@ -52,75 +35,7 @@ v0.51 of the chromehost which fixes this issue but otherwise contains the same e
 
 # BETA Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - test page to try out basic call control in the library
-* [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - **NEW** advanced test page that allows detailed testing of individual API calls)
+* [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - advanced test page that allows detailed testing of individual API calls)
 * [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/beta/playback/) - demo page showing auto selection of jabra device with simple audio playback example
 * [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/beta/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
-
-# Upgrading API from 1.2 to 2.0
-As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListenernameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
-
-The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example the changes made it easy to create our new API test tool. With the addition of typescript, the new API is also much easier and type safe.
-
-The example below shows how to convert old 1.2 code like this:
-
-```
-jabra.init(
-  function () {
-    // Handle success
-  },
-  function(msg) { 
-   // Handle error
-  },
-  function (req) {
-    if (req == jabra.requestEnum.mute) {
-      // Handle mute event
-    } else if (req == jabra.requestEnum.unmute) {
-      // Handle unmute event.
-    } 
-  }
-);
-```
-
-to new 2.0 compliant code:
-
-```
-jabra.init().then(() => {
- // Handle success
-}).catch((err) => {
- // Handle error
-});
-
-jabra.addEventListener("mute", (event) => {
- // Handle mute event.
-});
-
-jabra.addEventListener("unmute", (event) => {
- // Handle unmute event.
-});
-```
-
-# Typescript support (new notable BETA feature / documentation)
-Added [typescript](https://www.typescriptlang.org/) definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) of API for detailed documentation, static checking and better IDE support. Refer to this file for detailed documentation about the API, including exactly what each API method expect for parameters and what each method returns.
-
-You can use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools. 
-
-# Expanded device information/events (new notable BETA feature).
-Methods like `GetDevices()` and `getActiveDevice()` now return detailed device information. Likewise do "device attached" and "device detached" events.
-
-Support for >30 more device events like for example batteryStatus, keys,
-devlog etc. See typescript definitions [`jabra.browser.integration-2.0.d.ts`](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-2.0.d.ts) for details.
-
-# Man-machine interface (MMI v2) support for custom buttons and light effects (new notable BETA feature).
-Methods `setMmiFocus()` and `setRemoteMmiLightAction` can be used to take over device 
-buttons for customization and to change light effects (on supported devices).
-
-# Logging (new notable BETA feature)
-In this beta version of the extension, chromehost and api has logging support that can be used
-to diagnose errors. 
-
-Logging for javascript components can be seen in the browser developer console for the application and for the background page of the extension (a link is provided under chrome
-extensions when developer mode is selected). The log level (how much is being logged) can be controlled by right-clicking on the extension and selecting options.
-
-Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "fatal", "error", "warning", "info", "debug".
-
-
+* [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/beta/amazonconnectclient/) - demo showing Jabra and Amazon Connect integration
