@@ -33,7 +33,7 @@ var jabra;
     /**
      * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
      */
-    jabra.apiVersion = "2.0.0";
+    jabra.apiVersion = "2.0.1";
     /**
      * Is the current version a beta ?
      */
@@ -451,7 +451,7 @@ var jabra;
                 // Check that different beta versions are not mixed.
                 if (!browserSdkVersions.map(v => {
                     let betaIndex = v.lastIndexOf('beta');
-                    if (betaIndex && v.length > betaIndex + 4) {
+                    if (betaIndex >= 0 && v.length > betaIndex + 4) {
                         return v.substr(betaIndex + 4);
                     }
                     else {
@@ -544,6 +544,7 @@ var jabra;
      */
     function getEvents(nameSpec) {
         if (Array.isArray(nameSpec)) {
+            // @ts-ignore: Disable wrong "argument not assignable" error in ts 3.4
             return [...new Set([].concat.apply([], nameSpec.map(a => getEvents(a))))];
         }
         else if (nameSpec instanceof RegExp) {
