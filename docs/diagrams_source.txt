@@ -1,0 +1,93 @@
+These are the source diagram definitions from "https://www.websequencediagrams.com/":
+
+----- 1 outgoing-call-then-end-call -----
+
+title outgoing-call-then-end-call
+"App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Device goes into call state
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Device goes out of call state
+
+
+----- 2 incoming-call-then-accept-on-device-then-end-call -----
+
+title incoming-call-then-accept-on-device-then-end-call
+"App"->"Jabra Browser Integration library": jabra.ring()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Start device ringer
+note right of "Jabra USB device": User accepts call
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "acceptcall event"
+"App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Device stops ringing and goes into call state
+note right of "Jabra USB device": The user presses end call button
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "endCall event"
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device goes out of call state
+
+
+----- 3 incoming-call-then-user-rejects -----
+
+title incoming-call-then-user-rejects
+"App"->"Jabra Browser Integration library": jabra.ring()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Start device ringer
+note right of "Jabra USB device": User rejects call
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "rejectCall event"
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device stops ringing
+
+
+----- 4 mute-unmute-from-device -----
+
+title mute-unmute-from-device
+"App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Device is in call state
+note right of "Jabra USB device": User presses mute
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "mute event"
+"App"->"Jabra Browser Integration library": jabra.mute()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device mutes
+note right of "Jabra USB device": User presses unmute
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "unmute event"
+"App"->"Jabra Browser Integration library": jabra.unmute()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device unmutes
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": End call
+
+
+----- 5 hold-resume-from-device -----
+
+title hold-resume-from-device
+"App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": Device is in call state
+note right of "Jabra USB device": User presses flash
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "flash event"
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"App"->"Jabra Browser Integration library": jabra.hold()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device goes into held state
+note right of "Jabra USB device": User presses flash
+"Jabra USB device"->"Jabra Browser Integration library": ""
+"Jabra Browser Integration library"->"App": "flash event"
+"App"->"Jabra Browser Integration library": jabra.resume()
+"App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": The device goes out of held state
+"App"->"Jabra Browser Integration library": jabra.onHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+note right of "Jabra USB device": End call

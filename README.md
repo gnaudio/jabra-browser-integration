@@ -126,7 +126,33 @@ For many editors and IDE's, the above typescript definition file can be used to 
 * [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 * [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and [Amazon Connect](https://aws.amazon.com/connect) integration
 
-# Upgrading API from 1.2 to 2.0
+## Sequence diagrams
+
+These sequence diagrams shows typical use of the browser sdk:
+
+![Sequence diagram](docs/outgoing-call-then-end-call.png)
+
+![Sequence diagram](docs/incoming-call-then-accept-on-device-then-end-call.png)
+
+![Sequence diagram](docs/incoming-call-then-user-rejects.png)
+
+![Sequence diagram](docs/mute-unmute-from-device.png)
+
+![Sequence diagram](docs/hold-resume-from-device.png)
+
+## Deployment
+
+Documentation about [mass deployment](docs/Deployment.md)
+
+## Logging
+The extension, chromehost and api has logging support that can be used to diagnose errors. 
+
+Logging for javascript components can be seen in the browser developer console for the application and for the background page of the extension (a link is provided under chrome
+extensions when developer mode is selected). The log level (how much is being logged) can be controlled by right-clicking on the extension and selecting options followed by a restart of the browser.
+
+Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "fatal", "error", "warning", "info", "debug".
+
+## Upgrading API from 1.2 to 2.0
 As noted in the [changelog](CHANGELOG.md) all methods now return values using [Javascript promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) rather than callbacks. Also, events are now subscribed to using a `addEventListener(nameSpec, callback)` and `removeEventListener(nameSpec, callback)` similar to standard libraries. With this new way of subscribing to events, the old `requestEnum` is  removed as it is no longer necessary to switch on events.
 
 The above changes were made to better handle a future expansion of events efficiently and to streamline testing and API usage in a modern way. For example, the changes made it easy to create our new API test tool. With the addition of typescript, the new API is also much easier to use ... and type safe.
@@ -168,18 +194,6 @@ jabra.addEventListener("unmute", (event) => {
  // Handle unmute event.
 });
 ```
-
-## Deployment
-
-Documentation about [mass deployment](docs/Deployment.md)
-
-## Logging
-The extension, chromehost and api has logging support that can be used to diagnose errors. 
-
-Logging for javascript components can be seen in the browser developer console for the application and for the background page of the extension (a link is provided under chrome
-extensions when developer mode is selected). The log level (how much is being logged) can be controlled by right-clicking on the extension and selecting options followed by a restart of the browser.
-
-Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "fatal", "error", "warning", "info", "debug".
 
 ## Version information.
 
