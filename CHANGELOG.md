@@ -10,7 +10,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 # 2.0.1 Version (API only)
 
 2.0.1. Fixed the following in the Javascript API
-* Installation check bug fix - would falsly report that installation was corrupt in some cases.
+* Installation check bug fix - would falsely report that installation was corrupt in some cases.
 * Workaround for typescript 3.4 problem.
 
 # 2.0 Version
