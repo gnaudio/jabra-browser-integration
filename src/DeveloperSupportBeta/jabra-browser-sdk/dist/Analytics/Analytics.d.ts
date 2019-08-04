@@ -1,0 +1,33 @@
+import EventEmitter from "eventemitter3";
+import { AnalyticsEvent } from "./AnalyticsEvent";
+export declare class Analytics extends EventEmitter {
+    private events;
+    startTime: number | undefined;
+    stopTime: number | undefined;
+    constructor();
+    clear(): void;
+    getDuration(): number;
+    getTXSpeechStatus(): boolean;
+    getTXSpeechTime(fromTime?: number, toTime?: number): number;
+    getTXSpeechPercentage(fromTime?: number, toTime?: number): number;
+    getRXSpeechStatus(): boolean;
+    getRXSpeechTime(fromTime?: number, toTime?: number): number;
+    getRXSpeechPercentage(fromTime?: number, toTime?: number): number;
+    getCrosstalkStatus(): boolean;
+    getCrosstalkTime(fromTime?: number, toTime?: number): number;
+    getCrosstalkPercentage(fromTime?: number, toTime?: number): number;
+    getSilenceStatus(): boolean;
+    getSilenceTime(fromTime?: number, toTime?: number): number;
+    getSilencePercentage(fromTime?: number, toTime?: number): number;
+    getMutedStatus(): boolean;
+    getMutedCount(): number;
+    getBoomArmStatus(): boolean | undefined;
+    getBoomArmMisalignedCount(): number;
+    getVolumeUpCount(): number;
+    getVolumeDownCount(): number;
+    getAudioExposure(limit?: number): AnalyticsEvent[];
+    getAverageAudioExposure(fromTime?: number, toTime?: number): number;
+    getBackgroundNoise(limit?: number): AnalyticsEvent[];
+    getAverageBackgroundNoise(fromTime?: number, toTime?: number): number;
+}
+export default Analytics;
