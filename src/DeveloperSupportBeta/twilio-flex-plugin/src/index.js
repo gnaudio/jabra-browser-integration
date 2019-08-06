@@ -11,6 +11,7 @@ import {
   setInitializedState
 } from "./actions";
 import { Analytics } from "./components/Analytics";
+import { KibanaView, KibanaButton } from "./components/Kibana";
 import Device from "./components/Device";
 import { jabraReducer } from "./reducers";
 import Elastic from "./elastic";
@@ -58,8 +59,17 @@ class Plugin extends FlexPlugin {
       sortOrder: -1
     });
 
+    flex.SideNav.Content.add(<KibanaButton key="jabra-kibana-button" />);
+    flex.ViewCollection.Content.add(
+      <flex.View name="jabra-kibana-view" key="jabra-kibana-view">
+        <KibanaView />
+      </flex.View>
+    );
+
     (async () => {
       await jabra.init();
+      console.log("init");
+
       this.manager.store.dispatch(setInitializedState(true));
 
       if ((await jabra.getInstallInfo()).installationOk)
@@ -69,10 +79,12 @@ class Plugin extends FlexPlugin {
 
       if (Object.keys(device).length > 0) {
         this.manager.store.dispatch(setActiveDevice(device));
+        this.setDevice();
       }
 
       jabra.addEventListener("device attached", event => {
         this.manager.store.dispatch(setActiveDevice(event.data));
+        this.setDevice();
       });
 
       jabra.addEventListener("device detached", () => {
@@ -102,40 +114,67 @@ class Plugin extends FlexPlugin {
 
   change = async () => {
     const state = this.manager.store.getState();
-    const {
-      flex: { worker },
-      jabra: { active_device, mmi_focused, call_state, call_noise }
-    } = state;
 
-    if (active_device && !mmi_focused) {
-      const supportsMMI = active_device.deviceFeatures.includes(
-        jabra.DeviceFeature.RemoteMMIv2
+    if (!state.jabra.initialized) return;
+
+    const hasActiveDeviceChanges =
+      state.jabra.active_device &&
+      this.prevState &&
+      this.prevState.jabra.active_device === null;
+
+    const hasCallStateChanges =
+      state.jabra.active_device &&
+      (!this.prevState ||
+        state.jabra.call_state !== this.prevState.jabra.call_state);
+
+    const hasAvailabilityChange =
+      !this.prevState ||
+      state.flex.worker.activity.available !==
+        this.prevState.flex.worker.activity.available;
+
+    const hasCallNoiseChange =
+      !this.prevState ||
+      state.jabra.call_noise !== this.prevState.jabra.call_noise;
+
+    const setMMIFocus = () =>
+      new Promise(resolve => {
+        const supportsMMI = state.jabra.active_device.deviceFeatures.includes(
+          jabra.DeviceFeature.RemoteMMIv2
+        );
+
+        if (supportsMMI) {
+          jabra
+            .setMmiFocus(MMI_TYPE_DOT3, true)
+            .then(() => jabra.setMmiFocus(MMI_TYPE_DOT4, true))
+            .then(() => {
+              setTimeout(resolve, 1000);
+            });
+        }
+      });
+
+    const runCallStateActions = () =>
+      new Promise(resolve => {
+        const { call_state } = state.jabra;
+        if (call_state === "none") jabra.onHook();
+        if (call_state === "ringing") jabra.ring();
+        if (call_state === "connected") jabra.offHook();
+        if (call_state === "wrapping") jabra.onHook();
+        setTimeout(resolve, 1000);
+      });
+
+    const setAvailabilityLights = () => {
+      jabra.setRemoteMmiLightAction(
+        MMI_TYPE_DOT4,
+        state.flex.worker.activity.available ? 0x00ff00 : 0xff0000,
+        MMI_LED_SEQUENCE_ON
       );
+    };
 
-      if (supportsMMI) {
-        await jabra.setMmiFocus(MMI_TYPE_DOT3, true);
-        await jabra.setMmiFocus(MMI_TYPE_DOT4, true);
-        this.manager.store.dispatch(setMMIFocus(true));
-      }
-    }
+    const setNoiseLights = () => {
+      const { call_state, call_noise } = state.jabra;
 
-    if (
-      call_state === "ringing" &&
-      this.prevState &&
-      this.prevState.jabra.call_state !== "ringing"
-    ) {
-      jabra.ring();
-    }
+      if (call_state !== "connected") return;
 
-    if (
-      call_state === "connected" &&
-      this.prevState &&
-      this.prevState.jabra.call_state !== "connected"
-    ) {
-      jabra.offHook();
-    }
-
-    if (call_state === "connected") {
       function inRange(start, end) {
         return (call_noise - start) * (call_noise - end) <= 0;
       }
@@ -149,54 +188,70 @@ class Plugin extends FlexPlugin {
         : 0xff0000;
 
       jabra.setRemoteMmiLightAction(MMI_TYPE_DOT3, color, MMI_LED_SEQUENCE_ON);
-    }
+    };
 
-    if (
-      (call_state === "wrapping" &&
-        this.prevState &&
-        this.prevState.jabra.call_state === "connected") ||
-      (call_state === "none" &&
-        this.prevState &&
-        this.prevState.jabra.call_state === "wrapping")
-    ) {
-      jabra.onHook();
-    }
+    const setCallStateLights = () => {
+      const { call_state } = state.jabra;
+      if (call_state === "none" || call_state === "ringing")
+        jabra.setRemoteMmiLightAction(
+          MMI_TYPE_DOT3,
+          0x000000,
+          MMI_LED_SEQUENCE_OFF
+        );
 
-    if (
-      call_state === "wrapping" &&
-      this.prevState &&
-      this.prevState.jabra.call_state !== "wrapping"
-    ) {
-      setTimeout(() => {
+      if (call_state === "connected") {
+        setNoiseLights();
+      }
+      if (call_state === "wrapping")
         jabra.setRemoteMmiLightAction(
           MMI_TYPE_DOT3,
           0x0000ff,
           MMI_LED_SEQUENCE_ON
         );
-      }, 1000);
+    };
+
+    if (hasActiveDeviceChanges) {
+      await setMMIFocus();
+      runCallStateActions();
+      await setCallStateLights();
+      setAvailabilityLights();
     }
 
-    if (
-      call_state === "none" &&
-      this.prevState &&
-      this.prevState.jabra.call_state !== "none"
-    ) {
-      jabra.setRemoteMmiLightAction(
-        MMI_TYPE_DOT3,
-        0x000000,
-        MMI_LED_SEQUENCE_OFF
-      );
+    if (hasCallStateChanges) {
+      await runCallStateActions();
+      await setCallStateLights();
+      setAvailabilityLights();
     }
 
-    if (mmi_focused) {
-      jabra.setRemoteMmiLightAction(
-        MMI_TYPE_DOT4,
-        worker.activity.available ? 0x00ff00 : 0xff0000,
-        MMI_LED_SEQUENCE_ON
-      );
+    if (hasAvailabilityChange) {
+      setAvailabilityLights();
+    }
+
+    if (hasCallNoiseChange) {
+      setNoiseLights();
     }
 
     this.prevState = state;
+  };
+
+  setDevice = async () => {
+    try {
+      const { deviceInfo } = await jabra.getUserDeviceMediaExt({ audio: true });
+
+      await this.manager.voiceClient.audio.setInputDevice(
+        deviceInfo.browserAudioInputId
+      );
+
+      await this.manager.voiceClient.audio.speakerDevices.set(
+        deviceInfo.browserAudioOutputId
+      );
+
+      console.info(
+        `Successfully set ${deviceInfo.deviceName} as active device`
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   handleReservation = reservation => {
@@ -229,6 +284,8 @@ class Plugin extends FlexPlugin {
   };
 
   handleCallAccepted = reservation => {
+    this.analytics.start();
+
     this.manager.store.dispatch(setCallState("connected"));
 
     const connection = this.manager.voiceClient.activeConnection();
@@ -242,6 +299,11 @@ class Plugin extends FlexPlugin {
     this.elastic.start(reservation);
 
     this.analytics.on("txacousticlevel", handleCallNoise);
+
+    connection.on("mute", muted => {
+      if (muted) jabra.mute();
+      else jabra.unmute();
+    });
 
     jabra.addEventListener("endcall", () => {
       connection.disconnect();
@@ -264,6 +326,11 @@ class Plugin extends FlexPlugin {
   handleCallWrapping = reservation => {
     this.manager.store.dispatch(setCallState("wrapping"));
 
+    this.analytics.stop();
+    this.elastic.stop().then(() => {
+      this.analytics.clear();
+    });
+
     this.onDotClick(
       MMI_TYPE_DOT3,
       () => {
@@ -275,10 +342,6 @@ class Plugin extends FlexPlugin {
 
   handleCallCompleted = () => {
     this.manager.store.dispatch(setCallState("none"));
-
-    this.elastic.stop().then(() => {
-      this.analytics.clear();
-    });
   };
 
   handleCallCanceled = () => {

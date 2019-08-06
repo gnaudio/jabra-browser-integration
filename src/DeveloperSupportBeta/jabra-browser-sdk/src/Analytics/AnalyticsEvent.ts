@@ -52,7 +52,9 @@ const jabraEventTypes: {
   "Mute State": { eventType: "mute", valueType: "boolean" }
 };
 
+let count = 0;
 export class AnalyticsEvent {
+  public id = count++;
   public type: string;
   public value: any;
   public timestamp: number;

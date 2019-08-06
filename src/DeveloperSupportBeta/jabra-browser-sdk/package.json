@@ -1,6 +1,6 @@
 {
   "name": "jabra-browser-integration",
-  "version": "2.1.15",
+  "version": "2.1.19",
   "main": "dist/jabra.js",
   "umd:main": "dist/jabra.umd.js",
   "module": "dist/jabra.mjs",
@@ -11,9 +11,11 @@
     "start": "microbundle watch --name jabra --external none"
   },
   "dependencies": {
-    "eventemitter3": "^4.0.0"
+    "eventemitter3": "^4.0.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.136",
     "microbundle": "^0.11.0"
   }
 }

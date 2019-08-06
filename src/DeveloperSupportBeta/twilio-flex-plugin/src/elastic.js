@@ -64,13 +64,13 @@ class Elastic {
     try {
       await this.client.index(json);
 
-      // console.log(
-      //   "Sucessfully send " +
-      //     (live ? "live" : "historic") +
-      //     " data " +
-      //     JSON.stringify(json) +
-      //     " to ES"
-      // );
+      console.log(
+        "Sucessfully send " +
+          (live ? "live" : "historic") +
+          " data " +
+          JSON.stringify(json) +
+          " to ES"
+      );
     } catch (err) {
       console.error(
         "Error " + err + " trying to send " + JSON.stringify(json) + " to ES"
@@ -122,50 +122,31 @@ class Elastic {
   }
 
   async getAnalytics(live, currentTime) {
+    const speechTime = this.analytics.getSpeechTime();
+    const speechTimeNow = this.analytics.getSpeechTime(
+      this.lastReportTime,
+      currentTime
+    );
     const analytics = {
-      txSpeechTotal: this.analytics.getTXSpeechTime(),
-      rxSpeechTotal: this.analytics.getRXSpeechTime(),
-      crossTalkTotal: this.analytics.getCrosstalkTime(),
-      silenceTotal: this.analytics.getSilenceTime(),
-      txSpeechTotalPct: this.analytics.getTXSpeechPercentage(),
-      rxSpeechTotalPct: this.analytics.getRXSpeechPercentage(),
-      crossTalkTotalPct: this.analytics.getCrosstalkPercentage(),
-      silenceTotalPct: this.analytics.getSilencePercentage()
+      txSpeechTotal: speechTime.txSpeechTime,
+      rxSpeechTotal: speechTime.rxSpeechTime,
+      crossTalkTotal: speechTime.crosstalkTime,
+      silenceTotal: speechTime.silenceTime,
+      txSpeechTotalPct: speechTime.txSpeechTimePct,
+      rxSpeechTotalPct: speechTime.rxSpeechTimePct,
+      crossTalkTotalPct: speechTime.crosstalkTimePct,
+      silenceTotalPct: speechTime.silenceTimePct
     };
 
     if (live) {
-      analytics.txSpeechNow = this.analytics.getTXSpeechTime(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.rxSpeechNow = this.analytics.getRXSpeechTime(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.crossTalkNow = this.analytics.getCrosstalkTime(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.silenceNow = this.analytics.getSilenceTime(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.txSpeechNowPct = this.analytics.getTXSpeechPercentage(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.rxSpeechNowPct = this.analytics.getRXSpeechPercentage(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.crossTalkNowPct = this.analytics.getCrosstalkPercentage(
-        this.lastReportTime,
-        currentTime
-      );
-      analytics.silenceNowPct = this.analytics.getSilencePercentage(
-        this.lastReportTime,
-        currentTime
-      );
+      analytics.txSpeechNow = speechTimeNow.txSpeechTime;
+      analytics.rxSpeechNow = speechTimeNow.rxSpeechTime;
+      analytics.crossTalkNow = speechTimeNow.crosstalkTime;
+      analytics.silenceNow = speechTimeNow.silenceTime;
+      analytics.txSpeechNowPct = speechTimeNow.txSpeechTimePct;
+      analytics.rxSpeechNowPct = speechTimeNow.rxSpeechTimePct;
+      analytics.crossTalkNowPct = speechTimeNow.crosstalkTimePct;
+      analytics.silenceNowPct = speechTimeNow.silenceTimePct;
     }
 
     return analytics;
@@ -179,10 +160,14 @@ class Elastic {
       muteCount: this.analytics.getMutedCount(),
       boomArm: {},
       volUpDownCount:
-        this.analytics.getVolumeUpCount() + this.analytics.getVolumeDownCount(),
-      audioExposureAvg: this.analytics.getAverageAudioExposure(),
-      backgroundNoiseAvg: this.analytics.getAverageBackgroundNoise()
+        this.analytics.getVolumeUpCount() + this.analytics.getVolumeDownCount()
     };
+
+    const audioExposureAvg = this.analytics.getAverageAudioExposure();
+    const backgroundNoiseAvg = this.analytics.getAverageBackgroundNoise();
+
+    if (audioExposureAvg > 0) status.audioExposureAvg = audioExposureAvg;
+    if (backgroundNoiseAvg > 0) status.backgroundNoiseAvg = backgroundNoiseAvg;
 
     if (boomArmStatus) {
       status.boomArm = {
@@ -192,14 +177,17 @@ class Elastic {
     }
 
     if (live) {
-      status.audioExposureNow = this.analytics.getAverageAudioExposure(
+      const audioExposureNow = this.analytics.getAverageAudioExposure(
         this.lastReportTime,
         currentTime
       );
-      status.backgroundNoiseNow = this.analytics.getAverageBackgroundNoise(
+      const backgroundNoiseNow = this.analytics.getAverageBackgroundNoise(
         this.lastReportTime,
         currentTime
       );
+
+      if (audioExposureNow > 0) status.audioExposureNow = audioExposureNow;
+      if (audioExposureNow > 0) status.backgroundNoiseNow = backgroundNoiseNow;
     }
 
     return status;

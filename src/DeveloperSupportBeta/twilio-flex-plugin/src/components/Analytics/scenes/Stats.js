@@ -30,18 +30,8 @@ export class Stats extends React.Component {
 
   handleSpeechEvent = () => {
     this.setState({
-      status: {
-        isTXSpeaking: this.props.analytics.getTXSpeechStatus(),
-        isRXSpeaking: this.props.analytics.getRXSpeechStatus(),
-        isCrosstalking: this.props.analytics.getCrosstalkStatus(),
-        isSilent: this.props.analytics.getSilenceStatus()
-      },
-      overview: {
-        txSpeechTime: this.props.analytics.getTXSpeechTime(),
-        rxSpeechTime: this.props.analytics.getRXSpeechTime(),
-        crosstalkTime: this.props.analytics.getCrosstalkTime(),
-        silenceTime: this.props.analytics.getSilenceTime()
-      }
+      status: this.props.analytics.getSpeechStatus(),
+      overview: this.props.analytics.getSpeechTime()
     });
   };
 

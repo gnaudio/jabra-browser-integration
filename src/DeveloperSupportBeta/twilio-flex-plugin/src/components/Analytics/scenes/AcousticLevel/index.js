@@ -20,30 +20,20 @@ export class AcousticLevel extends React.Component {
   };
 
   handleNoiseLevel = () => {
-    const noise = this.props.analytics.events
-      .list({ eventType: "txacousticlevel" })
-      .map(({ value, timestamp }) => ({
-        value,
-        time: timestamp
-      }));
+    const noise = this.props.analytics.getBackgroundNoise();
 
     this.setState({ noise });
   };
 
   handleExposureLevel = () => {
-    const exposure = this.props.analytics.events
-      .list({ eventType: "rxacousticlevel" })
-      .map(({ value, timestamp }) => ({
-        value,
-        time: timestamp
-      }));
+    const exposure = this.props.analytics.getAudioExposure();
 
     this.setState({ exposure });
   };
 
   render = () => {
     const { noise, exposure } = this.state;
-    // console.log(noise);
+
     return (
       <Collapse label="Acoustic levels">
         <S.Base>

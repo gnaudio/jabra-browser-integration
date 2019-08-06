@@ -1,4 +1,5 @@
 import EventEmitter from "eventemitter3";
+import _ from "lodash";
 
 import * as Jabra from "../jabra.browser.integration-2.1";
 import {
@@ -20,6 +21,8 @@ export class Analytics extends EventEmitter {
     super();
 
     Jabra.addEventListener("devlog", (devlogEvent: any) => {
+      // opt out if not running
+      if (!this.startTime || this.stopTime) return;
       // Since devlog events can be recieved out of order, add event to the
       // event log, which will maintain an ordered list of events.
       const event = createAnalyticsEvent(devlogEvent);
@@ -31,349 +34,184 @@ export class Analytics extends EventEmitter {
     });
   }
 
+  public start() {
+    this.startTime = Date.now();
+    this.stopTime = undefined;
+  }
+
+  public stop() {
+    this.stopTime = Date.now();
+  }
+
   public clear() {
     this.events.clear();
   }
-  //
-  //
-  //
-  //
-  //
-  // getStatus(excludeCrosstalk: boolean = false) {
-  //   const txspeech = this.events.newest("txspeech");
-  //   const rxspeech = this.events.newest("rxspeech");
 
-  //   const isTXSpeaking = txspeech ? txspeech.value : false;
-  //   const isRXSpeaking = rxspeech ? rxspeech.value : false;
-
-  //   const status = {
-  //     isTXSpeaking,
-  //     isRXSpeaking,
-  //     isCrosstalking: isTXSpeaking && isRXSpeaking,
-  //     isSilent: !isTXSpeaking && !isRXSpeaking
-  //   };
-
-  //   if (excludeCrosstalk && status.isCrosstalking) {
-  //     status.isTXSpeaking = false;
-  //     status.isRXSpeaking = false;
-  //   }
-
-  //   return status;
-  // }
-
-  // /**
-  //  * Get the speech time of either transmitter or reciever
-  //  *
-  //  * @param {number} startTime
-  //  * @param {number} endTime
-  //  * @returns speech time in miliseconds
-  //  * @memberof Analytics
-  //  */
-  // public getSpeechTime(
-  //   eventType: "txspeech" | "rxspeech",
-  //   offsetEvent?: AnalyticsEvent
-  // ) {
-  //   const events = this.events.list({ eventType, offsetEvent });
-
-  //   let time = 0;
-  //   let startEvent: AnalyticsEvent | undefined;
-  //   let calculatedEvents: AnalyticsEvent[] = [];
-
-  //   for (const event of events) {
-  //     // Since this.history is ordered oldest to newest, if we find a true,
-  //     // find matching false
-  //     if (event.value === true) startEvent = event;
-
-  //     // When value is false, it's a match for startTime, calculate time difference
-  //     // and update totalTime, also mark the element as last calculated element
-  //     if (event.value === false && startEvent !== undefined) {
-  //       time += event.timestamp - startEvent.timestamp;
-  //       calculatedEvents.push(startEvent, event);
-  //       startEvent = undefined;
-  //     }
-  //   }
-
-  //   return { time, calculatedEvents };
-  // }
-
-  // getCrosstalkTime() {
-  //   const events = this.events.list({
-  //     eventType: "txspeech rxspeech"
-  //   });
-
-  //   let totalTime = 0;
-  //   let startTime = null;
-  //   let txSpeaking = false;
-  //   let rxSpeaking = false;
-
-  //   for (const event of events) {
-  //     if (event.type === "txspeech") txSpeaking = event.value;
-  //     if (event.type === "rxspeech") rxSpeaking = event.value;
-
-  //     if (startTime === null && txSpeaking === true && rxSpeaking === true) {
-  //       startTime = event.timestamp;
-  //     }
-
-  //     if (
-  //       startTime !== null &&
-  //       (txSpeaking === false || rxSpeaking === false)
-  //     ) {
-  //       totalTime += event.timestamp - startTime;
-  //       startTime = null;
-  //     }
-  //   }
-
-  //   return totalTime;
-  // }
-
-  // getSilenceTime(threshold: number = 1000) {
-  //   const events = this.events.list({ eventType: "txspeech rxspeech" });
-
-  //   let totalTime = 0;
-  //   let startTime = null;
-  //   let txSpeaking = false;
-  //   let rxSpeaking = false;
-
-  //   for (const event of events) {
-  //     if (event.type === "txspeech") txSpeaking = event.value;
-  //     if (event.type === "rxspeech") rxSpeaking = event.value;
-
-  //     if (startTime === null && txSpeaking === false && rxSpeaking === false) {
-  //       startTime = event.timestamp;
-  //     }
-
-  //     if (startTime !== null && (txSpeaking === true || rxSpeaking === true)) {
-  //       const time = event.timestamp - startTime;
-
-  //       if (time > threshold) totalTime += time;
-
-  //       startTime = null;
-  //     }
-  //   }
-
-  //   return totalTime;
-  // }
-
-  // public getAcousticLevel(
-  //   eventType: "txacousticlevel" | "rxacousticlevel",
-  //   limit: number = 15
-  // ) {
-  //   return this.events.list({ eventType, limit });
-  // }
-
-  // public getAvgAcousticLevel(
-  //   eventType: "txacousticlevel" | "rxacousticlevel",
-  //   interval?: { start: number; end: number }
-  // ) {
-  //   // get events within time interval
-  //   const eventsWithinInterval = this.events.list({ eventType, interval });
-  //   // get first event before time interval
-  //   const firstEventBeforeInterval = this.events.list({
-  //     eventType,
-  //     limitEvent: eventsWithinInterval[0],
-  //     limit: -1
-  //   });
-  //   // combine the two arrays of events
-  //   const events = [...firstEventBeforeInterval, ...eventsWithinInterval];
-
-  //   // If no events was found, the headset hasn't reported an acoustic level yet
-  //   if (events.length === 0) return 0;
-  //   // If only one event was found, the average is the value of event
-  //   if (events.length === 1) return events[0].value;
-
-  //   let sum = 0;
-  //   let totalWeight = 0;
-
-  //   // Iterate every event and calculate sum and weight
-  //   for (let i = 0; i < events.length - 1; i++) {
-  //     const eventA = events[i];
-  //     const eventB = events[i + 1];
-  //     // weight is the number of miliseconds the acoustic level as active
-  //     const weight = eventB.timestamp - eventA.timestamp;
-
-  //     sum += weight * eventA.value;
-  //     totalWeight += weight;
-  //   }
-
-  //   // return the weighted average
-  //   return Math.round(sum / totalWeight);
-  // }
-  //
-  //
-  //
-  //
-  //
-  getDuration(): number {
-    return (
-      this.getTXSpeechTime() +
-      this.getRXSpeechTime() +
-      this.getCrosstalkTime() +
-      this.getSilenceTime()
-    );
-  }
-
-  getTXSpeechStatus(): boolean {
+  public getSpeechStatus() {
     const txspeech = this.events.newest("txspeech");
-
-    return txspeech ? txspeech.value : false;
-  }
-  getTXSpeechTime(fromTime?: number, toTime?: number): number {
-    const query: {
-      eventType: AnalyticsEventType;
-      interval?: AnalyticsEventLogListFilter["interval"];
-    } = { eventType: "txspeech" };
-
-    if (fromTime && toTime) {
-      query.interval = { start: fromTime, end: toTime };
-    }
-
-    const events = this.events.list(query);
-
-    let time = 0;
-    let startEvent: AnalyticsEvent | undefined;
-
-    for (const event of events) {
-      // Since this.history is ordered oldest to newest, if we find a true,
-      // find matching false
-      if (event.value === true) startEvent = event;
-
-      // When value is false, it's a match for startTime, calculate time difference
-      // and update totalTime, also mark the element as last calculated element
-      if (event.value === false && startEvent !== undefined) {
-        time += event.timestamp - startEvent.timestamp;
-        startEvent = undefined;
-      }
-    }
-
-    return time;
-  }
-  getTXSpeechPercentage(fromTime?: number, toTime?: number): number {
-    return (100 * this.getTXSpeechTime(fromTime, toTime)) / this.getDuration();
-  }
-
-  getRXSpeechStatus(): boolean {
     const rxspeech = this.events.newest("rxspeech");
+    const isTXSpeaking = txspeech ? txspeech.value : false;
+    const isRXSpeaking = rxspeech ? rxspeech.value : false;
+    const isCrosstalking = isTXSpeaking && isRXSpeaking;
+    const isSilent = !isTXSpeaking && !isRXSpeaking;
 
-    return rxspeech ? rxspeech.value : false;
+    return {
+      isSilent,
+      isCrosstalking,
+      isTXSpeaking: isCrosstalking ? false : isTXSpeaking,
+      isRXSpeaking: isCrosstalking ? false : isRXSpeaking
+    };
   }
-  getRXSpeechTime(fromTime?: number, toTime?: number): number {
+
+  public getSpeechTime(fromTime?: number, toTime?: number) {
     const query: {
       eventType: string;
-      interval?: { start: number; end: number };
-    } = { eventType: "rxspeech" };
-
-    if (fromTime && toTime) {
-      query.interval = { start: fromTime, end: toTime };
-    }
-
-    const events = this.events.list(query);
-
-    let time = 0;
-    let startEvent: AnalyticsEvent | undefined;
-
-    for (const event of events) {
-      // Since this.history is ordered oldest to newest, if we find a true,
-      // find matching false
-      if (event.value === true) startEvent = event;
-
-      // When value is false, it's a match for startTime, calculate time difference
-      // and update totalTime, also mark the element as last calculated element
-      if (event.value === false && startEvent !== undefined) {
-        time += event.timestamp - startEvent.timestamp;
-        startEvent = undefined;
-      }
-    }
-
-    return time;
-  }
-  getRXSpeechPercentage(fromTime?: number, toTime?: number): number {
-    return (100 * this.getRXSpeechTime(fromTime, toTime)) / this.getDuration();
-  }
-
-  getCrosstalkStatus(): boolean {
-    return this.getTXSpeechStatus() && this.getRXSpeechStatus();
-  }
-  getCrosstalkTime(fromTime?: number, toTime?: number): number {
-    const query: {
-      eventType: string;
-      interval?: { start: number; end: number };
+      interval?: AnalyticsEventLogListFilter["interval"];
     } = { eventType: "txspeech rxspeech" };
 
     if (fromTime && toTime) {
       query.interval = { start: fromTime, end: toTime };
     }
 
-    const events = this.events.list(query);
+    let events = this.events.list(query);
+    const startTime = fromTime || this.startTime || 0;
+    const endTime = toTime || this.stopTime || Date.now();
 
-    let totalTime = 0;
-    let startTime = null;
-    let txSpeaking = false;
-    let rxSpeaking = false;
+    let txDuration = 0;
+    let txStartEvent: any | undefined;
 
-    for (const event of events) {
-      if (event.type === "txspeech") txSpeaking = event.value;
-      if (event.type === "rxspeech") rxSpeaking = event.value;
+    let rxDuration = 0;
+    let rxStartEvent: any | undefined;
 
-      if (startTime === null && txSpeaking === true && rxSpeaking === true) {
-        startTime = event.timestamp;
-      }
+    let crosstalkDuration = 0;
+    let crosstalkStartEvent: any | undefined;
 
+    if (fromTime && toTime) {
+      const firstTXEventBeforeInterval = this.events.list({
+        eventType: "txspeech",
+        limitEvent: events[0],
+        limit: -1
+      })[0];
+      const firstRXEventBeforeInterval = this.events.list({
+        eventType: "rxspeech",
+        limitEvent: events[0],
+        limit: -1
+      })[0];
+
+      // if tx was speaking before interval, we assume they are still speaking,
+      // and add an event to the event list with the timestamp being the
+      // startTime of the interval
       if (
-        startTime !== null &&
-        (txSpeaking === false || rxSpeaking === false)
+        firstTXEventBeforeInterval &&
+        firstTXEventBeforeInterval.value === true
       ) {
-        totalTime += event.timestamp - startTime;
-        startTime = null;
+        events.unshift(new AnalyticsEvent("txspeech", true, startTime));
+      }
+
+      // if rx was speaking before interval, we assume they are still speaking,
+      // and add an event to the event list with the timestamp being the
+      // startTime of the interval
+      if (
+        firstRXEventBeforeInterval &&
+        firstRXEventBeforeInterval.value === true
+      ) {
+        events.unshift(new AnalyticsEvent("rxspeech", true, startTime));
+      }
+
+      // to ensure correct calculations we pad stopping events, to the end of
+      // the events list
+      events.push(
+        new AnalyticsEvent("txspeech", false, endTime),
+        new AnalyticsEvent("rxspeech", false, endTime)
+      );
+    }
+
+    for (let event of events) {
+      const isTXEvent = event.type === "txspeech";
+      const isRXEvent = event.type === "rxspeech";
+
+      // if tx starts talking, and isn't already talking, mark start event
+      if (isTXEvent && event.value === true && !txStartEvent) {
+        txStartEvent = event;
+      }
+
+      // if rx starts talking, and isn't already talking, mark start event
+      if (isRXEvent && event.value === true && !rxStartEvent) {
+        rxStartEvent = event;
+      }
+
+      // if tx stops talking, and has been talking
+      if (isTXEvent && event.value === false && txStartEvent) {
+        // if has been crosstalking, add to crosstalk duration
+        if (crosstalkStartEvent) {
+          crosstalkDuration += event.timestamp - crosstalkStartEvent.timestamp;
+          crosstalkStartEvent = undefined;
+
+          // mark event as new start event for rx
+          if (rxStartEvent) rxStartEvent = event;
+        }
+        // if hasn't been crosstalking, add to tx duration
+        else {
+          txDuration += event.timestamp - txStartEvent.timestamp;
+        }
+
+        txStartEvent = undefined;
+      }
+
+      // if rx stops talking, and has been talking
+      if (isRXEvent && event.value === false && rxStartEvent) {
+        // if has been crosstalking, add to crosstalk duration
+        if (crosstalkStartEvent) {
+          crosstalkDuration += event.timestamp - crosstalkStartEvent.timestamp;
+          crosstalkStartEvent = undefined;
+          if (txStartEvent) txStartEvent = event;
+        }
+        // if hasn't been crosstalking, add to rx duration
+        else {
+          rxDuration += event.timestamp - rxStartEvent.timestamp;
+        }
+
+        rxStartEvent = undefined;
+      }
+
+      // if both tx and rx is talking,
+      if (txStartEvent && rxStartEvent && !crosstalkStartEvent) {
+        // mark event as the start of crosstalk
+        crosstalkStartEvent = event;
+
+        // if tx started crosstalk, add duration to rx duration
+        if (isTXEvent) {
+          rxDuration += event.timestamp - rxStartEvent.timestamp;
+        }
+
+        // if rx started crosstalk, add duration to tx duration
+        if (isRXEvent) {
+          txDuration += event.timestamp - txStartEvent.timestamp;
+        }
       }
     }
 
-    return totalTime;
-  }
-  getCrosstalkPercentage(fromTime?: number, toTime?: number): number {
-    return (100 * this.getCrosstalkTime(fromTime, toTime)) / this.getDuration();
-  }
+    const totalTime = endTime - startTime;
+    const silenceTime =
+      totalTime - (txDuration + rxDuration + crosstalkDuration);
 
-  getSilenceStatus(): boolean {
-    return !this.getTXSpeechStatus() && !this.getRXSpeechStatus();
-  }
-  getSilenceTime(fromTime?: number, toTime?: number): number {
-    const query: {
-      eventType: string;
-      interval?: { start: number; end: number };
-    } = { eventType: "txspeech rxspeech" };
+    const calculatePercentage = (duration: number) => {
+      const pct = (100 * duration) / totalTime;
+      //@ts-ignore
+      return +(Math.round(pct + "e+2") + "e-2");
+    };
 
-    if (fromTime && toTime) {
-      query.interval = { start: fromTime, end: toTime };
-    }
-
-    const events = this.events.list(query);
-
-    let totalTime = 0;
-    let startTime = null;
-    let txSpeaking = false;
-    let rxSpeaking = false;
-
-    for (const event of events) {
-      if (event.type === "txspeech") txSpeaking = event.value;
-      if (event.type === "rxspeech") rxSpeaking = event.value;
-
-      if (startTime === null && txSpeaking === false && rxSpeaking === false) {
-        startTime = event.timestamp;
-      }
-
-      if (startTime !== null && (txSpeaking === true || rxSpeaking === true)) {
-        const time = event.timestamp - startTime;
-
-        if (time > 1000) totalTime += time;
-
-        startTime = null;
-      }
-    }
-
-    return totalTime;
-  }
-  getSilencePercentage(fromTime?: number, toTime?: number): number {
-    return (100 * this.getSilenceTime(fromTime, toTime)) / this.getDuration();
+    return {
+      totalTime,
+      txSpeechTime: txDuration,
+      txSpeechTimePct: calculatePercentage(txDuration),
+      rxSpeechTime: rxDuration,
+      rxSpeechTimePct: calculatePercentage(rxDuration),
+      crosstalkTime: crosstalkDuration,
+      crosstalkTimePct: calculatePercentage(crosstalkDuration),
+      silenceTime: silenceTime,
+      silenceTimePct: calculatePercentage(silenceTime)
+    };
   }
 
   getMutedStatus(): boolean {
@@ -407,16 +245,16 @@ export class Analytics extends EventEmitter {
   }
 
   getAudioExposure(limit: number = -15): AnalyticsEvent[] {
-    return this.events.list({ limit, eventType: "txacousticlevel" });
+    return this.events.list({ limit, eventType: "rxacousticlevel" });
   }
   getAverageAudioExposure(fromTime?: number, toTime?: number): number {
-    const eventType = "txacousticlevel";
+    const eventType = "rxacousticlevel";
 
     let events: AnalyticsEvent[] = [];
 
     if (fromTime && toTime) {
       const eventsWithinInterval = this.events.list({
-        eventType: "txacousticlevel",
+        eventType,
         interval: { start: fromTime, end: toTime }
       });
       const firstEventBeforeInterval = this.events.list({
@@ -456,16 +294,16 @@ export class Analytics extends EventEmitter {
   }
 
   getBackgroundNoise(limit: number = -15): AnalyticsEvent[] {
-    return this.events.list({ limit, eventType: "rxacousticlevel" });
+    return this.events.list({ limit, eventType: "txacousticlevel" });
   }
   getAverageBackgroundNoise(fromTime?: number, toTime?: number): number {
-    const eventType = "rxacousticlevel";
+    const eventType = "txacousticlevel";
 
     let events: AnalyticsEvent[] = [];
 
     if (fromTime && toTime) {
       const eventsWithinInterval = this.events.list({
-        eventType: "txacousticlevel",
+        eventType,
         interval: { start: fromTime, end: toTime }
       });
       const firstEventBeforeInterval = this.events.list({
