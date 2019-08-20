@@ -1,4 +1,4 @@
-import AnalyticsEvent from "./AnalyticsEvent";
+import { AnalyticsEvent } from "./AnalyticsEvent";
 export declare type AnalyticsEventLogListFilter = {
     eventType?: string;
     limit?: number;
@@ -9,7 +9,7 @@ export declare type AnalyticsEventLogListFilter = {
         end: number;
     };
 };
-declare class AnalyticsEventLog {
+export declare class AnalyticsEventLog {
     private events;
     add(event: AnalyticsEvent): AnalyticsEvent;
     /**
@@ -30,4 +30,3 @@ declare class AnalyticsEventLog {
     list(filter?: AnalyticsEventLogListFilter): AnalyticsEvent[];
     clear(): void;
 }
-export default AnalyticsEventLog;

@@ -1,4 +1,4 @@
-import AnalyticsEvent from "./AnalyticsEvent";
+import { AnalyticsEvent } from "./AnalyticsEvent";
 
 export type AnalyticsEventLogListFilter = {
   eventType?: string;
@@ -8,7 +8,7 @@ export type AnalyticsEventLogListFilter = {
   interval?: { start: number; end: number };
 };
 
-class AnalyticsEventLog {
+export class AnalyticsEventLog {
   // An array of events sorted by the time it was emitted.
   private events: AnalyticsEvent[] = [];
 
@@ -102,5 +102,3 @@ class AnalyticsEventLog {
     this.events = [];
   }
 }
-
-export default AnalyticsEventLog;

@@ -1,13 +1,9 @@
 import EventEmitter from "eventemitter3";
-import _ from "lodash";
 
 import * as Jabra from "../jabra.browser.integration-2.1";
+import { AnalyticsEvent, createAnalyticsEvent } from "./AnalyticsEvent";
 import {
-  AnalyticsEvent,
-  createAnalyticsEvent,
-  AnalyticsEventType
-} from "./AnalyticsEvent";
-import AnalyticsEventLog, {
+  AnalyticsEventLog,
   AnalyticsEventLogListFilter
 } from "./AnalyticsEventLog";
 
