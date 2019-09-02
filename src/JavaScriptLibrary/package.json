@@ -1,17 +1,24 @@
 {
-  "name": "jabra.browser.integration",
-  "description": "Jabra web client browser integration api",
-  "version": "1.0.0",
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "3.1.1"
-  },
+  "private": true,
+  "name": "jabra.browser.integration-3.0",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch"
+    "build": "microbundle --name Jabra --external none && npm run dts-bundle && npm run copy-files",
+    "start": "microbundle watch --name Jabra --external none",
+    "test": "jest",
+    "dts-bundle": "dts-bundle --name jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
+    "copy-files": "copyfiles -u 1 dist/jabra.browser.integration-3.0.js dist/jabra.browser.integration-3.0.umd.js ."
   },
-  "engines": {
-    "node": ">= 8.0.0"
+  "dependencies": {
+    "eventemitter3": "^4.0.0"
   },
-  "license": "MIT"
+  "devDependencies": {
+    "@types/jest": "^24.0.17",
+    "copyfiles": "^2.1.1",
+    "dts-bundle": "^0.7.3",
+    "jest": "^24.8.0",
+    "microbundle": "^0.11.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.5.3"
+  }
 }
