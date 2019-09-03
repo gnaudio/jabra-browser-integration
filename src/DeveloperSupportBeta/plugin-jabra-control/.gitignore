@@ -65,3 +65,5 @@ appConfig.js
 
 # IDEs
 .vscode
+
+!build
