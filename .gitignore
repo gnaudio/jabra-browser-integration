@@ -1,5 +1,1 @@
-build
-.vscode
-private
-node_modules
-.rts*
+package-lock.json
