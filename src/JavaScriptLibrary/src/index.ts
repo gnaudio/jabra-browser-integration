@@ -1,2 +1,2 @@
-export * from "./jabra.browser.integration-2.1";
+export * from "./core";
 export * from "./Analytics";

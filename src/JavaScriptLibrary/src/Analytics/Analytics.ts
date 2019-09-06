@@ -1,20 +1,20 @@
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "../EventEmitter";
 
-import * as Jabra from "../jabra.browser.integration-2.1";
+import * as Jabra from "../core";
 import { AnalyticsEvent, createAnalyticsEvent } from "./AnalyticsEvent";
 import {
   AnalyticsEventLog,
   AnalyticsEventLogListFilter
 } from "./AnalyticsEventLog";
 
-type SpeechStatus = {
+export type SpeechStatus = {
   isSilent: boolean;
   isCrosstalking: boolean;
   isTXSpeaking: boolean;
   isRXSpeaking: boolean;
 };
 
-type SpeechTime = {
+export type SpeechTime = {
   totalTime: number;
   txSpeechTime: number;
   txSpeechTimePct: number;
@@ -277,7 +277,7 @@ export class Analytics extends EventEmitter {
       crosstalkTimePct: calculatePercentage(crosstalkDuration),
       silenceTime: silenceTime,
       silenceTimePct: calculatePercentage(silenceTime)
-    };
+    } as SpeechTime;
   }
 
   /**

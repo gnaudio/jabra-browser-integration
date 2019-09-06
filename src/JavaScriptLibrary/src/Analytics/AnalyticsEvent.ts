@@ -1,4 +1,4 @@
-import * as Jabra from "../jabra.browser.integration-2.1";
+import * as Jabra from "../core";
 
 export type JabraEventType =
   | "Speech_Analysis_TX"

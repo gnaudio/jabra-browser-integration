@@ -24,6 +24,7 @@ describe("createAnalyticsEvent", () => {
       }
     };
 
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("volumeup", true, now)
     );
@@ -36,7 +37,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("volumedown", true, now)
     );
@@ -49,7 +50,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("txspeech", true, now)
     );
@@ -62,7 +63,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("rxspeech", true, now)
     );
@@ -75,7 +76,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("txacousticlevel", 40, now)
     );
@@ -88,7 +89,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("rxacousticlevel", 40, now)
     );
@@ -101,7 +102,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("txacousticpeak", 40, now)
     );
@@ -114,7 +115,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("rxacousticpeak", 40, now)
     );
@@ -127,7 +128,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("armpositionok", true, now)
     );
@@ -140,7 +141,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("badmic", true, now)
     );
@@ -153,7 +154,7 @@ describe("createAnalyticsEvent", () => {
         TimeStampMs: now
       }
     };
-
+    // @ts-ignore
     expect(createAnalyticsEvent(devlogEvent)).toStrictEqual(
       new AnalyticsEvent("mute", true, now)
     );
