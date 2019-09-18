@@ -20,10 +20,11 @@
     "memoize-one": "^5.0.5",
     "react": "16.5.2",
     "react-dom": "16.5.2",
-    "react-redux": "^7.1.0",
+    "react-redux": "^7.1.1",
     "react-scripts": "^3.0.0",
     "react-tooltip": "^3.10.0",
     "redux": "^4.0.4",
+    "redux-thunk": "^2.3.0",
     "styled-components": "^4.3.2"
   },
   "browserslist": {
