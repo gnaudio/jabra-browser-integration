@@ -2,8 +2,8 @@
   "private": true,
   "name": "jabra.browser.integration-3.0",
   "scripts": {
-    "build": "microbundle --name Jabra --external none && npm run dts-bundle && npm run copy-files",
-    "start": "microbundle watch --name Jabra --external none",
+    "build": "microbundle --name jabra --external none && npm run dts-bundle && npm run copy-files",
+    "start": "microbundle watch --name jabra --external none",
     "test": "jest",
     "dts-bundle": "dts-bundle --name jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
     "copy-files": "copyfiles -u 1 dist/jabra.browser.integration-3.0.js dist/jabra.browser.integration-3.0.umd.js ."
