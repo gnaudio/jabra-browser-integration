@@ -1,8 +1,7 @@
 {
   "name": "jabra-browser-integration",
   "version": "3.0.0",
-  "main": "src/JavaScriptLibrary/jabra.browser.integration-3.0.js",
-  "umd:main": "src/JavaScriptLibrary/jabra.browser.integration-3.0.umd.js",
-  "module": "src/JavaScriptLibrary/jabra.browser.integration-3.0.mjs",
+  "main": "src/JavaScriptLibrary/jabra.browser.integration-3.0.es.js",
+  "umd:main": "src/JavaScriptLibrary/jabra.browser.integration-3.0.js",
   "typings": "src/JavaScriptLibrary/jabra.browser.integration-3.0.d.ts"
 }
