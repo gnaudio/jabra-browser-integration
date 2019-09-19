@@ -1,4 +1,4 @@
-/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts" />
+/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts" />
 
 let inputStat = document.getElementById("inputStat");
 let outputStat = document.getElementById("outputStat");
