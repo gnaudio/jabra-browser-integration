@@ -3,9 +3,9 @@ import { EventEmitter } from "../EventEmitter";
 import * as Jabra from "../core";
 import { AnalyticsEvent, createAnalyticsEvent } from "./AnalyticsEvent";
 import {
-  AnalyticsEventLog,
-  AnalyticsEventLogListFilter
-} from "./AnalyticsEventLog";
+  AnalyticsEventList,
+  AnalyticsEventListFilter
+} from "./AnalyticsEventList";
 
 export type SpeechStatus = {
   isSilent: boolean;
@@ -33,7 +33,7 @@ export class Analytics extends EventEmitter {
    * @private
    * @memberof Analytics
    */
-  private events = new AnalyticsEventLog();
+  private events = new AnalyticsEventList();
 
   /**
    * The timestamp of when analytics was started
@@ -132,14 +132,14 @@ export class Analytics extends EventEmitter {
   public getSpeechTime(fromTime?: number, toTime?: number) {
     const query: {
       eventType: string;
-      interval?: AnalyticsEventLogListFilter["interval"];
+      interval?: AnalyticsEventListFilter["interval"];
     } = { eventType: "txspeech rxspeech" };
 
     if (fromTime && toTime) {
       query.interval = { start: fromTime, end: toTime };
     }
 
-    let events = this.events.list(query);
+    let events = this.events.find(query);
     const startTime = fromTime || this.startTime || 0;
     const endTime = toTime || this.stopTime || Date.now();
 
@@ -153,12 +153,12 @@ export class Analytics extends EventEmitter {
     let crosstalkStartEvent: AnalyticsEvent | undefined;
 
     if (fromTime && toTime) {
-      const firstTXEventBeforeInterval = this.events.list({
+      const firstTXEventBeforeInterval = this.events.find({
         eventType: "txspeech",
         limitEvent: events[0],
         limit: -1
       })[0];
-      const firstRXEventBeforeInterval = this.events.list({
+      const firstRXEventBeforeInterval = this.events.find({
         eventType: "rxspeech",
         limitEvent: events[0],
         limit: -1
@@ -298,7 +298,7 @@ export class Analytics extends EventEmitter {
    * @memberof Analytics
    */
   getMutedCount(): number {
-    return this.events.list({ eventType: "mute" }).filter(event => event.value)
+    return this.events.find({ eventType: "mute" }).filter(event => event.value)
       .length;
   }
 
@@ -321,7 +321,7 @@ export class Analytics extends EventEmitter {
    */
   getBoomArmMisalignedCount(): number {
     return this.events
-      .list({ eventType: "boomarm" })
+      .find({ eventType: "boomarm" })
       .filter(event => event.value).length;
   }
 
@@ -333,7 +333,7 @@ export class Analytics extends EventEmitter {
    */
   getVolumeUpCount(): number {
     return this.events
-      .list({ eventType: "volumeup" })
+      .find({ eventType: "volumeup" })
       .filter(event => event.value).length;
   }
 
@@ -345,7 +345,7 @@ export class Analytics extends EventEmitter {
    */
   getVolumeDownCount(): number {
     return this.events
-      .list({ eventType: "volumedown" })
+      .find({ eventType: "volumedown" })
       .filter(event => event.value).length;
   }
 
@@ -356,7 +356,7 @@ export class Analytics extends EventEmitter {
    * @memberof Analytics
    */
   getAudioExposure(limit: number = -15): AnalyticsEvent[] {
-    return this.events.list({ limit, eventType: "rxacousticlevel" });
+    return this.events.find({ limit, eventType: "rxacousticlevel" });
   }
 
   /**
@@ -376,7 +376,7 @@ export class Analytics extends EventEmitter {
    * @memberof Analytics
    */
   getBackgroundNoise(limit: number = -15): AnalyticsEvent[] {
-    return this.events.list({ limit, eventType: "txacousticlevel" });
+    return this.events.find({ limit, eventType: "txacousticlevel" });
   }
 
   /**
@@ -404,11 +404,11 @@ export class Analytics extends EventEmitter {
     let events: AnalyticsEvent[] = [];
 
     if (fromTime && toTime) {
-      const eventsWithinInterval = this.events.list({
+      const eventsWithinInterval = this.events.find({
         eventType,
         interval: { start: fromTime, end: toTime }
       });
-      const firstEventBeforeInterval = this.events.list({
+      const firstEventBeforeInterval = this.events.find({
         eventType,
         limitEvent: eventsWithinInterval[0],
         limit: -1
@@ -416,7 +416,7 @@ export class Analytics extends EventEmitter {
 
       events = [...firstEventBeforeInterval, ...eventsWithinInterval];
     } else {
-      events = this.events.list({
+      events = this.events.find({
         eventType
       });
     }

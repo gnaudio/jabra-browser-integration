@@ -55,9 +55,29 @@ const jabraEventTypes: {
 };
 
 export class AnalyticsEvent {
-  public type: string;
-  public value: any;
-  public timestamp: number;
+  /**
+   * The event type of the analytics event
+   *
+   * @type {string}
+   * @memberof AnalyticsEvent
+   */
+  public readonly type: string;
+
+  /**
+   * The value of the analytics event
+   *
+   * @type {*}
+   * @memberof AnalyticsEvent
+   */
+  public readonly value: any;
+
+  /**
+   * The timestamp of the analytics event
+   *
+   * @type {number}
+   * @memberof AnalyticsEvent
+   */
+  public readonly timestamp: number;
 
   constructor(type: string, value: any, timestamp?: number) {
     this.type = type;

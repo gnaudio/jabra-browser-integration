@@ -1,11 +1,11 @@
-import { AnalyticsEventLog } from "./AnalyticsEventLog";
+import { AnalyticsEventList } from "./AnalyticsEventList";
 import { AnalyticsEvent } from "./AnalyticsEvent";
 
 const now = Date.now();
 
-describe("AnalyticsEventLog", () => {
+describe("AnalyticsEventList", () => {
   it("adds event to eventlog", () => {
-    const eventLog = new AnalyticsEventLog();
+    const eventLog = new AnalyticsEventList();
 
     const event = new AnalyticsEvent("txspeech", true, now);
     eventLog.add(event);
@@ -15,7 +15,7 @@ describe("AnalyticsEventLog", () => {
   });
 
   it("keeps eventlog in order, when added out of order", () => {
-    const eventLog = new AnalyticsEventLog();
+    const eventLog = new AnalyticsEventList();
 
     const event1 = new AnalyticsEvent("txspeech", true, now);
     const event2 = new AnalyticsEvent("txspeech", true, now + 5000);

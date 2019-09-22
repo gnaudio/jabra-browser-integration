@@ -1,6 +1,11 @@
 export type EventEmitterListener<V> = (value: V) => void;
 
 export class EventEmitter<T = string, V = any> {
+  /**
+   * A map of event listeners
+   *
+   * @memberof EventEmitter
+   */
   public listeners = new Map<T, EventEmitterListener<V>[]>();
 
   /**

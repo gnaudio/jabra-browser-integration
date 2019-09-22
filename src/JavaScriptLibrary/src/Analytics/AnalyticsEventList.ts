@@ -1,6 +1,6 @@
 import { AnalyticsEvent } from "./AnalyticsEvent";
 
-export type AnalyticsEventLogListFilter = {
+export type AnalyticsEventListFilter = {
   eventType?: string;
   limit?: number;
   limitEvent?: AnalyticsEvent;
@@ -8,12 +8,20 @@ export type AnalyticsEventLogListFilter = {
   interval?: { start: number; end: number };
 };
 
-export class AnalyticsEventLog {
+export class AnalyticsEventList {
   // An array of events sorted by the time it was emitted.
   private events: AnalyticsEvent[] = [];
 
-  // Asuming this.events is sorted, add an event while maintaining order.
+  /**
+   * Add an AnalyticsEvent to the event list, the list will automatically keep
+   * the list sorted by the time it was emitted
+   *
+   * @param {AnalyticsEvent} event
+   * @returns {AnalyticsEvent}
+   * @memberof AnalyticsEventList
+   */
   public add(event: AnalyticsEvent): AnalyticsEvent {
+    // Asuming this.events is sorted, add an event while maintaining order.
     // Find the index of the first event older than current event.
     let index = this.events.findIndex(e => {
       return event.timestamp < e.timestamp;
@@ -39,7 +47,7 @@ export class AnalyticsEventLog {
    *
    * @param {string} [eventType]
    * @returns newest event
-   * @memberof AnalyticsEventLog
+   * @memberof AnalyticsEventList
    */
   public newest(eventType?: string) {
     // If eventType has been specified return last event with that type
@@ -58,13 +66,18 @@ export class AnalyticsEventLog {
   }
 
   /**
-   *
+   * Find a subset of events based on an object of filter parameters.
    *
    * @param {AnalyticsEventLogListFilter} [filter]
+   * @param {string} filter.eventType A space separated list of event types to filter on
+   * @param {number} filter.limit Limit the result to a specified number of events
+   * @param {AnalyticsEvent} filter.limitEvent Limit the result to a specifc event, and get all events up to the specified event
+   * @param {AnalyticsEvent} filter.offsetEvent Offset the result to a specifc event, and get all events after the specified event
+   * @param {object} filter.interval Filter events by an start and end time, and get all events within the specified interval
    * @returns matching list of events
-   * @memberof AnalyticsEventLog
+   * @memberof AnalyticsEventList
    */
-  public list(filter?: AnalyticsEventLogListFilter) {
+  public find(filter?: AnalyticsEventListFilter) {
     let events = this.events;
 
     if (filter) {
