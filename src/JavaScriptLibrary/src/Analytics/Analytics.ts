@@ -7,6 +7,10 @@ import {
   AnalyticsEventListFilter
 } from "./AnalyticsEventList";
 
+/**
+ * The speech status type represents whether there is silence (neither
+ * transmitter or receiver)
+ */
 export type SpeechStatus = {
   isSilent: boolean;
   isCrosstalking: boolean;

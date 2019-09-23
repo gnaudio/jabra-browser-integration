@@ -1148,7 +1148,7 @@ function fillInMatchingMediaInfo(deviceInfo, mediaDevices) {
     function editDistance(s1, s2) {
       s1 = s1.toLowerCase();
       s2 = s2.toLowerCase();
-      var costs = [];
+      var costs = new Array();
 
       for (var i = 0; i <= s1.length; i++) {
         var lastValue = i;
@@ -1532,11 +1532,29 @@ var jabraEventTypes = {
     valueType: "boolean"
   }
 };
+/**
+ * The AnalyticsEvent class represents events that occur, when the Jabra
+ * headset reports analytics data.
+ *
+ * @export
+ * @class AnalyticsEvent
+ */
+
 var AnalyticsEvent = function AnalyticsEvent(type, value, timestamp) {
   this.type = type;
   this.value = value;
   this.timestamp = timestamp || Date.now();
 };
+/**
+ * The createAnalyticsEvent function converts a jabra.DevLogEvent, to an
+ * AnalyticsEvent. The event type and data value is parsed and sanitised before
+ * the event is created.
+ *
+ * @export
+ * @param {Jabra.DevLogEvent} event
+ * @returns {(AnalyticsEvent | null)}
+ */
+
 function createAnalyticsEvent(event) {
   if ("ID" in event.data) {
     switch (event.data.ID) {
@@ -1574,6 +1592,16 @@ function createAnalyticsEvent(event) {
   return null;
 }
 
+/**
+ * The AnalyticsEventList class, is used to maintain and time ordered list of
+ * events. Since there is no guarentee that analytics events will be received in
+ * order, the add method of this class ensures that an event is inserted into
+ * the list sorted. Besides that, it provides a convenient way to query events
+ * in the list, using the methods newest or find.
+ *
+ * @export
+ * @class AnalyticsEventList
+ */
 var AnalyticsEventList =
 /*#__PURE__*/
 function () {
@@ -1688,13 +1716,31 @@ function () {
   return AnalyticsEventList;
 }();
 
+/**
+ * The Analytics will collect AnalyticsEvents and allow you to query data such
+ * as speech status, speech time, and much more. To use the class, initialize an
+ * instance of the class and use the start method to start collecting. The class
+ * is an event emitter, so you can use addEventListener to listen to specific
+ * AnalyticEvents. If you have multiple jabra devices connected and only want to
+ * collect events from one of the devices supply a deviceID in the class
+ * constructor.
+ *
+ * @export
+ * @class Analytics
+ * @extends {EventEmitter}
+ */
+
 var Analytics =
 /*#__PURE__*/
 function (_EventEmitter) {
   _inheritsLoose(Analytics, _EventEmitter);
 
-  function Analytics() {
+  function Analytics(deviceID) {
     var _this;
+
+    if (deviceID === void 0) {
+      deviceID = null;
+    }
 
     _this = _EventEmitter.call(this) || this;
     /**
@@ -1707,7 +1753,10 @@ function (_EventEmitter) {
     _this.events = new AnalyticsEventList();
     addEventListener("devlog", function (devlogEvent) {
       // opt out if not running
-      if (!_this.startTime || _this.stopTime) return; // Since devlog events can be recieved out of order, add event to the
+      if (!_this.startTime || _this.stopTime) return; // If an deviceID is defined, and it doesn't match the one in the
+      // devlogEvent, opt out
+
+      if (deviceID && deviceID !== devlogEvent.data.deviceID) return; // Since devlog events can be recieved out of order, add event to the
       // event log, which will maintain an ordered list of events.
 
       var event = createAnalyticsEvent(devlogEvent);
