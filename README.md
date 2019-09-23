@@ -164,7 +164,7 @@ Logging for all native components (chromehost and platform sdk library) are writ
 
 ## Upgrading API from 2.0 to 3.0
 
-The API v3.0 is fully backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version includes a new build procedure, and besides the regular build, that can be included directly in the HTML (UMD), outputs an ES module build [jabra.browser.integration-3.0.esm.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.esm.js). The API is therefore now also compatible with NPM and can be installed using `npm install jabra-browser-integration`.
+The API v3.0 is fully backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version includes a new build procedure, and besides the regular build, that can be included directly in the HTML (UMD) and outputs an ES module build [jabra.browser.integration-3.0.esm.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.esm.js) for NPM use. Therefore the new version can be included diretly in the HTML or imported using a browser bundler.
 
 ### Analytics
 
