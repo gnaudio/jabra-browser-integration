@@ -164,7 +164,7 @@ Logging for all native components (chromehost and platform sdk library) are writ
 
 ## Upgrading API from 2.0 to 3.0
 
-The API v3.0 is fully backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version includes a new build procedure, and besides the regular build, that can be included directly in the HTML (UMD), outputs an ES module build [jabra.browser.integration-3.0.esm.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.esm.js), and an CJS build [jabra.browser.integration-3.0.cjs.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.cjs.js). The API is therefore now also compatible with NPM and can be installed using `npm install jabra-browser-integration`.
+The API v3.0 is fully backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version includes a new build procedure, and besides the regular build, that can be included directly in the HTML (UMD), outputs an ES module build [jabra.browser.integration-3.0.esm.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.esm.js), and a CJS build [jabra.browser.integration-3.0.cjs.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.cjs.js). The API is therefore now also compatible with NPM and can be installed using `npm install jabra-browser-integration`.
 This new version also includes an `Analytics` module (for supported headsets), the following is a simple use example:
 
 ```
@@ -172,7 +172,7 @@ This new version also includes an `Analytics` module (for supported headsets), t
 // If using UMD, it will be available globally under jabra.Analytics
 import { Analytics } from "jabra-browser-integration";
 
-// Create an instance of the Analytics class
+// Create an instance of the Analytics class, if you only want analytics for a specific device, supply a deviceID in the constructor.
 const analytics = new Analytics();
 
 // The analytics instance exposes a bunch of methods allowing you to pull data
