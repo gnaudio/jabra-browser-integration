@@ -26,6 +26,19 @@ export type SpeechTime = {
   silenceTimePct: number;
 };
 
+/**
+ * The Analytics will collect AnalyticsEvents and allow you to query data such
+ * as speech status, speech time, and much more. To use the class, initialize an
+ * instance of the class and use the start method to start collecting. The class
+ * is an event emitter, so you can use addEventListener to listen to specific
+ * AnalyticEvents. If you have multiple jabra deviced connected and only want to
+ * collect events from one of the devices supply a deviceID in the class
+ * constructor.
+ *
+ * @export
+ * @class Analytics
+ * @extends {EventEmitter}
+ */
 export class Analytics extends EventEmitter {
   /**
    * The event log containing all the events happening when analytics start
@@ -51,12 +64,17 @@ export class Analytics extends EventEmitter {
    */
   public stopTime: number | undefined;
 
-  constructor() {
+  constructor(deviceID: number | null = null) {
     super();
 
     Jabra.addEventListener("devlog", (devlogEvent: Jabra.DevLogEvent) => {
       // opt out if not running
       if (!this.startTime || this.stopTime) return;
+
+      // If an deviceID is defined, and it doesn't match the one in the
+      // devlogEvent, opt out
+      if (deviceID && deviceID !== devlogEvent.data.deviceID) return;
+
       // Since devlog events can be recieved out of order, add event to the
       // event log, which will maintain an ordered list of events.
       const event = createAnalyticsEvent(devlogEvent);

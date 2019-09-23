@@ -54,6 +54,13 @@ const jabraEventTypes: {
   "Mute State": { eventType: "mute", valueType: "boolean" }
 };
 
+/**
+ * The AnalyticsEvent class represents events that occur, when the Jabra
+ * headset reports analytics data.
+ *
+ * @export
+ * @class AnalyticsEvent
+ */
 export class AnalyticsEvent {
   /**
    * The event type of the analytics event
@@ -72,7 +79,7 @@ export class AnalyticsEvent {
   public readonly value: any;
 
   /**
-   * The timestamp of the analytics event
+   * The epoch time of the analytics event occured
    *
    * @type {number}
    * @memberof AnalyticsEvent
@@ -86,6 +93,15 @@ export class AnalyticsEvent {
   }
 }
 
+/**
+ * The createAnalyticsEvent function converts a jabra.DevLogEvent, to an
+ * AnalyticsEvent. The event type and data value is parsed and sanitised before
+ * the event is created.
+ *
+ * @export
+ * @param {Jabra.DevLogEvent} event
+ * @returns {(AnalyticsEvent | null)}
+ */
 export function createAnalyticsEvent(
   event: Jabra.DevLogEvent
 ): AnalyticsEvent | null {

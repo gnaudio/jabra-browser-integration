@@ -8,6 +8,16 @@ export type AnalyticsEventListFilter = {
   interval?: { start: number; end: number };
 };
 
+/**
+ * The AnalyticsEventList class, is used to maintain and time ordered list of
+ * events. Since there is no guarentee that analytics events will be received in
+ * order, the add method of this class ensures that an event is inserted into
+ * the list sorted. Besides that, it provides a convenient way to query events
+ * in the list, using the methods newest or find.
+ *
+ * @export
+ * @class AnalyticsEventList
+ */
 export class AnalyticsEventList {
   // An array of events sorted by the time it was emitted.
   private events: AnalyticsEvent[] = [];
