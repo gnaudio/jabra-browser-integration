@@ -31,7 +31,7 @@ export type SpeechTime = {
  * as speech status, speech time, and much more. To use the class, initialize an
  * instance of the class and use the start method to start collecting. The class
  * is an event emitter, so you can use addEventListener to listen to specific
- * AnalyticEvents. If you have multiple jabra deviced connected and only want to
+ * AnalyticEvents. If you have multiple jabra devices connected and only want to
  * collect events from one of the devices supply a deviceID in the class
  * constructor.
  *
