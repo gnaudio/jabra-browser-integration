@@ -172,7 +172,8 @@ This new version also includes an `Analytics` module (for supported headsets), t
 // If using UMD, it will be available globally under jabra.Analytics
 import { Analytics } from "jabra-browser-integration";
 
-// Create an instance of the Analytics class, if you only want analytics for a specific device, supply a deviceID in the constructor.
+// Create an instance of the Analytics class, if you only want analytics
+// for a specific device, supply a deviceID in the constructor.
 const analytics = new Analytics();
 
 // The analytics instance exposes a bunch of methods allowing you to pull data
