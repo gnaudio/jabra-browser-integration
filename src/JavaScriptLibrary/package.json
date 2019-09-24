@@ -3,16 +3,17 @@
   "version": "3.0.0",
   "main": "jabra.browser.integration-3.0.cjs.js",
   "main:umd": "jabra.browser.integration-3.0.js",
-  "module": "jabra-browser-integration-3.0.esm.js",
+  "module": "jabra.browser.integration-3.0.esm.js",
   "typings": "jabra-browser-integration-3.0.d.ts",
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
     "test": "tsdx test",
     "dts-bundle": "dts-bundle --name jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
-    "cp": "npm run cp:esm && npm run cp:umd",
+    "cp": "npm run cp:esm && npm run cp:umd && npm run cp:cjs",
     "cp:esm": "ncp dist/jabra.esm.js jabra.browser.integration-3.0.esm.js",
-    "cp:umd": "ncp dist/jabra.umd.development.js jabra.browser.integration-3.0.js"
+    "cp:umd": "ncp dist/jabra.umd.development.js jabra.browser.integration-3.0.js",
+    "cp:cjs": "ncp dist/jabra.cjs.development.js jabra.browser.integration-3.0.cjs.js"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
