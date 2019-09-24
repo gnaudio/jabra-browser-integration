@@ -5,9 +5,6 @@
   "main:umd": "jabra.browser.integration-3.0.js",
   "module": "jabra-browser-integration-3.0.esm.js",
   "typings": "jabra-browser-integration-3.0.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
