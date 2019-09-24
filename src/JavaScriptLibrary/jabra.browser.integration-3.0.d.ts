@@ -9,7 +9,7 @@ declare module 'jabra-browser-integration/core' {
     /**
         * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
         */
-    export const apiVersion = "2.1.0.beta1";
+    export const apiVersion = "3.0.0";
     /**
         * Contains information about installed components.
         */
@@ -493,6 +493,10 @@ declare module 'jabra-browser-integration/Analytics' {
 declare module 'jabra-browser-integration/Analytics/Analytics' {
     import { EventEmitter } from "jabra-browser-integration/EventEmitter";
     import { AnalyticsEvent } from "jabra-browser-integration/Analytics/AnalyticsEvent";
+    /**
+        * The speech status type represents whether there is silence (neither
+        * transmitter or receiver)
+        */
     export type SpeechStatus = {
             isSilent: boolean;
             isCrosstalking: boolean;
@@ -510,6 +514,19 @@ declare module 'jabra-browser-integration/Analytics/Analytics' {
             silenceTime: number;
             silenceTimePct: number;
     };
+    /**
+        * The Analytics will collect AnalyticsEvents and allow you to query data such
+        * as speech status, speech time, and much more. To use the class, initialize an
+        * instance of the class and use the start method to start collecting. The class
+        * is an event emitter, so you can use addEventListener to listen to specific
+        * AnalyticEvents. If you have multiple jabra devices connected and only want to
+        * collect events from one of the devices supply a deviceID in the class
+        * constructor.
+        *
+        * @export
+        * @class Analytics
+        * @extends {EventEmitter}
+        */
     export class Analytics extends EventEmitter {
             /**
                 * The timestamp of when analytics was started
@@ -525,7 +542,7 @@ declare module 'jabra-browser-integration/Analytics/Analytics' {
                 * @memberof Analytics
                 */
             stopTime: number | undefined;
-            constructor();
+            constructor(deviceID?: number | null);
             /**
                 * Starts the analytics module
                 *
@@ -643,18 +660,57 @@ declare module 'jabra-browser-integration/Analytics/AnalyticsEvent' {
     import * as Jabra from "jabra-browser-integration/core";
     export type JabraEventType = "Speech_Analysis_TX" | "Speech_Analysis_RX" | "TX Acoustic Logging Level" | "RX Acoustic Logging Level" | "TX Acoustic Logging Peak" | "RX Acoustic Logging Peak" | "Boom Position Guidance OK" | "Bad_Mic_detect Flag" | "Mute State";
     export type AnalyticsEventType = "txspeech" | "rxspeech" | "txacousticlevel" | "rxacousticlevel" | "txacousticpeak" | "rxacousticpeak" | "armpositionok" | "badmic" | "mute";
+    /**
+        * The AnalyticsEvent class represents events that occur, when the Jabra
+        * headset reports analytics data.
+        *
+        * @export
+        * @class AnalyticsEvent
+        */
     export class AnalyticsEvent {
-        type: string;
-        value: any;
-        timestamp: number;
-        constructor(type: string, value: any, timestamp?: number);
+            /**
+                * The event type of the analytics event
+                *
+                * @type {string}
+                * @memberof AnalyticsEvent
+                */
+            readonly type: string;
+            /**
+                * The value of the analytics event
+                *
+                * @type {*}
+                * @memberof AnalyticsEvent
+                */
+            readonly value: any;
+            /**
+                * The epoch time of the analytics event occured
+                *
+                * @type {number}
+                * @memberof AnalyticsEvent
+                */
+            readonly timestamp: number;
+            constructor(type: string, value: any, timestamp?: number);
     }
+    /**
+        * The createAnalyticsEvent function converts a jabra.DevLogEvent, to an
+        * AnalyticsEvent. The event type and data value is parsed and sanitised before
+        * the event is created.
+        *
+        * @export
+        * @param {Jabra.DevLogEvent} event
+        * @returns {(AnalyticsEvent | null)}
+        */
     export function createAnalyticsEvent(event: Jabra.DevLogEvent): AnalyticsEvent | null;
 }
 
 declare module 'jabra-browser-integration/EventEmitter/EventEmitter' {
     export type EventEmitterListener<V> = (value: V) => void;
     export class EventEmitter<T = string, V = any> {
+            /**
+                * A map of event listeners
+                *
+                * @memberof EventEmitter
+                */
             listeners: Map<T, EventEmitterListener<V>[]>;
             /**
                 * Add a function to be called when a specific type of event is emitted.
