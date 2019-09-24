@@ -1,11 +1,11 @@
 import { AnalyticsEvent } from "./AnalyticsEvent";
 
 export type AnalyticsEventListFilter = {
-  eventType?: string;
-  limit?: number;
-  limitEvent?: AnalyticsEvent;
-  offsetEvent?: AnalyticsEvent;
-  interval?: { start: number; end: number };
+  eventType?: string; // A space separated list of event types to filter on
+  limit?: number; // Limit the result to a specified number of events
+  limitEvent?: AnalyticsEvent; // Limit the result to a specifc event, and get all events up to the specified event
+  offsetEvent?: AnalyticsEvent; // Offset the result to a specifc event, and get all events after the specified event
+  interval?: { start: number; end: number }; // Filter events by an start and end time, and get all events within the specified interval
 };
 
 /**

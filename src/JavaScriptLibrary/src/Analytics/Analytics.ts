@@ -7,27 +7,23 @@ import {
   AnalyticsEventListFilter
 } from "./AnalyticsEventList";
 
-/**
- * The speech status type represents whether there is silence (neither
- * transmitter or receiver)
- */
 export type SpeechStatus = {
-  isSilent: boolean;
-  isCrosstalking: boolean;
-  isTXSpeaking: boolean;
-  isRXSpeaking: boolean;
+  isSilent: boolean; // true if both parties are silent at the same time
+  isCrosstalking: boolean; // true if both parties are speaking a the same time
+  isTXSpeaking: boolean; // true if transmitter is speaking and recipient is not
+  isRXSpeaking: boolean; // true if recipient is speaking and transmitter is not
 };
 
 export type SpeechTime = {
-  totalTime: number;
-  txSpeechTime: number;
-  txSpeechTimePct: number;
-  rxSpeechTime: number;
-  rxSpeechTimePct: number;
-  crosstalkTime: number;
-  crosstalkTimePct: number;
-  silenceTime: number;
-  silenceTimePct: number;
+  totalTime: number; // the time in miliseconds the conversation has been going
+  txSpeechTime: number; // how many miliseconds have the transmitter spoken
+  txSpeechTimePct: number; // how many percent of the conversation has the transmitter spoken
+  rxSpeechTime: number; // how many miliseconds have the recipient spoken
+  rxSpeechTimePct: number; // how many percent of the conversation has the recipient spoken
+  crosstalkTime: number; // how many miliseconds have both parties spoken
+  crosstalkTimePct: number; // how many percent of the conversation has both parties spoken
+  silenceTime: number; // how many miliseconds have both parties been silent at the same time
+  silenceTimePct: number; // how many percent of the conversation has both parties been silent at the same time
 };
 
 /**
@@ -68,6 +64,13 @@ export class Analytics extends EventEmitter {
    */
   public stopTime: number | undefined;
 
+  /**
+   * Creates an instance of Analytics. Supply a deviceID to only collect
+   * analytics from that specific device.
+   *
+   * @param {(number | null)} [deviceID=null]
+   * @memberof Analytics
+   */
   constructor(deviceID: number | null = null) {
     super();
 

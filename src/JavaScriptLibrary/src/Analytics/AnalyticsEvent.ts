@@ -1,5 +1,6 @@
 import * as Jabra from "../core";
 
+// A union containing all DevLogEvent data values that we will convert to AnalyticsEvents
 export type JabraEventType =
   | "Speech_Analysis_TX"
   | "Speech_Analysis_RX"
@@ -11,6 +12,7 @@ export type JabraEventType =
   | "Bad_Mic_detect Flag"
   | "Mute State";
 
+// A union containing all the AnalyticEvent types
 export type AnalyticsEventType =
   | "txspeech"
   | "rxspeech"
@@ -22,14 +24,25 @@ export type AnalyticsEventType =
   | "badmic"
   | "mute";
 
+// This object defines the remapping between a DevLogEvent and an
+// AnalyticsEvent. The object key is the key that must be present in the
+// DevLogEvent, the key.eventType is the new event type given in AnalyticsEvent,
+// and key.valueType is the expected primitive type of the value, so it can be
+// parsed correctly
 const jabraEventTypes: {
   [T in JabraEventType]: {
     eventType: AnalyticsEventType;
     valueType: "boolean" | "number";
   };
 } = {
-  Speech_Analysis_TX: { eventType: "txspeech", valueType: "boolean" },
-  Speech_Analysis_RX: { eventType: "rxspeech", valueType: "boolean" },
+  Speech_Analysis_TX: {
+    eventType: "txspeech",
+    valueType: "boolean"
+  },
+  Speech_Analysis_RX: {
+    eventType: "rxspeech",
+    valueType: "boolean"
+  },
   "TX Acoustic Logging Level": {
     eventType: "txacousticlevel",
     valueType: "number"
@@ -50,8 +63,14 @@ const jabraEventTypes: {
     eventType: "armpositionok",
     valueType: "boolean"
   },
-  "Bad_Mic_detect Flag": { eventType: "badmic", valueType: "boolean" },
-  "Mute State": { eventType: "mute", valueType: "boolean" }
+  "Bad_Mic_detect Flag": {
+    eventType: "badmic",
+    valueType: "boolean"
+  },
+  "Mute State": {
+    eventType: "mute",
+    valueType: "boolean"
+  }
 };
 
 /**
