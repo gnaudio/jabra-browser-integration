@@ -124,7 +124,7 @@
   /**
    * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
    */
-  var apiVersion = "3.0.0";
+  var apiVersion = "3.0.0-beta.3";
   /**
    * Is the current version a beta ?
    */
@@ -1466,6 +1466,11 @@
     return EventEmitter;
   }();
 
+  // This object defines the remapping between a DevLogEvent and an
+  // AnalyticsEvent. The object key is the key that must be present in the
+  // DevLogEvent, the key.eventType is the new event type given in AnalyticsEvent,
+  // and key.valueType is the expected primitive type of the value, so it can be
+  // parsed correctly
   var jabraEventTypes = {
     Speech_Analysis_TX: {
       eventType: "txspeech",
@@ -1707,6 +1712,13 @@
   function (_EventEmitter) {
     _inheritsLoose(Analytics, _EventEmitter);
 
+    /**
+     * Creates an instance of Analytics. Supply a deviceID to only collect
+     * analytics from that specific device.
+     *
+     * @param {(number | null)} [deviceID=null]
+     * @memberof Analytics
+     */
     function Analytics(deviceID) {
       var _this;
 

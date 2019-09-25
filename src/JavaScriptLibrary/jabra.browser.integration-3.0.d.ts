@@ -9,7 +9,7 @@ declare module 'jabra-browser-integration/core' {
     /**
         * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
         */
-    export const apiVersion = "3.0.0";
+    export const apiVersion = "3.0.0-beta.3";
     /**
         * Contains information about installed components.
         */
@@ -493,10 +493,6 @@ declare module 'jabra-browser-integration/Analytics' {
 declare module 'jabra-browser-integration/Analytics/Analytics' {
     import { EventEmitter } from "jabra-browser-integration/EventEmitter";
     import { AnalyticsEvent } from "jabra-browser-integration/Analytics/AnalyticsEvent";
-    /**
-        * The speech status type represents whether there is silence (neither
-        * transmitter or receiver)
-        */
     export type SpeechStatus = {
             isSilent: boolean;
             isCrosstalking: boolean;
@@ -542,6 +538,13 @@ declare module 'jabra-browser-integration/Analytics/Analytics' {
                 * @memberof Analytics
                 */
             stopTime: number | undefined;
+            /**
+                * Creates an instance of Analytics. Supply a deviceID to only collect
+                * analytics from that specific device.
+                *
+                * @param {(number | null)} [deviceID=null]
+                * @memberof Analytics
+                */
             constructor(deviceID?: number | null);
             /**
                 * Starts the analytics module
