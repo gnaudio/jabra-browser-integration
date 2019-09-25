@@ -13,19 +13,19 @@
   },
   "devDependencies": {
     "@craco/craco": "^5.2.4",
-    "@twilio/flex-ui": "^1.11.2",
+    "@twilio/flex-ui": "^1.13.0",
     "craco-config-flex-plugin": "^2.9.1",
     "react-scripts": "^3.0.0"
   },
   "dependencies": {
+    "@gnaudio/jabra-browser-integration": "^3.0.0-beta.4",
+    "@gnaudio/twilio-flex-call-control-plugin": "^1.0.0-beta.1",
     "elasticsearch-browser": "^16.3.0",
     "flex-plugin": "^2.9.1",
-    "jabra-browser-integration": "git+https://github.com/gnaudio/jabra-browser-integration.git#jabra-browser-sdk",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-iframe": "^1.8.0",
     "react-redux": "^7.1.0",
-    "react-tooltip": "^3.10.0",
     "recharts": "^1.6.2",
     "styled-components": "^4.3.2"
   },
