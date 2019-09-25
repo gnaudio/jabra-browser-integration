@@ -9,7 +9,7 @@ declare module 'jabra-browser-integration/core' {
     /**
         * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
         */
-    export const apiVersion = "3.0.0-beta.3";
+    export const apiVersion = "3.0.0-beta.4";
     /**
         * Contains information about installed components.
         */

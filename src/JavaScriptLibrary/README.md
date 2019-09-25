@@ -13,6 +13,8 @@ it is possible to create a softphone that only requires small software
 components installed locally on the computer, while the business logic 
 is implemented in JavaScript.
 
+**Warning: This software is in BETA. The software can be considered unstable, possibly untested and might be updated at any time. Use at your own risk. If you want to use something stable, please await completion of our development and Q/A process.**
+
 # Documentation
 
 For comprehensive documentation (including important additional software requirements, API usage, changelog, license) and API examples etc. please refer to [our github site](https://github.com/gnaudio/jabra-browser-integration)
