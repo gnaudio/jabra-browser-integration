@@ -38,26 +38,29 @@ The solution consists of a Javascript API that webpages can consume, a chrome we
 
 ## Javascript/typescript API
 
-Developers must use the versioned JavaScript library file with the format `jabra.browser.integration.<majorVersion>.<minorVersion>.js` and the associated
-[typescript \*.d.ts](https://www.typescriptlang.org/) definition file which
-documents the API in detail, including exactly what each API method expect for parameters and what each method returns.
+Developers must use the versioned JavaScript library file with the format `jabra.browser.integration.<majorVersion>.<minorVersion>.js` and the associated [typescript \*.d.ts](https://www.typescriptlang.org/) definition file which
+documents the API in detail, including exactly what each API method expect for parameters and what each method returns. Alternatively,
+the [@gnaudio/jabra-browser-integration](https://www.npmjs.com/package/@gnaudio/jabra-browser-integration) npm
+package can be used together with a browser bundler.
 
 These files adhere to semantic versioning
 so increases in majorVersion between releases indicate breaking changes so developers using the software
 may need to change their code when updating. Increases in minorVersion indicates that all changes are backwards compatible.
 
-> _Tip: Use the supplied typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools._
+> _Tip: Javascript developers can use the supplied typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools._
 
 Latest API versions are:
 
-| API file downloads                                                                                                                             | Description                |
+| API packages/downloads                                                                                                                             | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| [@gnaudio/jabra-browser-integration](https://www.npmjs.com/package/@gnaudio/jabra-browser-integration) | Npm package |
 | [jabra.browser.integration-3.0.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.js)     | Javascript API client file |
 | [jabra.browser.integration-3.0.d.ts](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.d.ts) | Typescript definition file |
 
-The library internally checks for dependencies – and will report this to the app using the library. An example: When trying to initialize Jabra library the promise might fail with an error “You need to use this Extension and then reload this page” if the browser extension is missing.
 
-_Notice that the latest API contains [breaking changes](CHANGELOG.md) compared with previous 1.2 version as evident from the change in major version. See upgrade section below for help on upgrading your client code._
+The API v3.0 is fully backward compatible with v2.0, and works with the current 2.x version of the Chrome Host and Chrome Extension.
+
+The library internally checks for dependencies – and will report this to the app using the library. An example: When trying to initialize Jabra library the promise might fail with an error “You need to use this Extension and then reload this page” if the browser extension is missing.
 
 ## WebExtension
 
@@ -124,7 +127,7 @@ Importantly, please do consult the
 For many editors and IDE's, the above typescript definition file can be used to provide code completion and context sensitive help. For example for Visual Code, this requires top-level comment like this to your javascript source file:
 
 ```javascript
-/// <reference path="<your-path-to-a-local-copy-here>/jabra.browser.integration-2.0.d.ts" />
+/// <reference path="<your-path-to-a-local-copy-here>/jabra.browser.integration-3.0.d.ts" />
 ```
 
 ## Development tools/demos
@@ -164,15 +167,15 @@ Logging for all native components (chromehost and platform sdk library) are writ
 
 ## Upgrading API from 2.0 to 3.0
 
-The API v3.0 is fully backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version includes a new build procedure, and besides the regular build, that can be included directly in the HTML (UMD) and outputs an ECMAScript module build [jabra.browser.integration-3.0.esm.js](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.esm.js) for NPM use. Therefore the new version can be included diretly in the HTML or imported using a browser bundler.
+The API v3.0 is backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version can be consumed directly as previous versions by including the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.js) or by using the new npm package [@gnaudio/jabra-browser-integration](https://www.npmjs.com/package/@gnaudio/jabra-browser-integration) in combination with a browser bundler.
 
 ### Analytics
 
 This new version also includes an `Analytics` module (for supported headsets), the following is a simple use example:
 
-```
-// Start by importing the module if using ES
-// If using UMD, it will be available globally under jabra.Analytics
+```typescript
+// Start by importing the module if using our npm module.
+// If using direct includes (UMD), it will be available globally under jabra.Analytics
 import { Analytics } from "jabra-browser-integration";
 
 // Create an instance of the Analytics class, if you only want analytics
@@ -213,7 +216,7 @@ The above changes were made to better handle a future expansion of events effici
 
 The example below shows how to convert old 1.2 code like this:
 
-```
+```javascript
 jabra.init(
   function () {
     // Handle success
@@ -233,7 +236,7 @@ jabra.init(
 
 to new 2.0 compliant code:
 
-```
+```javascript
 jabra.init().then(() => {
  // Handle success
 }).catch((err) => {
