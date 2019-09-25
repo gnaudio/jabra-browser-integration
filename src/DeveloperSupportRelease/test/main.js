@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Put any methods that are not available for testing here
-    let untestable = [];
+    let untestable = ["Analytics", "CommandError"];
 
     // Internals below are filtered out by default (in addition 
     // to methods starting with underscore):
