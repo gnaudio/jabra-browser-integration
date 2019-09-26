@@ -12,17 +12,18 @@ export type JabraEventType =
   | "Bad_Mic_detect Flag"
   | "Mute State";
 
-// A union containing all the AnalyticEvent types
+// A union containing all the AnalyticEvent types, these events all represent a
+// change in the value they represent
 export type AnalyticsEventType =
-  | "txspeech"
-  | "rxspeech"
-  | "txacousticlevel"
-  | "rxacousticlevel"
-  | "txacousticpeak"
-  | "rxacousticpeak"
-  | "armpositionok"
-  | "badmic"
-  | "mute";
+  | "txspeech" // Is the transmitter speaking
+  | "rxspeech" // Is the receiver speaking
+  | "txacousticlevel" // The acoustic level of the transmitter
+  | "rxacousticlevel" // The acoustic level of the receiver
+  | "txacousticpeak" // The acoustic level peak of the transmitter
+  | "rxacousticpeak" // The acoustic level peak of the receiver
+  | "armpositionok" // Is the boom arm correctly positioned
+  | "badmic" // Is the mic reported as a bad mic
+  | "mute"; // Is the headset muted
 
 // This object defines the remapping between a DevLogEvent and an
 // AnalyticsEvent. The object key is the key that must be present in the
