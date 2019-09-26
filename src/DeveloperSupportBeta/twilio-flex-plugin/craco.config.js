@@ -1,5 +1,6 @@
 const config = require("craco-config-flex-plugin");
 
 module.exports = {
-  ...config
+  ...config,
+  plugins: []
 };

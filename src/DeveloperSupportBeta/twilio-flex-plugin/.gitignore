@@ -54,13 +54,10 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
 
 # next.js build output
 .next
 
 # Flex related ignore
 appConfig.js
-
-.DS_Store
+build/
