@@ -4,8 +4,7 @@ import * as Jabra from "jabra-browser-integration";
 
 class Elastic {
   client = new Client({
-    host:
-      "https://search-jabra-twilio-flex-sg4bab332ayahqwjnim6fw4e3a.eu-central-1.es.amazonaws.com/",
+    host: process.env.REACT_APP_ES_HOST,
     log: "trace",
     apiVersion: "6.8"
   });
