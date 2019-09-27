@@ -4,20 +4,24 @@ import { connect } from "react-redux";
 const Wrapping = ({ activeDevice, supportsMMI, callState }) => {
   if (!activeDevice || !supportsMMI) return null;
 
-  if (callState === "wrapping") {
-    jabra.setRemoteMmiLightAction(
-      jabra.RemoteMmiType.MMI_TYPE_DOT3,
-      0x0000ff,
-      jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON
-    );
-  } else {
-    setTimeout(() => {
+  try {
+    if (callState === "wrapping") {
       jabra.setRemoteMmiLightAction(
         jabra.RemoteMmiType.MMI_TYPE_DOT3,
-        0x000000,
-        jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_OFF
+        0x0000ff,
+        jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_ON
       );
-    }, 500);
+    } else {
+      setTimeout(() => {
+        jabra.setRemoteMmiLightAction(
+          jabra.RemoteMmiType.MMI_TYPE_DOT3,
+          0x000000,
+          jabra.RemoteMmiSequence.MMI_LED_SEQUENCE_OFF
+        );
+      }, 500);
+    }
+  } catch (error) {
+    console.log(error);
   }
 
   return null;

@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@craco/craco": "^5.0.2",
-    "@gnaudio/twilio-flex-call-control-plugin": "^1.0.0-beta.2",
+    "@gnaudio/twilio-flex-call-control-plugin": "^1.0.0-beta.3",
     "@twilio/flex-ui": "^1.13.0",
     "craco-config-flex-plugin": "^2",
     "flex-plugin": "^2.9.1",
