@@ -1,6 +1,6 @@
 import { Client } from "elasticsearch-browser";
 import * as Flex from "@twilio/flex-ui";
-import * as Jabra from "jabra-browser-integration";
+import { jabra } from "@gnaudio/twilio-flex-call-control-plugin";
 
 class Elastic {
   client = new Client({
@@ -80,7 +80,7 @@ class Elastic {
   }
 
   async getDeviceInfo() {
-    const activeDevice = await Jabra.getActiveDevice();
+    const activeDevice = await jabra.getActiveDevice();
 
     if (activeDevice)
       return {
@@ -94,7 +94,7 @@ class Elastic {
   }
 
   async getEnvironment() {
-    const installInfo = await Jabra.getInstallInfo();
+    const installInfo = await jabra.getInstallInfo();
 
     if (installInfo && navigator)
       return {

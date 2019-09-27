@@ -13,6 +13,7 @@
     "@gnaudio/twilio-flex-call-control-plugin": "^1.0.0-beta.3",
     "@twilio/flex-ui": "^1.13.0",
     "craco-config-flex-plugin": "^2",
+    "elasticsearch-browser": "^16.4.0",
     "flex-plugin": "^2.9.1",
     "react-scripts": "^3.0.0",
     "recharts": "^1.7.1"

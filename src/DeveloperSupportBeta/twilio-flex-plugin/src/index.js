@@ -10,6 +10,7 @@ import Analytics from "./components/Analytics";
 import AvailabilityEffect from "./effects/Availability";
 import CallStateEffect from "./effects/CallState";
 import AnalyticsEffect from "./effects/Analytics";
+import Elastic from "./elastic";
 
 class Plugin extends FlexPlugin {
   constructor() {
@@ -72,11 +73,20 @@ class Plugin extends FlexPlugin {
   };
 
   handleCallAccepted = reservation => {
-    // console.log("handleCallAccepted");
+    const {
+      jabra: {
+        devices: { active, analytics }
+      }
+    } = store.getState();
+
+    this.elastic = new Elastic(analytics[active.deviceID]);
+
+    // this.elastic.start(reservation);
   };
 
   handleCallWrapping = reservation => {
-    // console.log("handleCallWrapping");
+    if (this.elastic) this.elastic.stop();
+
     const handler = ({ data: { type, action } }) => {
       if (
         type !== jabra.RemoteMmiType.MMI_TYPE_DOT3 ||
