@@ -14,6 +14,8 @@ class CallState extends React.Component {
     if (callState !== "accepted") return;
     const event = this.props.analytics.events.newest("txacousticlevel");
 
+    if (!event) return;
+
     function inRange(start, end) {
       return (event.value - start) * (event.value - end) <= 0;
     }
