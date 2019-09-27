@@ -6,12 +6,12 @@ Twilio Flex Plugins allow you to customize the apperance and behavior of [Twilio
 
 Make sure you have [Node.js](https://nodejs.org) as well as [`npm`](https://npmjs.com) installed.
 
+Make a copy of `public/appConfig.example.js` rename it `public/appConfig.js`, in the file, fill in the `accountSid`, with your Twilio Flex `accountSid`.
+Make a copy of `.env.example` rename it `.env`, fill in the `REACT_APP_ES_HOST` with an elastic search host url, and fill in `REACT_APP_KIBANA_HOST` with a kibana host url.
+
 Afterwards install the dependencies by running `npm install`:
 
-```bash
-cd
-
-# If you use npm
+```
 npm install
 ```
 
@@ -41,6 +41,6 @@ Run the following command to start the bundling:
 npm run build
 ```
 
-Afterwards, you'll find in your project a `build/` folder that contains a file with the name of your plugin project. For example `plugin-example.js`. Take this file and upload it into the Assets part of your Twilio Runtime.
+Afterwards, you'll find in your project a `build/` folder that contains a file with the name of your plugin project. For example `plugin-jabra.js`. Take this file and upload it into the Assets part of your Twilio Runtime.
 
 Note: Common packages like `React`, `ReactDOM`, `Redux` and `ReactRedux` are not bundled with the build because they are treated as external dependencies so the plugin will depend on Flex which would provide them globally.

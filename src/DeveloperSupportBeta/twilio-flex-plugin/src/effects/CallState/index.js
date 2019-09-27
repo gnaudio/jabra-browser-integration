@@ -3,10 +3,6 @@ import { jabra } from "@gnaudio/twilio-flex-call-control-plugin";
 import { connect } from "react-redux";
 
 class CallState extends React.Component {
-  state = {
-    noise: 0
-  };
-
   listeningToCallNoise = false;
   handleCallNoise = () => {
     const { callState } = this.props;
@@ -68,6 +64,7 @@ class CallState extends React.Component {
     return null;
   }
 }
+
 const mapStateToProps = ({ jabra }) => ({
   activeDevice: jabra.devices.active,
   supportsMMI: jabra.devices.mmi,

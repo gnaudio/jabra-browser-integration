@@ -10,6 +10,7 @@ import Analytics from "./components/Analytics";
 import AvailabilityEffect from "./effects/Availability";
 import CallStateEffect from "./effects/CallState";
 import AnalyticsEffect from "./effects/Analytics";
+import { KibanaView, KibanaButton } from "./components/Kibana";
 import Elastic from "./elastic";
 
 class Plugin extends FlexPlugin {
@@ -36,15 +37,17 @@ class Plugin extends FlexPlugin {
       <CallStateEffect key="jabra-effect-call-state" store={store} />
     );
 
+    flex.SideNav.Content.add(<KibanaButton key="jabra-kibana-button" />);
+
+    flex.ViewCollection.Content.add(
+      <flex.View name="jabra-kibana-view" key="jabra-kibana-view">
+        <KibanaView />
+      </flex.View>
+    );
+
     handleReservation({
       manager,
-      handleCallIncoming: this.handleCallIncoming,
       handleCallAccepted: this.handleCallAccepted,
-      handleCallCanceled: this.handleCallCanceled,
-      handleCallCompleted: this.handleCallCompleted,
-      handleCallRejected: this.handleCallRejected,
-      handleCallRescinded: this.handleCallRescinded,
-      handleCallTimeout: this.handleCallTimeout,
       handleCallWrapping: this.handleCallWrapping
     });
 
@@ -68,10 +71,6 @@ class Plugin extends FlexPlugin {
     });
   }
 
-  handleCallIncoming = reservation => {
-    // console.log("handleCallIncoming");
-  };
-
   handleCallAccepted = reservation => {
     const {
       jabra: {
@@ -79,9 +78,11 @@ class Plugin extends FlexPlugin {
       }
     } = store.getState();
 
+    if (!active) return;
+
     this.elastic = new Elastic(analytics[active.deviceID]);
 
-    // this.elastic.start(reservation);
+    this.elastic.start(reservation);
   };
 
   handleCallWrapping = reservation => {
@@ -94,33 +95,10 @@ class Plugin extends FlexPlugin {
       ) {
         return;
       }
-
       reservation.complete();
-
       jabra.removeEventListener("mmi", handler);
     };
-
     jabra.addEventListener("mmi", handler);
-  };
-
-  handleCallCompleted = reservation => {
-    // console.log("handleCallCompleted");
-  };
-
-  handleCallCanceled = reservation => {
-    // console.log("handleCallCanceled");
-  };
-
-  handleCallRescinded = reservation => {
-    // console.log("handleCallRescinded");
-  };
-
-  handleCallRejected = reservation => {
-    // console.log("handleCallRejected");
-  };
-
-  handleCallTimeout = reservation => {
-    // console.log("handleCallTimeout");
   };
 }
 
