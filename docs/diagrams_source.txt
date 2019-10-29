@@ -77,15 +77,17 @@ note right of "Jabra USB device": Device is in call state
 note right of "Jabra USB device": User presses flash
 "Jabra USB device"->"Jabra Browser Integration library": ""
 "Jabra Browser Integration library"->"App": "flash event"
-"App"->"Jabra Browser Integration library": jabra.onHook()
 "App"->"Jabra Browser Integration library": jabra.hold()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+"App"->"Jabra Browser Integration library": jabra.onHook()
 "Jabra Browser Integration library"->"Jabra USB device": ""
 note right of "Jabra USB device": The device goes into held state
 note right of "Jabra USB device": User presses flash
 "Jabra USB device"->"Jabra Browser Integration library": ""
 "Jabra Browser Integration library"->"App": "flash event"
-"App"->"Jabra Browser Integration library": jabra.resume()
 "App"->"Jabra Browser Integration library": jabra.offHook()
+"Jabra Browser Integration library"->"Jabra USB device": ""
+"App"->"Jabra Browser Integration library": jabra.resume()
 "Jabra Browser Integration library"->"Jabra USB device": ""
 note right of "Jabra USB device": The device goes out of held state
 "App"->"Jabra Browser Integration library": jabra.onHook()
