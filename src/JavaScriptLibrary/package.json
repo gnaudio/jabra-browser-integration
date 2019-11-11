@@ -17,7 +17,8 @@
   "homepage": "https://github.com/gnaudio/jabra-browser-integration",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gnaudio/jabra-browser-integration.git"
+    "url": "https://github.com/gnaudio/jabra-browser-integration.git",
+	"directory": "src/JavaScriptLibrary"
   },
   "bugs": {
     "url": "https://developer.jabra.com/site/global/support/index.gsp"
