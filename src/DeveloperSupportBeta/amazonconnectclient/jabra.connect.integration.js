@@ -486,7 +486,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost, softphoneEnable
                 newState = activeAgent.getAgentStates().filter(function(state) {
                     return state.type === connect.AgentStateType.OFFLINE;
                 })[0];
-            } else if (currentState === connect.AgentStateType.OFFLINE) {
+            } else if (currentState === connect.AgentStateType.OFFLINE || currentState === "system") {
                 newState = activeAgent.getAgentStates().filter(function(state) {
                     return state.type === connect.AgentStateType.ROUTABLE;
                 })[0];
