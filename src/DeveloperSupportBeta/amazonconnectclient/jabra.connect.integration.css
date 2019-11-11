@@ -189,3 +189,7 @@ input:optional {
 input:required {
     border: 1px solid red;
 }
+
+input.radio { 
+    width: auto;
+}
