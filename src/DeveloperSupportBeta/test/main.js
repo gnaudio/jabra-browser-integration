@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Open Api reference with syntax highlightning in new window.
   apiReference.onclick = () => {
-   fetch('../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts')
+   fetch('../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts')
     .then(response => response.text())
     .then(text => {
       let header = "<!DOCTYPE html><title>Jabra Typescript Api</title><link rel=\"stylesheet\" href=\"default.css\">" +
