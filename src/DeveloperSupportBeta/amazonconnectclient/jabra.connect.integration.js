@@ -76,7 +76,7 @@ const cloudReportIntervalMs = 5000;
 const silenceUpdateIntervalMs = 1000;
 
 // The run method contains the actual demo.
-function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
+function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost, softphoneEnable) {
     /** @type {jabra.InstallInfo} */
     let installInfo = undefined;
 
@@ -479,18 +479,28 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
 
     jabra.addEventListener("mmi", (event) => {
         if (event.data.type === jabra.RemoteMmiType.MMI_TYPE_DOT3 && event.data.action === jabra.RemoteMmiActionInput.MMI_ACTION_UP) {
-            const availableState = activeAgent.getAgentStates().filter(function(state) {
-                return state.type === connect.AgentStateType.ROUTABLE;
-            })[0];
+            const currentState = activeAgent.getState().type;
 
-            activeAgent.setState(availableState,
-            {
-                success: () => {},
-                failure: (jsonErr) => { 
-                    console.error ("Failed setting state: " + JSON.stringify(jsonErr));
-                }
+            let newState;
+            if (currentState === connect.AgentStateType.ROUTABLE) {
+                newState = activeAgent.getAgentStates().filter(function(state) {
+                    return state.type === connect.AgentStateType.OFFLINE;
+                })[0];
+            } else if (currentState === connect.AgentStateType.OFFLINE || currentState === "system") {
+                newState = activeAgent.getAgentStates().filter(function(state) {
+                    return state.type === connect.AgentStateType.ROUTABLE;
+                })[0];
+            } else newState = null;
+
+            if (newState) {
+                activeAgent.setState(newState,
+                {
+                    success: () => {},
+                    failure: (jsonErr) => { 
+                        console.error ("Failed setting state: " + JSON.stringify(jsonErr));
+                    }
+                });
             }
-            );
         } else if (event.data.type === jabra.RemoteMmiType.MMI_TYPE_DOT4 && event.data.action === jabra.RemoteMmiActionInput.MMI_ACTION_UP && quickPhoneNumber) {
             let state = activeAgent.getState().type;
             if (state === connect.AgentStateType.ROUTABLE) {
@@ -999,7 +1009,7 @@ function run(cppAccountUrl, quickPhoneNumber, elasticsearchHost) {
     connect.core.initCCP(containerDiv, {
             ccpUrl: cppAccountUrl,
             loginPopup: true,
-            softphone: { allowFramedSoftphone: true }
+            softphone: { allowFramedSoftphone: softphoneEnable }
     });
     
     // Agent
@@ -1168,14 +1178,16 @@ const urlParams = new URLSearchParams(window.location.search);
 const cppUrlParam = urlParams.get('cppAccountUrl');
 const quickPhoneNumberParam = urlParams.get('quickPhoneNumber');
 const elasticsearchHostParam = urlParams.get('elasticsearchHost');
+const softphoneEnableParam = urlParams.get('softphoneEnable');
 
-let cppUrl = cppUrlParam ? decodeURI(cppUrlParam) : '';
-let quickPhoneNumber = quickPhoneNumberParam ? decodeURI(quickPhoneNumberParam) : '';
-let elasticsearchHost = elasticsearchHostParam ? decodeURI(elasticsearchHostParam) : '';
+const cppUrl = cppUrlParam ? decodeURI(cppUrlParam) : '';
+const quickPhoneNumber = quickPhoneNumberParam ? decodeURI(quickPhoneNumberParam) : '';
+const elasticsearchHost = elasticsearchHostParam ? decodeURI(elasticsearchHostParam) : '';
+const softphoneEnable = softphoneEnableParam ? decodeURI(softphoneEnableParam).toLowerCase() === "true" : true;
 
 // Run demo if we have the required parts of the configuration - otherwise ask for configuration:
 if (cppUrl) {
-    run(cppUrl, quickPhoneNumber, elasticsearchHost);
+    run(cppUrl, quickPhoneNumber, elasticsearchHost, softphoneEnable);
 } else {
     urlText.textContent = "https://" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
     configurationParent.style.display = "inline";

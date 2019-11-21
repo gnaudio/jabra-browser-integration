@@ -42,8 +42,8 @@
     <tr>
         <td colspan="3">
           <div class="configStep">Step <span class="configStepNumber">&#x2463;</span></div>
-          <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator, any phone number for easy outbound calls using the 4-dot button on the Jabra Engage 50 controller
-            and optionally an Elasticsearch v6.6 host for reporting:</p>
+          <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator, any phone number for easy outbound calls using the 4-dot button on the Jabra Engage 50 controller,
+            optionally an Elasticsearch v6.6 host for reporting :</p>
         </td>
       </tr>
     <tr>
@@ -59,6 +59,18 @@
             <br/>
             <label for="elasticsearchHost">ES host:&nbsp;</label>
             <input id="elasticsearchHost" class="configInput" name="elasticsearchHost" placeholder="https://your-elasticsearch-host" type="url" width="80"/>
+            <br/>
+            <br/>
+            <label for="softphoneEnable">Use Amazon softphone:&nbsp;
+              <label for="softphoneEnableTrue">
+                <input type="radio" id="softphoneEnableTrue" name="softphoneEnable" value="true" checked="checked">
+                Enable
+              </label>
+              <label for="softphoneEnableFalse">
+                <input type="radio" id="softphoneEnableFalse" name="softphoneEnable" value="false">
+                Disable
+              </label>
+            </label>
             <br/>
             <br/>
             <button id="configureGo" type="submit">&nbsp;&nbsp;RUN&nbsp;&nbsp;</button>
