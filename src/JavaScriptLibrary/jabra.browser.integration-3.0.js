@@ -2,7 +2,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = global || self, factory(global.jabra = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
   function _inheritsLoose(subClass, superClass) {
     subClass.prototype = Object.create(superClass.prototype);
@@ -1557,9 +1557,6 @@
           case "number":
             value = Number(value);
             break;
-
-          default:
-            break;
         }
 
         return new AnalyticsEvent(translation.eventType, value, event.data.TimeStampMs);
@@ -2189,5 +2186,5 @@
   exports.trySetDeviceOutput = trySetDeviceOutput;
   exports.unmute = unmute;
 
-}));
+})));
 //# sourceMappingURL=jabra.umd.development.js.map

@@ -1585,9 +1585,6 @@ function createAnalyticsEvent(event) {
         case "number":
           value = Number(value);
           break;
-
-        default:
-          break;
       }
 
       return new AnalyticsEvent(translation.eventType, value, event.data.TimeStampMs);
