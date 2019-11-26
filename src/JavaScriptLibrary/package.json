@@ -29,13 +29,15 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
+    "build": "tsdx build --out build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
     "test": "tsdx test",
     "dts-bundle": "dts-bundle --name jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
     "cp": "npm run cp:esm && npm run cp:umd && npm run cp:cjs",
     "cp:esm": "ncp dist/jabra.esm.js jabra.browser.integration-3.0.esm.js",
     "cp:umd": "ncp dist/jabra.umd.development.js jabra.browser.integration-3.0.js",
-    "cp:cjs": "ncp dist/jabra.cjs.development.js jabra.browser.integration-3.0.cjs.js"
+    "cp:cjs": "ncp dist/jabra.cjs.development.js jabra.browser.integration-3.0.cjs.js",
+    "tsc": "tsc",
+    "generatemeta": "ts-node --skip-project src/script/generatemeta.ts"
   },
   "devDependencies": {
     "@types/jest": "24.0.23",
@@ -43,6 +45,7 @@
     "ncp": "2.0.0",
     "tsdx": "0.11.0",
     "tslib": "1.10.0",
-    "typescript": "3.6.3"
+    "typescript": "3.6.3",
+    "ts-node": "8.5.2"
   }
 }
