@@ -2,6 +2,7 @@
 
 declare module 'jabra-browser-integration' {
     export * from "jabra-browser-integration/core";
+    export * from "jabra-browser-integration/meta";
     export * from "jabra-browser-integration/Analytics";
 }
 
@@ -484,6 +485,52 @@ declare module 'jabra-browser-integration/core' {
         * if the browser did in fact choose a Jabra device for the microphone.
         */
     export function getUserDeviceMediaExt(constraints?: MediaStreamConstraints): Promise<MediaStreamAndDeviceInfoPair>;
+}
+
+declare module 'jabra-browser-integration/meta' {
+    /**
+        * Base interface for containing common meta-data for
+        * reflective access to API classes, properties,
+        * methods, constructors etc.
+        */
+    export interface SymbolEntry {
+            comment?: string;
+            name: string;
+            documentation: string;
+            tsType: string;
+            jsType?: string;
+    }
+    /**
+        * Meta-data for reflective access to API classes.
+        */
+    export interface ClassEntry extends SymbolEntry {
+            methods: MethodEntry[];
+            properties: PropertyEntry[];
+    }
+    /**
+        * Meta-data for reflective access to API class properties.
+        */
+    export interface PropertyEntry extends SymbolEntry {
+            readonly: boolean;
+    }
+    /**
+        * Meta-data for reflective access to API class methods.
+        */
+    export interface MethodEntry extends SymbolEntry {
+            parameters: ParameterEntry[];
+    }
+    /**
+        * Meta-data for reflective access to API method parameters.
+        */
+    export interface ParameterEntry extends SymbolEntry {
+            optional: boolean;
+    }
+    /**
+        * The meta API that classes with meta information shold support.
+        */
+    export interface MetaApi {
+            getMeta(): ClassEntry;
+    }
 }
 
 declare module 'jabra-browser-integration/Analytics' {
