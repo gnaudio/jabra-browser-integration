@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn');
 
   const methodSelector = document.getElementById('methodSelector');
+  const apiClassSelector = document.getElementById('apiClassSelector');
+
   const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
   const invokeApiBtn = document.getElementById('invokeApiBtn');
   const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn');
