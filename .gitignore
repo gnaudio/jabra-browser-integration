@@ -1,1 +1,7 @@
 package-lock.json
+build
+.vscode
+.ionide
+private
+node_modules
+.rts*
