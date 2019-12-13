@@ -1,7 +1,10 @@
 /**
  * Simple queue with max size.
  */
-class BoundedQueue {
+export class BoundedQueue<T> {
+    private maxSize: number;
+    private backingArray: T[];
+
     // Creates the queue
     constructor(maxSize = 1000) {
       this.maxSize = maxSize;
@@ -9,7 +12,7 @@ class BoundedQueue {
     }
 
     // Adds element to back of queue, removing front element if at max size.
-    push(element) {
+    push(element: T) {
       if (this.backingArray.length >= this.maxSize) {
         this.backingArray.shift();
       }

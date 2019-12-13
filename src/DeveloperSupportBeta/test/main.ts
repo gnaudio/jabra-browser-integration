@@ -1,83 +1,90 @@
-﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts" />
+﻿import { BoundedQueue } from './queue';
+import { MethodEntry, ParameterEntry } from '@gnaudio/jabra-browser-integration';
+import * as jabra from '@gnaudio/jabra-browser-integration';
+import * as toastr from "toastr";
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
   const stressWaitInterval = 1000;
   const maxQueueSize = 1000;
 
-  const initSDKBtn = document.getElementById('initSDKBtn');
-  const unInitSDKBtn = document.getElementById('unInitSDKBtn');
-  const checkInstallBtn = document.getElementById('checkInstallBtn');
+  const initSDKBtn = document.getElementById('initSDKBtn') as HTMLButtonElement;
+  const unInitSDKBtn = document.getElementById('unInitSDKBtn') as HTMLButtonElement;;
+  const checkInstallBtn = document.getElementById('checkInstallBtn') as HTMLButtonElement;
 
-  const devicesBtn = document.getElementById('devicesBtn');
-  const deviceSelector = document.getElementById('deviceSelector');
-  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn');
+  const devicesBtn = document.getElementById('devicesBtn') as HTMLButtonElement;
+  const deviceSelector = document.getElementById('deviceSelector') as HTMLSelectElement;
+  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn') as HTMLButtonElement;
 
-  const setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn');
+  const setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn') as HTMLButtonElement;
 
-  const methodSelector = document.getElementById('methodSelector');
-  const apiClassSelector = document.getElementById('apiClassSelector');
+  const methodSelector = document.getElementById('methodSelector') as HTMLSelectElement;
+  const apiClassSelector = document.getElementById('apiClassSelector') as HTMLSelectElement;
 
-  const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk');
-  const invokeApiBtn = document.getElementById('invokeApiBtn');
-  const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn');
+  const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk') as HTMLInputElement;
+  const invokeApiBtn = document.getElementById('invokeApiBtn') as HTMLButtonElement;
+  const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn') as HTMLButtonElement;
 
-  const txtParam1 = document.getElementById('txtParam1');
-  const txtParam2 = document.getElementById('txtParam2');
-  const txtParam3 = document.getElementById('txtParam3');
-  const txtParam4 = document.getElementById('txtParam4');
-  const txtParam5 = document.getElementById('txtParam5');
+  const txtParam1 = document.getElementById('txtParam1') as HTMLTextAreaElement;
+  const txtParam2 = document.getElementById('txtParam2') as HTMLTextAreaElement;
+  const txtParam3 = document.getElementById('txtParam3') as HTMLTextAreaElement;
+  const txtParam4 = document.getElementById('txtParam4') as HTMLTextAreaElement;
+  const txtParam5 = document.getElementById('txtParam5') as HTMLTextAreaElement;
 
-  const methodHelp = document.getElementById('methodHelp');  
-  const param1Hint = document.getElementById('param1Hint');
-  const param2Hint = document.getElementById('param2Hint');
-  const param3Hint = document.getElementById('param3Hint');
-  const param4Hint = document.getElementById('param4Hint');
-  const param5Hint = document.getElementById('param5Hint');    
+  const methodHelp = document.getElementById('methodHelp') as HTMLDivElement;  
+  const param1Hint = document.getElementById('param1Hint') as HTMLSpanElement;
+  const param2Hint = document.getElementById('param2Hint') as HTMLSpanElement;
+  const param3Hint = document.getElementById('param3Hint') as HTMLSpanElement;
+  const param4Hint = document.getElementById('param4Hint') as HTMLSpanElement;
+  const param5Hint = document.getElementById('param5Hint') as HTMLSpanElement;
 
-  const clearMessageAreaBtn = document.getElementById('clearMessageAreaBtn');
-  const clearErrorAreaBtn = document.getElementById('clearErrorAreaBtn');
-  const clearlogAreaBtn = document.getElementById('clearlogAreaBtn');
+  const clearMessageAreaBtn = document.getElementById('clearMessageAreaBtn') as HTMLButtonElement;
+  const clearErrorAreaBtn = document.getElementById('clearErrorAreaBtn') as HTMLButtonElement;
+  const clearlogAreaBtn = document.getElementById('clearlogAreaBtn') as HTMLButtonElement;
 
-  const toggleScrollMessageAreaBtn = document.getElementById('toggleScrollMessageAreaBtn');
-  const toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn');
-  const toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn');
+  const toggleScrollMessageAreaBtn = document.getElementById('toggleScrollMessageAreaBtn') as HTMLButtonElement;
+  const toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn') as HTMLButtonElement;
+  const toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn') as HTMLButtonElement;
 
-  const messageFilter = document.getElementById('messageFilter');
-  const logFilter = document.getElementById('logFilter');
-  const messagesCount = document.getElementById('messagesCount');
+  const messageFilter = document.getElementById('messageFilter') as HTMLSelectElement;
+  const logFilter = document.getElementById('logFilter') as HTMLSelectElement;
+  const messagesCount = document.getElementById('messagesCount') as HTMLSpanElement;
 
-  const messageArea = document.getElementById('messageArea');
-  const errorArea = document.getElementById('errorArea');
+  const messageArea = document.getElementById('messageArea') as HTMLTextAreaElement;
+  const errorArea = document.getElementById('errorArea') as HTMLTextAreaElement;
 
-  const errorsCount = document.getElementById('errorsCount');
+  const errorsCount = document.getElementById('errorsCount') as HTMLSpanElement;
 
-  const logArea = document.getElementById('logArea');
-  const logCount = document.getElementById('logCount');
+  const logArea = document.getElementById('logArea') as HTMLTextAreaElement;
+  const logCount = document.getElementById('logCount') as HTMLSpanElement;
 
-  const enableLogging = document.getElementById('enableLogging');
-  const copyLog = document.getElementById('copyLog');
-  const copyMessages = document.getElementById('copyMessages');
+  const enableLogging = document.getElementById('enableLogging') as HTMLInputElement;
+  const copyLog = document.getElementById('copyLog') as HTMLButtonElement;
+  const copyMessages = document.getElementById('copyMessages') as HTMLButtonElement;
 
-  const installCheckResult = document.getElementById('installCheckResult');
-  const clientlibVersionTxt = document.getElementById('clientlibVersionTxt');
-  const otherVersionTxt = document.getElementById('otherVersionTxt');
+  const installCheckResult = document.getElementById('installCheckResult') as HTMLButtonElement;
+  const clientlibVersionTxt = document.getElementById('clientlibVersionTxt') as HTMLSpanElement;
+  const otherVersionTxt = document.getElementById('otherVersionTxt') as HTMLSpanElement;
+  const browserAndOsVersionTxt = document.getElementById('browserAndOsVersionTxt') as HTMLSpanElement;
 
-  const player = document.getElementById('player');
+  const player = document.getElementById('player') as HTMLAudioElement;
 
-  const apiReference = document.getElementById('apiReference');
-  let apiReferenceWindow = undefined;
+  const apiReference = document.getElementById('apiReference') as HTMLButtonElement;
+  let apiReferenceWindow: Window | undefined | null = undefined;
 
-  let boomArmStatus = document.getElementById('boomArmStatus');
-  let txStatus = document.getElementById('txStatus');
-  let txPeakStatus = document.getElementById('txPeakStatus');
-  let rxStatus = document.getElementById('rxStatus');
-  let rxPeakStatus = document.getElementById('rxPeakStatus');
-  let txSpeechStatus = document.getElementById('txSpeechStatus');
-  let rxSpeechStatus = document.getElementById('rxSpeechStatus');
+  let devLogStatus = document.getElementById('devLogStatus') as HTMLSpanElement;
+  let boomArmStatus = document.getElementById('boomArmStatus') as HTMLSpanElement;
+  let txStatus = document.getElementById('txStatus') as HTMLSpanElement;
+  let txPeakStatus = document.getElementById('txPeakStatus') as HTMLSpanElement;
+  let rxStatus = document.getElementById('rxStatus') as HTMLSpanElement;
+  let rxPeakStatus = document.getElementById('rxPeakStatus') as HTMLSpanElement;
+  let txSpeechStatus = document.getElementById('txSpeechStatus') as HTMLSpanElement;
+  let rxSpeechStatus = document.getElementById('rxSpeechStatus') as HTMLSpanElement;
 
   let variables = {
-    "audioElement": player
+    "audioElement": player,
+    "mediaStream": undefined,
+    "deviceInfo": undefined
   }
   
   let boomArm = undefined;
@@ -92,15 +99,15 @@ document.addEventListener('DOMContentLoaded', function () {
   let scrollErrorArea = true;
   let scrollLogArea = true;
 
-  let errors = new BoundedQueue(maxQueueSize);
-  let messages = new BoundedQueue(maxQueueSize);
-  let logs = new BoundedQueue(maxQueueSize);
+  let errors = new BoundedQueue<string>(maxQueueSize);
+  let messages = new BoundedQueue<string>(maxQueueSize);
+  let logs = new BoundedQueue<string>(maxQueueSize);
 
-  let stressInvokeCount = undefined;
-  let stressInterval = undefined;
+  let stressInvokeCount : number | undefined = undefined;
+  let stressInterval: any | undefined  = undefined;
 
   // Help text for command followed by help for parameters:
-  const commandTxtHelp = {
+  const commandTxtHelp: any = {
     getDevices: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
     setActiveDeviceId: ["", "id: integer"],
@@ -121,9 +128,16 @@ document.addEventListener('DOMContentLoaded', function () {
     __default__: [""]
   };
 
-  // Helper for converting textual parameter values into the right type:
-  function convertParam(value) {
+  // Convert value to argument.
+  // Nb. meta data is only available if the API expects a parameter (For testing purpoeses,
+  // this tool supports passing parameters even if the API does not expect so).
+  function convertParam(value: string, meta?: ParameterEntry): any {
     let tValue = value.trim();
+
+    // If no parameter is expected, we interpret empty string as "undefined"
+    if (tValue.length == 0 && !meta) {
+      return undefined;
+    }
     
     // Remove leading zero from numbers to avoid intreprenting them as octal.
     if (/0[0-9a-fA-F]+/.test(tValue)) {
@@ -136,15 +150,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Peek and if we can find signs of non-string than evaluate it otherwise return as string.
-    if (tValue.startsWith("[") 
-        || tValue.startsWith("/") 
-        || tValue.startsWith('"') 
-        || tValue.startsWith("'") 
+    if (tValue.startsWith("[")
+        || tValue.startsWith("/")
+        || tValue.startsWith('"')
+        || tValue.startsWith("'")
         || tValue.startsWith("{")
-        || tValue.toLowerCase() === "true" 
+        || tValue.toLowerCase() === "true"
         || tValue.toLowerCase() === "false"
-        || !isNaN(tValue)) {
-      return eval(tValue); // Normally dangerous but since this is a test app it is acceptable.
+        || (tValue.length>0 && !isNaN(tValue as any))) {
+      return eval("("+tValue+")"); // Normally dangerous but since this is a test app it is acceptable.
     } else { // Assume string otherwise.
       return value;
     }
@@ -152,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Resolves arguments for different API methods. All methods that require
   // complex values or have default values should be explicitly handled here:
-  const commandArgs = {
+  const commandArgs: { [name: string]: () => any[] } = {
     trySetDeviceOutput: () => [ variables.audioElement, variables.deviceInfo ],
     isDeviceSelectedForInput: () => [ variables.mediaStream, variables.deviceInfo ],
     getUserDeviceMediaExt: () => [ convertParam(txtParam1.value || "{}") ],
@@ -165,8 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   // Populate dropdown with api methods:
-  function setupApiMethods(filtered) {
-    function isFunction(obj) {
+  function setupApiMethods(filtered: any) {
+    function isFunction(obj: any) {
       return !!(obj && obj.constructor && obj.call && obj.apply && !/^\s*class\s+/.test(obj.toString()));
     };
   
@@ -211,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Make sure we log anything by default unless overridden by the user.
   // Useful for testing with old <=0.5 versions.
-  jabra.logLevel = 255;
+  (jabra as any).logLevel = 255;
 
   // Setup SDK and setup event listeners when asked.
   initSDKBtn.onclick = () => {
@@ -227,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // Event listener that listen to everything from our SDK:
-  function eventListener(event) {
+  function eventListener(event: any) {
     if (event && event.error) {
       addError(event);
     } else {
@@ -264,12 +278,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Watch for interesting status in devlog events:
     if (event && event.message === "devlog") {
-      devLogStatus.style = "display: block";
+      (devLogStatus as any).style = "display: block";
 
       let boomArmEvent = event.data["Boom Position Guidance OK"];
       if (boomArmEvent !== undefined) {
           boomArm = (boomArmEvent.toString().toLowerCase() === "true");
-          boomArmStatus.innerText = boomArm;
+          boomArmStatus.innerText = boomArm.toString();
       }
   
       let txLevelEvent = event.data["TX Acoustic Logging Level"];
@@ -349,18 +363,18 @@ document.addEventListener('DOMContentLoaded', function () {
     param4Hint.innerText = "";
     param5Hint.innerText = "";
     methodHelp.innerText = "";
-    txtParam1.style="";
-    txtParam2.style="";
-    txtParam3.style="";
-    txtParam4.style="";
-    txtParam5.style="";
+    (txtParam1 as any).style="";
+    (txtParam2 as any).style="";
+    (txtParam3 as any).style="";
+    (txtParam4 as any).style="";
+    (txtParam5 as any).style="";
 
-    function getInputStyle(optional) {
+    function getInputStyle(optional: boolean) {
       return optional ? "border:1px solid #00ff00" : "border:1px solid #ff0000";
     }
 
     let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
-    var help = commandTxtHelp[apiFuncName];
+    var help: string[] | undefined = commandTxtHelp[apiFuncName];
     if (!help) {
       help = commandTxtHelp["__default__"];
     }
@@ -372,23 +386,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (help.length>1) {
         param1Hint.innerText = help[1];
-        txtParam1.style = getInputStyle(help[1].includes("?:"));
+        (txtParam1 as any).style = getInputStyle(help[1].includes("?:"));
       }
       if (help.length>2) {
         param2Hint.innerText = help[2];
-        txtParam2.style = getInputStyle(help[2].includes("?:"));
+        (txtParam2 as any).style = getInputStyle(help[2].includes("?:"));
       }
       if (help.length>3) {
         param3Hint.innerText = help[3];
-        txtParam3.style = getInputStyle(help[3].includes("?:"));
+        (txtParam3 as any).style = getInputStyle(help[3].includes("?:"));
       }
       if (help.length>4) {
         param4Hint.innerText = help[4];
-        txtParam4.style = getInputStyle(help[4].includes("?:"));
+        (txtParam4 as any).style = getInputStyle(help[4].includes("?:"));
       }
       if (help.length>5) {
         param5Hint.innerText = help[5];
-        txtParam5.style = getInputStyle(help[5].includes("?:"));
+        (txtParam5 as any).style = getInputStyle(help[5].includes("?:"));
       }
     }
   }
@@ -417,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
           try {
             invokeSelectedApi(apiFuncName).then( () => {
               stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " success count # " + stressInvokeCount + ")";
-              ++stressInvokeCount;
+              ++stressInvokeCount!;
             }).catch( () => {
               stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
               sucess = false;
@@ -434,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // Stop stress testing. Leave button with status if failure until repeated stop.
-  function stopStressInvokeApi(success) {
+  function stopStressInvokeApi(success: boolean) {
     if (stressInterval) {
         clearInterval(stressInterval);
         stressInterval = undefined;
@@ -445,8 +459,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Call into user selected API method.
-  function invokeSelectedApi(apiFuncName) {
-    const apiFunc = jabra[apiFuncName];
+  function invokeSelectedApi(apiFuncName: string) {
+    const apiFunc = (jabra as any)[apiFuncName];
 
     let argsResolver = commandArgs[apiFuncName];
     if (!argsResolver) {
@@ -465,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Update state with result from previously executed command and return promise with result.
-  function commandEffect(apiFuncName, result) {
+  function commandEffect(apiFuncName: string, result: Promise<any> | any) {
     if (result instanceof Promise) {
       return result.then((value) => {
         addStatusMessage("Api call " + apiFuncName + " succeeded.");
@@ -494,7 +508,9 @@ document.addEventListener('DOMContentLoaded', function () {
           }
   
           variables = {
-            "audioElement": player
+            "audioElement": player,
+            "mediaStream": undefined,
+            "deviceInfo": undefined
           }
   
           toastr.info("Jabra library uninitialized");
@@ -549,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           } else {
             // Decode device information normally - recommended way going forward.
-            value.forEach(device => {
+            value.forEach((device: jabra.DeviceInfo) => {
               var opt = document.createElement('option');
               opt.value = device.deviceID.toString();
               opt.innerHTML = device.deviceName;
@@ -632,15 +648,15 @@ document.addEventListener('DOMContentLoaded', function () {
     logCount.innerText = "0";
   };
 
-  function messageFilterAllows(str) {
+  function messageFilterAllows(str: string) {
     return messageFilter.value === "" || str.toLocaleLowerCase().includes(messageFilter.value.toLocaleLowerCase());
   }
 
-  function logFilterAllows(str) {
+  function logFilterAllows(str: string) {
     return logFilter.value === "" || str.toLocaleLowerCase().includes(logFilter.value.toLocaleLowerCase());
   }
 
-  function addError(err) {  
+  function addError(err: string | Error) {  
     let txt;
     if (typeof err === 'string' || err instanceof String) {
       txt = "error string: " + err;
@@ -663,20 +679,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function addStatusMessage(msg) {
-    let txt = (typeof msg === 'string' || msg instanceof String) ? msg : "Status: " + JSON.stringify(msg, null, 2);
+  function addStatusMessage(msg: string | any) {
+    let txt = (typeof msg === 'string' || msg instanceof String) ? msg.toString() : "Status: " + JSON.stringify(msg, null, 2);
     messages.push(txt);
     updateMessageArea();
   }
 
-  function addResponseMessage(msg) {
-    let txt = (typeof msg === 'string' || msg instanceof String) ? "response string: " + msg : "response object: " + JSON.stringify(msg, null, 2);
+  function addResponseMessage(msg: string | any) {
+    let txt = (typeof msg === 'string' || msg instanceof String) ? "response string: " + msg.toString() : "response object: " + JSON.stringify(msg, null, 2);
     messages.push(txt);
     updateMessageArea();
   }
 
-  function addEventMessage(msg) {
-    let txt = (typeof msg === 'string' || msg instanceof String) ? "event string: " + msg : "event object: " + JSON.stringify(msg, null, 2);
+  function addEventMessage(msg: string | any) {
+    let txt = (typeof msg === 'string' || msg instanceof String) ? "event string: " + msg.toString() : "event object: " + JSON.stringify(msg, null, 2);
     messages.push(txt);
     updateMessageArea();
   }
@@ -706,19 +722,21 @@ document.addEventListener('DOMContentLoaded', function () {
   // Copy console output to log area:
   var console = window.console
   if (console) {
-    function replaceStr(str, ...placeholders) {
+    function replaceStr(str: any, ...placeholders: any[]): any {
       var count = 0;
       return (str && (typeof str === 'string') || (str instanceof String)) ? str.replace(/%s/g, () => placeholders[count++]): str;
     }
-    function intercept(method){
-        var original = console[method]
-        console[method] = function() {
+    function intercept(method: any){
+        var original = (console as any)[method]
+        (console as any)[method] = function() {
+          // @ts-ignore
           original.apply(console, arguments);
 
           if (enableLogging.checked) {
+            // @ts-ignore
             let v = replaceStr.apply(this, arguments);
             if ((typeof v === 'string') || (v instanceof String)) {
-              logs.push(v);
+              logs.push(v.toString());
             } else if (v !== null && v !== undefined) {
               logs.push(v.toString())
             }
