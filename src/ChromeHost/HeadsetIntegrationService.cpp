@@ -572,8 +572,13 @@ void HeadsetIntegrationService::processDevLog(const DeviceDevLogWork& work) {
     std::string timeCleanedEventStr = std::regex_replace(work.eventStr, timePartDevlogRegEx, "");
     std::string lastTimeCleanedDevLogEventStr = lastTimeCleanedDevLogEventStrMap[work.deviceID];
 
-    // Only process if something other than event time/number has changed:
-    if (timeCleanedEventStr != lastTimeCleanedDevLogEventStr) {
+    // Check if this is a button event. Ideally we should parse json and look at ID string
+    // but simply looking for the "TAP" substring should be enough as a potential false 
+    // positive is not critical here.
+    bool isTap = (timeCleanedEventStr.find(" TAP") != std::string::npos);
+
+    // Only process if a tap or something other than event time/number has changed:
+    if (isTap || (timeCleanedEventStr != lastTimeCleanedDevLogEventStr)) {
       bool isActiveDeviceEvent = (GetCurrentDeviceId() == work.deviceID);  
 
       // Merge DevLog event json with additional properties of our own.
