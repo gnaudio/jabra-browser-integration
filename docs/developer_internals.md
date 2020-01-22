@@ -1,12 +1,11 @@
 # Developer information
 
-This document contains various implementation details of interest to developers and advanced integrators of the browser sdk. Normal users
-of the Jabra client API should not need this information.
+This document contains various implementation details of interest to developers and advanced integrators of the browser sdk. Normal users of the Jabra client API should not need this information.
 
 ## Internal message format between API, Extension and Chromehost
 
 All communication between API, Extension and chromehost is based on message 
-passing of basically the same json structure. 
+passing of basically the same json structure as documented in typescript format below:
 
 General message format:
 ```typescript
@@ -21,15 +20,15 @@ General message format:
            args?: any,
            // Response data, not used for requests.
            data?: any, 
-           // Unique arbitary ID for each request used to pair requests with results. Empty for device orginating events.
-           requestId?: number,
-           // Unique arbitary ID for each api client instance used to pair requests with requesters. Empty for device orginating events.
+           // Unique arbitary ID for each request used to pair requests with results. Empty for device orginating events!
+           requestId?: number | string,
+           // Unique arbitary ID for each api client instance used to pair requests with requesters. Empty for device orginating events!
            apiClientId?: string,
            // JS client api version.
            version_jsapi?: string,
-           // Reserved for non-jabra clients. Not presently used.
+           // Reserved for non-Jabra clients. Not presently used.
            customClientName?: string
-           // Reserved for non-jabra clients. Not presently used.
+           // Reserved for non-Jabra clients. Not presently used.
            customClientVersion?: string
 }
 ```
@@ -113,5 +112,36 @@ Request:
     "error": "Error: No device",
     "message": "na",
     "requestId": 7
+}
+```
+
+### Chromehost event examples:
+
+The example(s) below show examples of device events that are orginating from a device or from
+physically adding/removing a device (i.e. without a command being issued). Note that apiClientId and requestId are empty for such events.
+
+#### device attach event 
+
+```json 
+{
+    "data": {
+        "batteryCharging":false,
+        "batteryLevelInPercent":100,
+        "batteryLow":false,
+        "deviceConnection":"USB",
+        "deviceFeatures":[1003],
+        "deviceID":0,
+        "deviceName":"Jabra SPEAK 510 USB",
+        "errStatus":0,
+        "firmwareVersion":"2.25.0",
+        "isInFirmwareUpdateMode":false,
+        "productID":1058,
+        "serialNumber":"xxxxxxxxxxxx",
+        "skypeCertified":true,
+        "variant":"08-01"
+    },
+    "message": "Event: device attached",
+    "apiClientId":"",
+    "requestId":""
 }
 ```
