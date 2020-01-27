@@ -29,6 +29,23 @@ SOFTWARE.
 #include "Types.h"
 #include <stdlib.h>
 
+#if defined (__unix__) || defined (__APPLE__) || defined (__linux__)
+#include <unistd.h>
+#elif _WIN32
+#include <process.h>
+#endif
+
+// Get process id for chomehost executable (useful for debugging). 
+int getProcessId() {
+#ifdef _WIN32
+	return _getpid();
+#elif  __APPLE__
+	return (int)getpid();
+#elif  __linux__
+	return (int)getpid();
+#endif
+}
+
 // Generate json from device info - flatten and filter out empty stuff.
 void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDeviceInfo& dynSrc) {
 	dest[JSON_KEY_DEVICEID] = src.getDeviceID();

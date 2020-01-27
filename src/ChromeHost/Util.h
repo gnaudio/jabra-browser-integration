@@ -7,6 +7,11 @@
 #include <condition_variable>
 #include <stdexcept>
 
+/*
+* Get process id for chomehost executable (useful for debugging).
+*/
+int getProcessId();
+
 /**
  * Utf8 verification. Returns false if string is invalid.
  */

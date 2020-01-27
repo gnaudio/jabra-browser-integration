@@ -30,7 +30,7 @@ SOFTWARE.
 #include <exception>
 #include <iostream>
 #include <cstdlib>
-#include "Logger.h"
+#include "util.h"
 #include "Meta.h"
 
 using namespace std;
@@ -49,7 +49,9 @@ int main()
 	  return 2;
   }
 
-  LOG_INFO << "Starting chromehost integrator v" << VERSION << " running native SDK v" << getNativeSDKVersion();
+  auto pid = getProcessId();
+
+  LOG_INFO << "Starting chromehost integrator v" << VERSION << " running native SDK v" << getNativeSDKVersion() << " using process #" << pid;
 
   try {
 	  App app;
