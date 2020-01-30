@@ -5,3 +5,13 @@ build
 private
 node_modules
 .rts*
+*.log
+
+
+# Ignore files generated locally by running cmake . src/<project>
+#CMakeFiles/
+#cmake_install.cmake
+#CMakeCache.txt
+*.vcxproj
+*.vcxproj.filters
+*.sln
