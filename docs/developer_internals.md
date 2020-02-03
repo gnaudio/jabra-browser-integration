@@ -2,6 +2,52 @@
 
 This document contains various implementation details of interest to developers and advanced integrators of the browser sdk. Normal users of the Jabra client API should not need this information.
 
+## Chromehost executable
+
+The native chromehost executable integrates the Jabra C sdk with browser
+through chrome extension. The chromehost executable is written in C++ and 
+compiled using the [cmake](https://cmake.org/) build tool.
+
+### Prerequisites 
+
+* Windows: Visual Studio 2017 (command line tools), cmake
+
+* Mac: Xcode, cmake
+
+* Ubuntu: build-essential, libasound2, [libssl v1.0.2 from ubuntu 18.04](https://packages.ubuntu.com/bionic/libssl1.0.0), cmake
+
+
+### Building Chromehost
+To build open a command shell, CD into src/ChromeHost and enter the following commands:
+
++ All platforms (unless directory already exist)
+
+```
+mkdir build
+```
+
++ Windows:
+```
+cmake .. -G "Visual Studio 15 2017" -A Win32
+cmake --build . --target ALL_BUILD --config Release
+```
+
++ Mac:
+```
+cmake ..
+cmake --build . --config Release
+```
+
++ Linux:
+```
+cmake ..
+cmake --build . --config Release
+```
+### Building chromehost installers
+
+// TODO:
+
+
 ## Internal message format between API, Extension and Chromehost
 
 All communication between API, Extension and chromehost is based on message 
