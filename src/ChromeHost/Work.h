@@ -81,6 +81,7 @@ class Work {
   virtual void print(std::ostream& where) const = 0;
 
   Work();
+  virtual ~Work() {}
 
   friend std::ostream& operator<<(std::ostream& out, const Work& work);
 };
