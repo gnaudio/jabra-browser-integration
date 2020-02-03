@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 project (jabrachromehost)
 
 file(GLOB sources *.cpp)
@@ -6,7 +6,7 @@ file(GLOB sources *.cpp)
 include_directories(SDK
                     include)
 
-add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
 
 if(WIN32)
   set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Zi")
