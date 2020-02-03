@@ -2,6 +2,7 @@ package-lock.json
 build
 .vscode
 .ionide
+.DS_Store
 private
 node_modules
 .rts*
