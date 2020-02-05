@@ -720,17 +720,17 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // Copy console output to log area:
-  var console = window.console
-  if (console) {
+  const orgConsole = window.console as any;
+  if (orgConsole) {
     function replaceStr(str: any, ...placeholders: any[]): any {
       var count = 0;
       return (str && (typeof str === 'string') || (str instanceof String)) ? str.replace(/%s/g, () => placeholders[count++]): str;
     }
     function intercept(method: any){
-        var original = (console as any)[method]
-        (console as any)[method] = function() {
+        const originalMethod = orgConsole[method];       
+        orgConsole[method] = function() {
           // @ts-ignore
-          original.apply(console, arguments);
+          originalMethod.apply(orgConsole, arguments);
 
           if (enableLogging.checked) {
             // @ts-ignore
