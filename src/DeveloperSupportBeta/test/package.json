@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "API test web application",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json && browserify main.ts -p tsify --debug -o bundle.js",
     "clean": "rimraf dist"
   },
   "author": "jabra",
@@ -15,7 +15,8 @@
     "url": "https://developer.jabra.com/"
   },
   "devDependencies": {
-    "@types/toastr": "^2.1.37",
+    "@types/toastr": "2.1.37",
+    "toastr": "2.1.4",
     "browserify": "16.5.0",
     "copyfiles": "2.1.1",
     "rimraf": "2.6.3",
