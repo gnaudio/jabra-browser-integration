@@ -1,10 +1,18 @@
 ﻿import { BoundedQueue } from './queue';
-import { MethodEntry, ParameterEntry } from '@gnaudio/jabra-browser-integration';
+import { MethodEntry, ClassEntry, ParameterEntry } from '@gnaudio/jabra-browser-integration';
 import * as jabra from '@gnaudio/jabra-browser-integration';
 import * as toastr from "toastr";
+import * as _apiMeta from '@gnaudio/jabra-browser-integration/dist/api-meta.json';
+
+const apiMeta: ClassEntry[] = (_apiMeta as any).default; // workaround for browserify json import problem.
+const jabraMeta: ClassEntry = apiMeta.find((c) => c.name === "jabra")!;
+const analyticsMeta: ClassEntry = apiMeta.find((c) => c.name === "Analytics")!;
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
+  console.log("jabraMeta is " + JSON.stringify(jabraMeta, null,3));
+  console.log("analyticsMeta is " + JSON.stringify(analyticsMeta, null,3));
+
   const stressWaitInterval = 1000;
   const maxQueueSize = 1000;
 
