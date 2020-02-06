@@ -1,93 +1,34 @@
 ﻿import { BoundedQueue } from './queue';
-import { MethodEntry, ClassEntry, ParameterEntry } from '@gnaudio/jabra-browser-integration';
+import { MethodEntry, ClassEntry, ParameterEntry, DeviceInfo, Analytics } from '@gnaudio/jabra-browser-integration';
 import * as jabra from '@gnaudio/jabra-browser-integration';
 import * as toastr from "toastr";
 import * as _apiMeta from '@gnaudio/jabra-browser-integration/dist/api-meta.json';
+import { initSDKBtn, unInitSDKBtn, devicesBtn, checkInstallBtn, deviceSelector, methodSelector, 
+         setupUserMediaPlaybackBtn, showInternalsAndDeprecatedMethodsChk, stressInvokeApiBtn, invokeApiBtn, 
+         txtParam1, txtParam2, txtParam3, txtParam4, txtParam5,
+         param1Hint, param2Hint, param3Hint, param4Hint, param5Hint, methodHelp, 
+         clearMessageAreaBtn, clearErrorAreaBtn, clearlogAreaBtn, toggleScrollMessageAreaBtn, 
+         toggleScrollErrorAreaBtn, toggleLogAreaBtn, messageFilter, logFilter, messagesCount, 
+         errorArea, errorsCount, logArea, logCount, messageArea, copyMessages, enableLogging, copyLog,
+         txStatus, txPeakStatus, rxStatus, rxPeakStatus, txSpeechStatus, rxSpeechStatus, devLogStatus, 
+         boomArmStatus, player, apiReferenceBtn, installCheckResult, clientlibVersionTxt, 
+         browserAndOsVersionTxt, otherVersionTxt, addDevice, removeDevice, setupApiClasses, setupApiMethods, setupDevices, removeDevices, apiClassSelector, methodSignature } from './guihelper';
 
+// Setup meta references.
 const apiMeta: ClassEntry[] = (_apiMeta as any).default; // workaround for browserify json import problem.
-const jabraMeta: ClassEntry = apiMeta.find((c) => c.name === "jabra")!;
-const analyticsMeta: ClassEntry = apiMeta.find((c) => c.name === "Analytics")!;
+
+// Main jabra api.
+const jabraApiMeta: ClassEntry = apiMeta.find((c) => c.name === "jabra")!;
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
-  console.log("jabraMeta is " + JSON.stringify(jabraMeta, null,3));
-  console.log("analyticsMeta is " + JSON.stringify(analyticsMeta, null,3));
+  setupApiClasses(apiMeta);
+  updateApiMethods();
 
   const stressWaitInterval = 1000;
   const maxQueueSize = 1000;
 
-  const initSDKBtn = document.getElementById('initSDKBtn') as HTMLButtonElement;
-  const unInitSDKBtn = document.getElementById('unInitSDKBtn') as HTMLButtonElement;;
-  const checkInstallBtn = document.getElementById('checkInstallBtn') as HTMLButtonElement;
-
-  const devicesBtn = document.getElementById('devicesBtn') as HTMLButtonElement;
-  const deviceSelector = document.getElementById('deviceSelector') as HTMLSelectElement;
-  const changeActiveDeviceBtn = document.getElementById('changeActiveDeviceBtn') as HTMLButtonElement;
-
-  const setupUserMediaPlaybackBtn = document.getElementById('setupUserMediaPlaybackBtn') as HTMLButtonElement;
-
-  const methodSelector = document.getElementById('methodSelector') as HTMLSelectElement;
-  const apiClassSelector = document.getElementById('apiClassSelector') as HTMLSelectElement;
-
-  const filterInternalsAndDeprecatedMethodsChk = document.getElementById('filterInternalsAndDeprecatedMethodsChk') as HTMLInputElement;
-  const invokeApiBtn = document.getElementById('invokeApiBtn') as HTMLButtonElement;
-  const stressInvokeApiBtn = document.getElementById('stressInvokeApiBtn') as HTMLButtonElement;
-
-  const txtParam1 = document.getElementById('txtParam1') as HTMLTextAreaElement;
-  const txtParam2 = document.getElementById('txtParam2') as HTMLTextAreaElement;
-  const txtParam3 = document.getElementById('txtParam3') as HTMLTextAreaElement;
-  const txtParam4 = document.getElementById('txtParam4') as HTMLTextAreaElement;
-  const txtParam5 = document.getElementById('txtParam5') as HTMLTextAreaElement;
-
-  const methodHelp = document.getElementById('methodHelp') as HTMLDivElement;  
-  const param1Hint = document.getElementById('param1Hint') as HTMLSpanElement;
-  const param2Hint = document.getElementById('param2Hint') as HTMLSpanElement;
-  const param3Hint = document.getElementById('param3Hint') as HTMLSpanElement;
-  const param4Hint = document.getElementById('param4Hint') as HTMLSpanElement;
-  const param5Hint = document.getElementById('param5Hint') as HTMLSpanElement;
-
-  const clearMessageAreaBtn = document.getElementById('clearMessageAreaBtn') as HTMLButtonElement;
-  const clearErrorAreaBtn = document.getElementById('clearErrorAreaBtn') as HTMLButtonElement;
-  const clearlogAreaBtn = document.getElementById('clearlogAreaBtn') as HTMLButtonElement;
-
-  const toggleScrollMessageAreaBtn = document.getElementById('toggleScrollMessageAreaBtn') as HTMLButtonElement;
-  const toggleScrollErrorAreaBtn = document.getElementById('toggleScrollErrorAreaBtn') as HTMLButtonElement;
-  const toggleLogAreaBtn = document.getElementById('toggleLogAreaBtn') as HTMLButtonElement;
-
-  const messageFilter = document.getElementById('messageFilter') as HTMLSelectElement;
-  const logFilter = document.getElementById('logFilter') as HTMLSelectElement;
-  const messagesCount = document.getElementById('messagesCount') as HTMLSpanElement;
-
-  const messageArea = document.getElementById('messageArea') as HTMLTextAreaElement;
-  const errorArea = document.getElementById('errorArea') as HTMLTextAreaElement;
-
-  const errorsCount = document.getElementById('errorsCount') as HTMLSpanElement;
-
-  const logArea = document.getElementById('logArea') as HTMLTextAreaElement;
-  const logCount = document.getElementById('logCount') as HTMLSpanElement;
-
-  const enableLogging = document.getElementById('enableLogging') as HTMLInputElement;
-  const copyLog = document.getElementById('copyLog') as HTMLButtonElement;
-  const copyMessages = document.getElementById('copyMessages') as HTMLButtonElement;
-
-  const installCheckResult = document.getElementById('installCheckResult') as HTMLButtonElement;
-  const clientlibVersionTxt = document.getElementById('clientlibVersionTxt') as HTMLSpanElement;
-  const otherVersionTxt = document.getElementById('otherVersionTxt') as HTMLSpanElement;
-  const browserAndOsVersionTxt = document.getElementById('browserAndOsVersionTxt') as HTMLSpanElement;
-
-  const player = document.getElementById('player') as HTMLAudioElement;
-
-  const apiReference = document.getElementById('apiReference') as HTMLButtonElement;
   let apiReferenceWindow: Window | undefined | null = undefined;
-
-  let devLogStatus = document.getElementById('devLogStatus') as HTMLSpanElement;
-  let boomArmStatus = document.getElementById('boomArmStatus') as HTMLSpanElement;
-  let txStatus = document.getElementById('txStatus') as HTMLSpanElement;
-  let txPeakStatus = document.getElementById('txPeakStatus') as HTMLSpanElement;
-  let rxStatus = document.getElementById('rxStatus') as HTMLSpanElement;
-  let rxPeakStatus = document.getElementById('rxPeakStatus') as HTMLSpanElement;
-  let txSpeechStatus = document.getElementById('txSpeechStatus') as HTMLSpanElement;
-  let rxSpeechStatus = document.getElementById('rxSpeechStatus') as HTMLSpanElement;
 
   let variables = {
     "audioElement": player,
@@ -113,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let stressInvokeCount : number | undefined = undefined;
   let stressInterval: any | undefined  = undefined;
+
+  // let attachedDevices : Map<number, DeviceInfo> = new Map<number, DeviceInfo>();
 
   // Help text for command followed by help for parameters:
   const commandTxtHelp: any = {
@@ -174,61 +117,68 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Resolves arguments for different API methods. All methods that require
   // complex values or have default values should be explicitly handled here:
-  const commandArgs: { [name: string]: () => any[] } = {
-    trySetDeviceOutput: () => [ variables.audioElement, variables.deviceInfo ],
-    isDeviceSelectedForInput: () => [ variables.mediaStream, variables.deviceInfo ],
-    getUserDeviceMediaExt: () => [ convertParam(txtParam1.value || "{}") ],
-    getDevices: () => [ convertParam(txtParam1.value || "false") ],
-    addEventListener: () => [ convertParam(txtParam1.value), eventListener ],
-    removeEventListener: () => [ convertParam(txtParam1.value), eventListener ],
-    getActiveDevice: () => [  convertParam(txtParam1.value || "false") ],
-    __default__: () => [ convertParam(txtParam1.value), convertParam(txtParam2.value), convertParam(txtParam3.value), convertParam(txtParam4.value), convertParam(txtParam5.value) ],
+  
+  const commandArgs: { [name: string]: (method: MethodEntry) => any[] } = {
+    trySetDeviceOutput: (method: MethodEntry) => [ variables.audioElement, variables.deviceInfo ],
+    isDeviceSelectedForInput: (method: MethodEntry) => [ variables.mediaStream, variables.deviceInfo ],
+    getUserDeviceMediaExt: (method: MethodEntry) => [ convertParam(txtParam1.value || "{}") ],
+    getDevices: (method: MethodEntry) => [ convertParam(txtParam1.value || "false") ],
+    addEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
+    removeEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
+    getActiveDevice: (method: MethodEntry) => [  convertParam(txtParam1.value || "false") ],
+    __default__: (method: MethodEntry) => [ convertParam(txtParam1.value, method.parameters.length>0 ? method.parameters[0] : undefined),
+                                            convertParam(txtParam2.value, method.parameters.length>1 ? method.parameters[1] : undefined),
+                                            convertParam(txtParam3.value, method.parameters.length>2 ? method.parameters[2] : undefined),
+                                            convertParam(txtParam4.value, method.parameters.length>3 ? method.parameters[3] : undefined),
+                                            convertParam(txtParam5.value, method.parameters.length>4 ? method.parameters[4] : undefined) ],
   };
 
+  let analyticsSingleton: Analytics | null = null;
 
-  // Populate dropdown with api methods:
-  function setupApiMethods(filtered: any) {
-    function isFunction(obj: any) {
-      return !!(obj && obj.constructor && obj.call && obj.apply && !/^\s*class\s+/.test(obj.toString()));
-    };
-  
-    
-    while (methodSelector.options.length > 0) {
-      methodSelector.remove(0);
-    }
-
-    // Put any methods that are not available for testing here
-    let untestable = ["Analytics", "CommandError"];
-
-    // Internals below are filtered out by default (in addition 
-    // to methods starting with underscore):
-    let internals = [
-      "init", 
-      "shutdown",
-      "addEventListener",
-      "removeEventListener"
-    ];
-
-    // Add all other methods as testable api's.
-    Object.entries(jabra).forEach(([key, value]) => {
-      if (isFunction(value) && !untestable.includes(key)) {
-        if (!filtered || (filtered && !(key.startsWith("_") || internals.includes(key)))) {
-          var opt = document.createElement('option');
-          opt.value = key;
-          opt.innerHTML = key;
-          methodSelector.appendChild(opt);
-        }
-      }
-    });
+  function getCurrentApiClassObject(): object {
+    const clazzName = apiClassSelector.value.toLowerCase();
+    switch (clazzName) {
+      case "jabra": 
+           return jabra; 
+           break;
+      case "analytics":
+           if (analyticsSingleton === null) {
+            analyticsSingleton = new Analytics(null); // TODO: Make device specific !!!!
+           }
+           return analyticsSingleton;
+           break;
+      default: throw new Error("Unknown Api Class '" + clazzName + "'");
+    }    
   }
 
-  // Setup available methods initially
-  setupApiMethods(filterInternalsAndDeprecatedMethodsChk.checked);
+  function getCurrentApiMeta(): ClassEntry | undefined {
+    const clazzName = apiClassSelector.value;
+    return apiMeta.find((c) => c.name === clazzName);
+  }
 
-  // Change available methods when filter toggled.
-  filterInternalsAndDeprecatedMethodsChk.onchange = (() => {
-    setupApiMethods(filterInternalsAndDeprecatedMethodsChk.checked);
+  function getCurrentMethodMeta(): MethodEntry | undefined {
+    const currentApiObjectMeta = getCurrentApiMeta();
+    if (currentApiObjectMeta) {
+        let selectedMethodName = methodSelector.value;
+        return currentApiObjectMeta.methods.find(method => method.name === selectedMethodName);
+    } else {
+        return undefined;
+    }
+  }
+
+  function updateApiMethods() {
+    const currentApiObjectMeta = getCurrentApiMeta();
+    setupApiMethods(currentApiObjectMeta);
     setupApiHelp();
+  }
+
+  apiClassSelector.onchange = ((e) => {
+      updateApiMethods();
+  });
+  
+  // Change available methods when filter toggled.
+  showInternalsAndDeprecatedMethodsChk.onchange = (() => {
+    updateApiMethods();
   });
 
   // Make sure we log anything by default unless overridden by the user.
@@ -237,21 +187,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Setup SDK and setup event listeners when asked.
   initSDKBtn.onclick = () => {
-    commandEffect("init", jabra.init()).then(() => {
-      return commandEffect("addEventListener", jabra.addEventListener(/.*/, eventListener));
+    commandEffect("init", [], jabra.init()).then(() => {
+      return commandEffect("addEventListener", ["/.*/"], jabra.addEventListener(/.*/, eventListener));
     }).then( () => {});
   };
 
   // Close API when asked.
   unInitSDKBtn.onclick = () => {
     let result = jabra.shutdown();
-    commandEffect("shutdown", result).then( () => {});
+    commandEffect("shutdown", [], result).then( () => {});
   };
 
   // Event listener that listen to everything from our SDK:
   function eventListener(event: any) {
     if (event && event.error) {
-      addError(event);
+      addError(undefined, event);
     } else {
       addEventMessage(event);
     }
@@ -264,24 +214,15 @@ document.addEventListener('DOMContentLoaded', function () {
       let deviceName = event.data.deviceName;
 
       if (event.message === "device attached") {
-        var opt = document.createElement('option');
-        opt.value = deviceIdStr;
-        opt.innerHTML = deviceName;
-        deviceSelector.appendChild(opt);
-      } else if (event.message === "device detached") {
-        let found = false;
-        let i = 0;
-        while (deviceSelector.options.length > i && !found) {
-          if (deviceSelector.options[i].value === deviceIdStr) {
-              deviceSelector.remove(i);
-              found = true;
-          }
+        addDevice(event.data);
 
-          ++i;
-        }
+        updateApiMethods();
+      } else if (event.message === "device detached") {
+        removeDevice(event.data);
+
+        updateApiMethods();
       }
 
-      changeActiveDeviceBtn.disabled = deviceSelector.options.length === 0;
     }
 
     // Watch for interesting status in devlog events:
@@ -334,37 +275,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
   checkInstallBtn.onclick = () => {
     let result = jabra.getInstallInfo();
-    commandEffect("getInstallInfo", result).then( () => {});
+    commandEffect("getInstallInfo", [], result).then( () => {});
   };
 
   // Fillout devices dropdown when asked.
   devicesBtn.onclick = () => {
     let result = jabra.getDevices();
-    commandEffect("getDevices", result).then( () => {});
+    commandEffect("getDevices", [], result).then( () => {});
   };
-
   // Setup user media for playback (getUserDeviceMediaExt + trySetDeviceOutput)
   setupUserMediaPlaybackBtn.onclick = () => {
-    commandEffect("getUserDeviceMediaExt", jabra.getUserDeviceMediaExt({})).then((value) => {
-      return commandEffect("trySetDeviceOutput",  jabra.trySetDeviceOutput(player, value.deviceInfo));
+    commandEffect("getUserDeviceMediaExt", ["{}"], jabra.getUserDeviceMediaExt({})).then((value) => {
+      return commandEffect("trySetDeviceOutput", ["<player>", "<deviceInfo>"], jabra.trySetDeviceOutput(player, value.deviceInfo));
     }).then(() => {});
   };
   
-  // Change active device
-  changeActiveDeviceBtn.onclick = () => {
-    let id = deviceSelector.value;
-
-    // Using old deprecated version so it works with previous chromehost.
-    commandEffect("_setActiveDeviceId", jabra._setActiveDeviceId(id)).then(() => {});
-  };
-
   // Update hints for API call:
   methodSelector.onchange = () => {
     setupApiHelp();
   };
 
+  // Producable printable version of parameter
+  function paramToString(param: any): string {
+    if (param === null) {
+      return "<null>";
+    } else if (param === undefined) {
+      return "<undefined>"
+    } else if ((param !== Object(param)) || param.hasOwnProperty('toString')) {
+      return param.toString();
+    } else {
+      return JSON.stringify(param, null, 2);
+    }
+  }
+
   // Setup hints to help out with API use:
   function setupApiHelp() {
+    const meta = getCurrentMethodMeta();
+
     param1Hint.innerText = "";
     param2Hint.innerText = "";
     param3Hint.innerText = "";
@@ -381,36 +328,33 @@ document.addEventListener('DOMContentLoaded', function () {
       return optional ? "border:1px solid #00ff00" : "border:1px solid #ff0000";
     }
 
-    let apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
-    var help: string[] | undefined = commandTxtHelp[apiFuncName];
-    if (!help) {
-      help = commandTxtHelp["__default__"];
+    function getTypeHint(pMeta: ParameterEntry) {
+      return pMeta.tsType + (pMeta.tsType !== pMeta.jsType ? " (" + pMeta.jsType + ")" : "");
     }
 
-    if (help) {
-      if (help.length>0) {
-        methodHelp.innerText = help[0];
-      }
+    if (meta) {
+      methodSignature.innerText = meta.name + "( " + meta.parameters.map(p => p.name + (p.optional ? "?": "") + ": " + p.tsType).join(", ") + "): " + meta.tsType;
+      methodHelp.innerText = meta.documentation;
 
-      if (help.length>1) {
-        param1Hint.innerText = help[1];
-        (txtParam1 as any).style = getInputStyle(help[1].includes("?:"));
+      if (meta.parameters.length>=1) {
+        param1Hint.innerText = getTypeHint(meta.parameters[0]);
+        (txtParam1 as any).style = getInputStyle(meta.parameters[0].optional);
       }
-      if (help.length>2) {
-        param2Hint.innerText = help[2];
-        (txtParam2 as any).style = getInputStyle(help[2].includes("?:"));
+      if (meta.parameters.length>=2) {
+        param2Hint.innerText =  getTypeHint(meta.parameters[1]);
+        (txtParam2 as any).style = getInputStyle(meta.parameters[1].optional);
       }
-      if (help.length>3) {
-        param3Hint.innerText = help[3];
-        (txtParam3 as any).style = getInputStyle(help[3].includes("?:"));
+      if (meta.parameters.length>=3) {
+        param3Hint.innerText =  getTypeHint(meta.parameters[2]);
+        (txtParam3 as any).style =  getInputStyle(meta.parameters[2].optional);
       }
-      if (help.length>4) {
-        param4Hint.innerText = help[4];
-        (txtParam4 as any).style = getInputStyle(help[4].includes("?:"));
+      if (meta.parameters.length>=4) {
+        param4Hint.innerText =  getTypeHint(meta.parameters[3]);
+        (txtParam4 as any).style =  getInputStyle(meta.parameters[3].optional);
       }
-      if (help.length>5) {
-        param5Hint.innerText = help[5];
-        (txtParam5 as any).style = getInputStyle(help[5].includes("?:"));
+      if (meta.parameters.length>=5) {
+        param5Hint.innerText =  getTypeHint(meta.parameters[4]);
+        (txtParam5 as any).style =  getInputStyle(meta.parameters[4].optional);
       }
     }
   }
@@ -420,74 +364,100 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Invoke API once:
   invokeApiBtn.onclick = () => {
-    invokeSelectedApi(methodSelector.options[methodSelector.selectedIndex].value)
+    const meta = getCurrentMethodMeta();
+    const currentApiObject = getCurrentApiClassObject(); 
+    if (meta) {
+        invokeSelectedApi(currentApiObject, meta);
+    } else {
+        addError("User error", "No device/api selected to invoke");
+    }
   };
 
   // Invoke API repeatedly:
   stressInvokeApiBtn.onclick = () => {
-    let sucess = true;
-    let stopped = false;
-    if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
-      stopStressInvokeApi(sucess);
-      stopped = true;
-    } else {
-      const apiFuncName = methodSelector.options[methodSelector.selectedIndex].value;
-      stressInvokeCount = 1;
-      stressInvokeApiBtn.value = "Stop";
-      stressInterval = setInterval(() => {
-        if (sucess && stressInterval) {
-          try {
-            invokeSelectedApi(apiFuncName).then( () => {
-              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " success count # " + stressInvokeCount + ")";
-              ++stressInvokeCount!;
-            }).catch( () => {
-              stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed at count # " + stressInvokeCount + ")";
+      // Stop stress testing. Leave button with status if failure until repeated stop.
+      function stopStressInvokeApi(success: boolean) {
+        if (stressInterval) {
+            clearInterval(stressInterval);
+            stressInterval = undefined;
+        }
+        if (success) {
+            stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
+        }
+      }
+      
+      let sucess = true;
+      let stopped = false;
+      if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
+        stopStressInvokeApi(sucess);
+        stopped = true;
+      } else {
+        const funcMeta = getCurrentMethodMeta();
+        const currentApiObject = getCurrentApiClassObject(); 
+        if (!currentApiObject || !funcMeta) {
+          addError("User error", "No device/api selected to invoke");
+          return;
+        }
+
+        stressInvokeCount = 1;
+        stressInvokeApiBtn.value = "Stop";
+        stressInterval = setInterval(() => {
+          if (sucess && stressInterval && funcMeta) {
+            try {
+              invokeSelectedApi(currentApiObject, funcMeta).then( () => {
+                stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " success count # " + stressInvokeCount + ")";
+                ++stressInvokeCount!;
+              }).catch( () => {
+                stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed at count # " + stressInvokeCount + ")";
+                sucess = false;
+                stopStressInvokeApi(sucess);
+              });
+            } catch (err) {
+              stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed with exception at count # " + stressInvokeCount + ")";
               sucess = false;
               stopStressInvokeApi(sucess);
-            });
-          } catch (err) {
-            stressInvokeApiBtn.value = "Stop stress test (" + apiFuncName + " failed with exception at count # " + stressInvokeCount + ")";
-            sucess = false;
-            stopStressInvokeApi(sucess);
+            }
           }
-        }
-      }, stressWaitInterval);
-    }
+        }, stressWaitInterval);
+      }
   };
 
-  // Stop stress testing. Leave button with status if failure until repeated stop.
-  function stopStressInvokeApi(success: boolean) {
-    if (stressInterval) {
-        clearInterval(stressInterval);
-        stressInterval = undefined;
-    }
-    if (success) {
-        stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
-    }
-  }
-
   // Call into user selected API method.
-  function invokeSelectedApi(apiFuncName: string) {
-    const apiFunc = (jabra as any)[apiFuncName];
+  function invokeSelectedApi(currentApiObject: object, method: MethodEntry) {
+    if (currentApiObject && method) {
+      const apiFunc = (currentApiObject as any)[method.name];
 
-    let argsResolver = commandArgs[apiFuncName];
-    if (!argsResolver) {
-      argsResolver = commandArgs["__default__"];
-    }
+      let argsResolver = commandArgs[method.name];
+      if (!argsResolver) {
+          argsResolver = commandArgs["__default__"];
+      }
 
-    const args = argsResolver();
+      let args: any[];
+      try {
+        args = argsResolver(method);
+        while(args.length>0 && args[args.length-1] === undefined){
+          args.pop();
+        } 
+      } catch (err) {
+        addError("Parameter input error", err);
+        return Promise.reject(err);
+      }
 
-    try {
-      let result = apiFunc.call(jabra, ...args);
-      return commandEffect(apiFuncName, result).then(() => {});
-    } catch (err) {
-      addError(err);
-      return Promise.reject(err);
+      try {
+          const result = apiFunc.call(jabra, ...args);
+          return commandEffect(method.name, args.map(a => paramToString(a)), result).then(() => {});
+      } catch (err) {
+          addError("Command execution error",  err);
+          return Promise.reject(err);
+      }
+    } else {
+        addError("invokeSelectedApi", "No api selected to execute");
+        return Promise.reject(new Error("No api selected to execute"));
     }
   }
 
   // Update state with result from previously executed command and return promise with result.
-  function commandEffect(apiFuncName: string, result: Promise<any> | any) {
+  function commandEffect(apiFuncName: string, argDescriptions: any[], result: Promise<any> | any) {
     if (result instanceof Promise) {
       return result.then((value) => {
         addStatusMessage("Api call " + apiFuncName + " succeeded.");
@@ -499,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
           initSDKBtn.disabled = true;
           unInitSDKBtn.disabled = false;
           checkInstallBtn.disabled = false;
+          invokeApiBtn.disabled = false;
           devicesBtn.disabled = false;
           setupUserMediaPlaybackBtn.disabled = false;
 
@@ -508,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
           unInitSDKBtn.disabled = true;
           checkInstallBtn.disabled = true;
           devicesBtn.disabled = true;
-          changeActiveDeviceBtn.disabled = true;
+          invokeApiBtn.disabled = true;
           setupUserMediaPlaybackBtn.disabled = true;
   
           while (deviceSelector.options.length > 0) {                
@@ -551,42 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
           addResponseMessage(value);
         } else if (apiFuncName === "getDevices") {
-          while (deviceSelector.options.length > 0) {
-            deviceSelector.remove(0);
-          }
-    
-          // Normally one should not need to check for legacy_result, but for this
-          // special test page we would like it to work with older extensions/chromehosts
-          // while at the same time using newest JS API. This is not normally
-          // supported so we need special code to deal with legazy result formats as well.
-          // Do not do this yourself - upgrade dependencies or use older API.
-    
-          if (!Array.isArray(value) && value && value.legacy_result) {
-            let devicesAry = value.legacy_result.split(",");
-            for (var i = 0; i < devicesAry.length; i += 2){
-              Object.entries(value).forEach(([key, v]) => {
-                var opt = document.createElement('option');
-                opt.value = devicesAry[i];
-                opt.innerHTML = devicesAry[i+1];
-                deviceSelector.appendChild(opt);
-              });
-            }
-          } else {
-            // Decode device information normally - recommended way going forward.
-            value.forEach((device: jabra.DeviceInfo) => {
-              var opt = document.createElement('option');
-              opt.value = device.deviceID.toString();
-              opt.innerHTML = device.deviceName;
-              deviceSelector.appendChild(opt);
-            });
-          }
-    
-          if (deviceSelector.options.length == 0) {
-            addError("No devices found");
-          }
-
-          changeActiveDeviceBtn.disabled = deviceSelector.options.length === 0;
-
+          setupDevices(value);
           addResponseMessage(value);
         } else { // Default handling of general API call:
           // Just print output if there is any:
@@ -603,12 +539,10 @@ document.addEventListener('DOMContentLoaded', function () {
           installCheckResult.innerHTML = " Failed verifying installation. Likely because installation is not working or too old to support verification.";
           installCheckResult.style.color = "red";
         } else if (apiFuncName === "getDevices") {
-          while (deviceSelector.options.length > 0) {
-            deviceSelector.remove(0);
-          }
+          removeDevices();
         }
 
-        addError(error);
+        addError("commandEffect", error);
 
         return undefined;
       });
@@ -664,17 +598,24 @@ document.addEventListener('DOMContentLoaded', function () {
     return logFilter.value === "" || str.toLocaleLowerCase().includes(logFilter.value.toLocaleLowerCase());
   }
 
-  function addError(err: string | Error) {  
+  function addError(context: string | undefined, err: string | Error) {  
     let txt;
     if (typeof err === 'string' || err instanceof String) {
-      txt = "error string: " + err;
+      txt = err;
     } else if (err instanceof Error) {
       txt = err.name + " : " + err.message;
+    } else if (err === undefined) {
+      txt = undefined;
     } else {
-      txt = "error object: " + JSON.stringify(err, null, 2);
+      txt = JSON.stringify(err, null, 2);
+    }
+  
+    if (context !== undefined) {
+      errors.push(txt ? (context + ": " + txt) : context);
+    } else if (txt !== undefined) {
+      errors.push(txt.toString());
     }
 
-    errors.push(txt);
     updateErrorArea();
   }
 
@@ -719,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function () {
     navigator.clipboard.writeText(clipText)
     .then(() => {})
     .catch(err => {
-      addError("Could not copy to clipboard");
+      addError("copyMessages", "Could not copy to clipboard");
     });
   };
 
@@ -776,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
     navigator.clipboard.writeText(clipText)
     .then(() => {})
     .catch(err => {
-      addError("Could not copy to clipboard");
+      addError("copyLog", "Could not copy to clipboard");
     });
   };
 
@@ -802,7 +743,7 @@ document.addEventListener('DOMContentLoaded', function () {
   browserAndOsVersionTxt.innerHTML = "Chrome v" + getChromeVersion() + ", " + getOS();
 
   // Open Api reference with syntax highlightning in new window.
-  apiReference.onclick = () => {
+  apiReferenceBtn.onclick = () => {
    fetch('../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts')
     .then(response => response.text())
     .then(text => {

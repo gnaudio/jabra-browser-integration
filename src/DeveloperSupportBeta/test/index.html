@@ -21,6 +21,7 @@
   <div id="subTitles">
         <p id="subTitle1"></p>
         <p id="subTitle2"></p>
+        <b id="errorMsg"></b>
   </div>
   
   <div class="wrapper">
@@ -31,6 +32,9 @@
             </td>
             <td>
                 <input id="unInitSDKBtn" type="button" value="UnInit" disabled="true" title="De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API - Alias for shutdown call"/>
+            </td>
+            <td>
+                <input id="devicesBtn" type="button" value="Get Devices" title="Alias for call into getDevices" disabled="true"/>
             </td>
             <td>&nbsp;&nbsp;&nbsp;</td>
             <td>
@@ -51,54 +55,48 @@
     <br/>
     <audio id="player" muted autoplay></audio>
     <br/>
-    
+       
     <table>
         <tr>
+            <td>Device</td>
+            <td>ApiClass</td>
+            <td>Method</td>
+            <td>Internals</td>
+            <td>Invoke</td>
+            <td></td>
+        </tr>
+        <tr>
             <td>
-                <input id="devicesBtn" type="button" value="Get Devices" title="Alias for call into getDevices" disabled="true"/>
+              <select id="deviceSelector"> 
+              </select>   
             </td>
             <td>
-                <div>   
-                    <select id="deviceSelector"> 
-                    </select>   
-                </div>   
+              <select id="apiClassSelector"> 
+              </select>   
             </td>
             <td>
-                 <input id="changeActiveDeviceBtn" type="button" value="Set as active" title="Select active device using special backwards compatible call into _setActiveDeviceId_deprecated" disabled="true"/>
+              <select id="methodSelector">                  
+              </select>
+            </td>
+            <td>
+                <input type="checkbox" id="showInternalsAndDeprecatedMethodsChk" value="true" title="Show internals/deprecated/event methods" />
+            </td>
+            <td>
+                <input id="invokeApiBtn" type="button" value="Invoke" disabled="true" title="Invoke selected API function (1 time)"/>
+            </td>
+            <td>
+                &nbsp;&nbsp;<input id="stressInvokeApiBtn" type="button" value="Invoke repeatedly (stress test)" disabled="true" title="Stress test by invoking selected API function repeatedly"/>
             </td>
         </tr>
     </table>
 
     <p>&nbsp;</p>
-        
-    <table>
-        <tr>
-            <td>
-                <label for="methodSelector">Select API call to invoke:</label>
-            </td>
-            <td>
-                <select id="apiClassSelector">                  
-                </select>
-            </td>
-            <td>
-                <select id="methodSelector">                  
-                </select>
-            </td>
-            <td>
-                <input type="checkbox" id="filterInternalsAndDeprecatedMethodsChk" value="true" title="Filter out internals/deprecated methods" checked />
-            </td>
-            <td>
-                <input id="invokeApiBtn" type="button" value="Invoke" title="Invoke selected API function (1 time)"/>
-            </td>
-            <td>
-                &nbsp;&nbsp;<input id="stressInvokeApiBtn" type="button" value="Invoke repeatedly (stress test)" title="Stress test by invoking selected API function repeatedly"/>
-            </td>
-            <td>
-                <div id="methodHelp" class="methodHelp"></div>
-            </td>
-        </tr>
-    </table>
+
+    <div id="methodSignature" class="methodSignature"></div></br>
+    <div id="methodHelp" class="methodHelp"></div><br/>
     
+    <p>&nbsp;</p>
+
     <table>
         <tr>
             <td>
