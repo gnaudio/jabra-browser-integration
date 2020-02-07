@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let stressInvokeCount : number | undefined = undefined;
   let stressInterval: any | undefined  = undefined;
-
-  // let attachedDevices : Map<number, DeviceInfo> = new Map<number, DeviceInfo>();
+ 
+  let currentDeviceAnalyticsSingleton: Analytics | null = null;
 
   // Help text for command followed by help for parameters:
   const commandTxtHelp: any = {
@@ -133,19 +133,18 @@ document.addEventListener('DOMContentLoaded', function () {
                                             convertParam(txtParam5.value, method.parameters.length>4 ? method.parameters[4] : undefined) ],
   };
 
-  let analyticsSingleton: Analytics | null = null;
-
   function getCurrentApiClassObject(): object {
     const clazzName = apiClassSelector.value.toLowerCase();
+    const deviceId = Number.parseInt(deviceSelector.value);
     switch (clazzName) {
       case "jabra": 
            return jabra; 
            break;
       case "analytics":
-           if (analyticsSingleton === null) {
-            analyticsSingleton = new Analytics(null); // TODO: Make device specific !!!!
+           if (currentDeviceAnalyticsSingleton === null) {
+            currentDeviceAnalyticsSingleton = new Analytics(deviceId);
            }
-           return analyticsSingleton;
+           return currentDeviceAnalyticsSingleton;
            break;
       default: throw new Error("Unknown Api Class '" + clazzName + "'");
     }    
@@ -171,6 +170,13 @@ document.addEventListener('DOMContentLoaded', function () {
     setupApiMethods(currentApiObjectMeta);
     setupApiHelp();
   }
+
+  deviceSelector.onchange = (() => {
+    currentDeviceAnalyticsSingleton?.stop();
+    currentDeviceAnalyticsSingleton = null;
+    const deviceId = deviceSelector.value;
+    commandEffect("setActiveDeviceId", [ deviceId.toString() ], jabra.setActiveDeviceId(deviceId)).then( () => {});
+  });
 
   apiClassSelector.onchange = ((e) => {
       updateApiMethods();
@@ -444,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       try {
-          const result = apiFunc.call(jabra, ...args);
+          const result = apiFunc.call(getCurrentApiClassObject(), ...args);
           return commandEffect(method.name, args.map(a => paramToString(a)), result).then(() => {});
       } catch (err) {
           addError("Command execution error",  err);
@@ -470,9 +476,12 @@ document.addEventListener('DOMContentLoaded', function () {
           unInitSDKBtn.disabled = false;
           checkInstallBtn.disabled = false;
           invokeApiBtn.disabled = false;
+          stressInvokeApiBtn.disabled = false;
           devicesBtn.disabled = false;
           setupUserMediaPlaybackBtn.disabled = false;
 
+          currentDeviceAnalyticsSingleton?.stop();
+          currentDeviceAnalyticsSingleton = null;
           toastr.info("Jabra library initialized successfully");
         } else if (apiFuncName === "shutdown") {
           initSDKBtn.disabled = false;
@@ -480,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
           checkInstallBtn.disabled = true;
           devicesBtn.disabled = true;
           invokeApiBtn.disabled = true;
+          stressInvokeApiBtn.disabled = true;
           setupUserMediaPlaybackBtn.disabled = true;
   
           while (deviceSelector.options.length > 0) {                
