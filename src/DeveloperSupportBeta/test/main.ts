@@ -464,10 +464,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Update state with result from previously executed command and return promise with result.
   function commandEffect(apiFuncName: string, argDescriptions: any[], result: Promise<any> | any) {
+    let apiCallDescription = apiFuncName + "(" + argDescriptions.join(", ") + ")";
+    addStatusMessage("Api call " + apiCallDescription + " executed.");
+
     if (result instanceof Promise) {
       return result.then((value) => {
-        addStatusMessage("Api call " + apiFuncName + " succeeded.");
-
         // Handle special calls that must have side effects in this test application:
         if (apiFuncName === "init") {
           // Use the Jabra library
