@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
   deviceSelector.onchange = (() => {
     currentDeviceAnalyticsSingleton?.stop();
     currentDeviceAnalyticsSingleton = null;
-    const deviceId = deviceSelector.value;
+    const deviceId = Number.parseInt(deviceSelector.value);
     commandEffect("setActiveDeviceId", [ deviceId.toString() ], jabra.setActiveDeviceId(deviceId)).then( () => {});
   });
 

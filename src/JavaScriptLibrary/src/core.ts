@@ -1121,8 +1121,8 @@ export function resume(): void {
  * @returns A promise that is resolved once operation completes.
  */
 export function setMmiFocus(
-  type: RemoteMmiType | string,
-  capture: boolean | string
+  type: RemoteMmiType,
+  capture: boolean
 ): Promise<void> {
   let typeVal = numberOrString(type);
   let captureVal = booleanOrString(capture);
@@ -1143,9 +1143,9 @@ export function setMmiFocus(
  * @returns A promise that is resolved once operation completes.
  */
 export function setRemoteMmiLightAction(
-  type: RemoteMmiType | string,
-  color: ColorType | string | number,
-  effect: RemoteMmiSequence | string
+  type: RemoteMmiType,
+  color: ColorType | number,
+  effect: RemoteMmiSequence
 ): Promise<void> {
   let typeVal = numberOrString(type);
   let colorVal = colorOrString(color);
@@ -1183,7 +1183,7 @@ function _doGetSDKDevices(): Promise<ReadonlyArray<DeviceInfo>> {
  * setSinkId (when supported by the browser) to set output.
  */
 export function getActiveDevice(
-  includeBrowserMediaDeviceInfo: boolean | string = false
+  includeBrowserMediaDeviceInfo: boolean = false
 ): Promise<DeviceInfo> {
   let includeBrowserMediaDeviceInfoVal = booleanOrString(
     includeBrowserMediaDeviceInfo
@@ -1205,7 +1205,7 @@ export function getActiveDevice(
  * setSinkId (when supported by the browser) to set output.
  */
 export function getDevices(
-  includeBrowserMediaDeviceInfo: boolean | string = false
+  includeBrowserMediaDeviceInfo: boolean = false
 ): Promise<ReadonlyArray<DeviceInfo>> {
   let includeBrowserMediaDeviceInfoVal = booleanOrString(
     includeBrowserMediaDeviceInfo
@@ -1227,7 +1227,7 @@ export function getDevices(
  *
  * @deprecated Use setActiveDeviceId instead.
  */
-export function _setActiveDeviceId(id: number | string): void {
+export function _setActiveDeviceId(id: number): void {
   let idVal = numberOrString(id);
 
   // Use both new and old way of passing parameters for compatibility with <= v0.5.
@@ -1245,7 +1245,7 @@ export function _setActiveDeviceId(id: number | string): void {
  * @returns A promise that is resolved once selection completes.
  *
  */
-export function setActiveDeviceId(id: number | string): Promise<void> {
+export function setActiveDeviceId(id: number): Promise<void> {
   let idVal = numberOrString(id);
 
   return sendCmdWithResult<void>("setactivedevice2", { id: idVal });
@@ -1256,7 +1256,7 @@ export function setActiveDeviceId(id: number | string): Promise<void> {
  *
  * @param busy True if busy light should be set, false if it should be cleared.
  */
-export function setBusyLight(busy: boolean | string): Promise<void> {
+export function setBusyLight(busy: boolean): Promise<void> {
   let busyVal = booleanOrString(busy);
 
   return sendCmdWithResult<void>("setbusylight", { busy: busyVal });

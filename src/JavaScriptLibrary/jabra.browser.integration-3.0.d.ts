@@ -399,7 +399,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         *
         * @returns A promise that is resolved once operation completes.
         */
-    export function setMmiFocus(type: RemoteMmiType | string, capture: boolean | string): Promise<void>;
+    export function setMmiFocus(type: RemoteMmiType, capture: boolean): Promise<void>;
     /**
         * Change light/color on a previously captured button.
         * Nb. This requires the button to be previously captured though setMMiFocus.
@@ -410,7 +410,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         *
         * @returns A promise that is resolved once operation completes.
         */
-    export function setRemoteMmiLightAction(type: RemoteMmiType | string, color: ColorType | string | number, effect: RemoteMmiSequence | string): Promise<void>;
+    export function setRemoteMmiLightAction(type: RemoteMmiType, color: ColorType | number, effect: RemoteMmiSequence): Promise<void>;
     /**
         * Get detailed information about the current active Jabra Device, including current status
         * and optionally also including related browser media device information.
@@ -420,7 +420,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         * is useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
         * setSinkId (when supported by the browser) to set output.
         */
-    export function getActiveDevice(includeBrowserMediaDeviceInfo?: boolean | string): Promise<DeviceInfo>;
+    export function getActiveDevice(includeBrowserMediaDeviceInfo?: boolean): Promise<DeviceInfo>;
     /**
         * List detailed information about all attached Jabra Devices, including current status.
         * and optionally also including related browser media device information.
@@ -430,7 +430,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         * is useful for setting a device constraint on mediaDevices.getUserMedia for input or for calling
         * setSinkId (when supported by the browser) to set output.
         */
-    export function getDevices(includeBrowserMediaDeviceInfo?: boolean | string): Promise<ReadonlyArray<DeviceInfo>>;
+    export function getDevices(includeBrowserMediaDeviceInfo?: boolean): Promise<ReadonlyArray<DeviceInfo>>;
     /**
         * Internal utility that select a new active device in a backwards compatible way that works with earlier chrome host.
         * Used internally by test tool - do not use otherwise.
@@ -441,7 +441,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         *
         * @deprecated Use setActiveDeviceId instead.
         */
-    export function _setActiveDeviceId(id: number | string): void;
+    export function _setActiveDeviceId(id: number): void;
     /**
         * Select a new active device returning once selection is completed.
         *
@@ -453,13 +453,13 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         * @returns A promise that is resolved once selection completes.
         *
         */
-    export function setActiveDeviceId(id: number | string): Promise<void>;
+    export function setActiveDeviceId(id: number): Promise<void>;
     /**
         * Set busylight on active device (if supported)
         *
         * @param busy True if busy light should be set, false if it should be cleared.
         */
-    export function setBusyLight(busy: boolean | string): Promise<void>;
+    export function setBusyLight(busy: boolean): Promise<void>;
     /**
         * Get version number information for all components.
         */

@@ -7,7 +7,8 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 3.0.1. Changed the following in the Javascript API
 
 - Added analytics module
-- Added multiple builds, CommonJS (CJS), ECMAScript Module (ESM), and Universal Module Definition (UMD)
+- Added npm module support.
+- Otional string types removed in TS declarations. Clients should now use the correct types instead of strings.
 
 # 2.1 Version (browser extension)
 
