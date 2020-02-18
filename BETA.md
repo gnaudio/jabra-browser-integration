@@ -21,8 +21,8 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0beta8.msi) | Chromehost 2.0 Beta 8 |
-| macOS (El Capitan/Sierra)     | *coming soon* | |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.2.msi](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.0.2.msi) | Chromehost 2.0.2 RC |
+| macOS (10.x)                  | [JabraChromeHost2.0.2.dmg](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.0.2.dmg) | Chromehost 2.0.2 RC |
 
 # WebExtension BETA
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/igcbbdnhomedfadljgcmcfpdcoonihfe)
