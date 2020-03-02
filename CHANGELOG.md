@@ -1,21 +1,12 @@
 # Change information.
 
-Here are listed changes for (1) Javascript API, (2) Browser extension and (3) native chromehost installation. 
+Here are listed changes for (1) Javascript API, (2) Browser extension and (3) native chromehost installation components.
 
-# 2.1 Version (browser extension)
-
-2.1 Fixed the following in the Browser extension:
-* Added frames support. Enable use in salesforce apps etc.
-
-# 2.0.1 Version (API only)
+# 1. JAVASCRIPT API
 
 2.0.1. Fixed the following in the Javascript API
 * Installation check bug fix - would falsely report that installation was corrupt in some cases.
 * Workaround for typescript 3.4 problem.
-
-# 2.0 Version
-
-## 1/3 Javascript API changes :
 
 2.0 Added/changed the following
 * Added [typescript](https://www.typescriptlang.org/) definitions `jabra.browser.integration-2.0.d.ts` of API for detailed documentation, static checking and better IDE support. *Tip: Use the typescript file with a [reference path comment](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) on top of your javascript files to get code completion for the Jabra API in many development tools.* 
@@ -45,7 +36,10 @@ to enable clients to synchronize **(breaking change)**.
 
 1.0 Original version with call control support.
 
-## 2/3 Browser extension changes:
+# 2. BROWSER EXTENSION
+
+2.1 Fixed the following in the Browser extension:
+* Added frames support. Enable use in salesforce apps etc.
 
 2.0 Added the following:
 * Support for passing complex input/output as needed by new JS API.
@@ -53,9 +47,14 @@ to enable clients to synchronize **(breaking change)**.
 * Support for new getInstallInfo command.
 * Added logging support, configurable using new UI.
 
+0.51 Added the following:
+* Security fix to allow being called from beta browser extensions
+
 0.5 Original version with call control support.
 
-## 3/3 Chomehost changes:
+# 3. CHROMEHOST:
+2.0.2 Added permission for 3CX extensions to use chromehost executable.
+
 2.0 Added the following:
 * Logging to files similar to native SDK.
 * Support for >30 more events.
@@ -64,19 +63,12 @@ to enable clients to synchronize **(breaking change)**.
 * Fixed various bugs, incl. a race-condition where incorrect results would be given.
 * Beta support
 
-2.0 Release for MAC
+Notes for MacOS version:
 * Supports the released Chrome Extension 2.0 and JavaScript Library 2.0
 * Logging to files similar to native SDK.
 Note: 
 * There is a difference in native SDK version of Chromehost 2.0 for Win and Mac. Native SDK version of Win is v1.4.0.10 and Mac is v1.7.0.0
 * Chromehost source is updated to support native SDK v1.7.0.0
 * Remote MMI (MMIV2) for Jabra Engage 50 device is not supported in MAC.
-
-# 0.51 Release
-
-0.51 Added the following:
-* Security fix to allow being called from beta browser extensions
-
-# 0.5 Release
 
 0.5 Original version with call control support.
