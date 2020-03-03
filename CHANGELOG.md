@@ -8,7 +8,9 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 - Added analytics module
 - Added npm module support.
-- Otional string types removed in TS declarations. Clients should now use the correct types instead of strings.
+- Optional string types removed in TS declarations. Clients should now use the correct types instead of strings.
+- Added meta-data for APIs.
+- Improved API test application to support multiple objects, documentation, alignment with similar node.js test application.
 
 2.0.1. Fixed the following in the Javascript API
 
