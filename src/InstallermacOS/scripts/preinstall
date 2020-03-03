@@ -1,6 +1,6 @@
 #! /bin/sh
 #Package version to be installed
-CURRENT_PKG_VERSION=2.0
+CURRENT_PKG_VERSION=2.0.2
 
 # Installed package version
 INSTALLED_PKG_VERSION=$(pkgutil --pkg-info com.jabra.chromehost | grep version | cut -d: -f2)

@@ -1,2 +1,4 @@
 \.gitignore\
 \.vs\
+\node_modules\
+\build\
