@@ -10,7 +10,7 @@ compiled using the [cmake](https://cmake.org/) build tool.
 
 ### Prerequisites 
 
-* Windows: Visual Studio 2017 (command line tools), cmake
+* Windows: Visual Studio 2017 (command line tools), cmake, [Wix Toolset](https://wixtoolset.org/).
 
 * Mac: Xcode, cmake
 
@@ -32,21 +32,19 @@ cmake .. -G "Visual Studio 15 2017" -A Win32
 cmake --build . --target ALL_BUILD --config Release
 ```
 
-+ Mac:
-```
-cmake ..
-cmake --build . --config Release
-```
-
-+ Linux:
++ Mac/Linux:
 ```
 cmake ..
 cmake --build . --config Release
 ```
 ### Building chromehost installers
 
-// TODO:
++ Windows: 
+For Windows the installer build using Visual Studio with the [Wix Toolset](https://wixtoolset.org/) extension. The version number must be specified in the outputname in the project file
+and in Version attribute in the Product file.
 
++ Mac:
+For MacOS the installer is build using a shell script. The version number must be updated in the script.
 
 ## Internal message format between API, Extension and Chromehost
 
