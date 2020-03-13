@@ -39,6 +39,17 @@ CmdSetRemoteMmiLightAction::~CmdSetRemoteMmiLightAction()
 {
 }
 
+RemoteMmiSequence CmdSetRemoteMmiLightAction::mapEffect(uint8_t value) 
+{
+  switch (value) {
+    case 0: return RemoteMmiSequence::MMI_LED_SEQUENCE_OFF;
+    case 1: return RemoteMmiSequence::MMI_LED_SEQUENCE_ON;
+    case 2: return RemoteMmiSequence::MMI_LED_SEQUENCE_SLOW;
+    case 3: return RemoteMmiSequence::MMI_LED_SEQUENCE_FAST;
+    default: return RemoteMmiSequence::MMI_LED_SEQUENCE_OFF;
+  }
+}
+
 bool CmdSetRemoteMmiLightAction::CanExecute(const Request& request)
 {
   return (request.message == command);
@@ -47,7 +58,7 @@ bool CmdSetRemoteMmiLightAction::CanExecute(const Request& request)
 void CmdSetRemoteMmiLightAction::Execute(const Request& request)
 {
   RemoteMmiType type = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_TYPE, MMI_TYPE_MFB);
-  RemoteMmiSequence effect = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT, MMI_LED_SEQUENCE_OFF);
+  uint8_t effect = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_EFFECT, 0);
   nlohmann::json colorArray = defaultValue(request.args, SET_REMOTE_MMI_LIGHT_COMMAND_ARG_COLOR, nlohmann::json::array());
 
   uint8_t red = 0;
@@ -60,11 +71,16 @@ void CmdSetRemoteMmiLightAction::Execute(const Request& request)
     blue = colorArray[2];
   }
 
+  // The RemoteMmiSequence defined in c-sdk has changed since 
+  // introduced in the browser sdk. For backwards compatability
+  // reasons we therefore need to map them. 
+  RemoteMmiSequence actualEffect = mapEffect(effect);
+
   RemoteMmiActionOutput output = {
     red,
     green,
     blue,
-    effect
+    actualEffect
   };
 
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();

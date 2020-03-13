@@ -530,6 +530,7 @@ export enum RemoteMmiType {
 
 /**
  * A MMI effect specification for light on, off or blinking in different tempo.
+ * Nb: For legacy reasons these values are different than those in the C-SDK.
  */
 export enum RemoteMmiSequence {
   MMI_LED_SEQUENCE_OFF = 0,

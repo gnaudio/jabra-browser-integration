@@ -41,5 +41,6 @@ public:
 
 protected:
   HeadsetIntegrationService* m_headsetIntegrationService;
+  RemoteMmiSequence mapEffect(uint8_t value);
 };
 
