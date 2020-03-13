@@ -35,7 +35,7 @@ function generateDocumentation(
   let output: ClassEntry[] = [
     {
       comment: topComment,
-      name: "jabra",
+      name: "Jabra",
       documentation: "Global functions exported under jabra nampespace",
       tsType: "jabra",
       jsType: "object",

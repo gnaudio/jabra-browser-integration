@@ -18,7 +18,7 @@ import { initSDKBtn, unInitSDKBtn, devicesBtn, checkInstallBtn, deviceSelector, 
 const apiMeta: ClassEntry[] = (_apiMeta as any).default; // workaround for browserify json import problem.
 
 // Main jabra api.
-const jabraApiMeta: ClassEntry = apiMeta.find((c) => c.name === "jabra")!;
+const jabraApiMeta: ClassEntry = apiMeta.find((c) => c.name.toLowerCase() === "jabra")!;
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
