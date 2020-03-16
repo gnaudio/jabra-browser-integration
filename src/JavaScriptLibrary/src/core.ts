@@ -1508,7 +1508,7 @@ function fillInMatchingMediaInfo(
   function findBestMatchIndex(
     sdkDeviceName: string,
     mediaDeviceNameCandidates: string[]
-  ): number {
+  ): number {  
     // Edit distance helper adapted from
     // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
     function editDistance(s1: string, s2: string) {
@@ -1555,6 +1555,14 @@ function fillInMatchingMediaInfo(
     if (mediaDeviceNameCandidates.length == 1) {
       return 0;
     } else if (mediaDeviceNameCandidates.length > 0) {
+      // First try to see if the vendor and product id is mentioned in label (newer versions of chrome):
+      const explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+      const explicitIdx = mediaDeviceNameCandidates.findIndex((c) => c.indexOf(explicitStr) >= 0);
+      if (explicitIdx>=0) {
+        return explicitIdx;
+      }
+
+      // Otherwise fallback on guessing names
       let similarities = mediaDeviceNameCandidates.map(candidate => {
         if (candidate.includes("(" + sdkDeviceName + ")")) {
           return 1.0;

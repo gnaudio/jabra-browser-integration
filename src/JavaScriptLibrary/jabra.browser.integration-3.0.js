@@ -1165,6 +1165,18 @@
       if (mediaDeviceNameCandidates.length == 1) {
         return 0;
       } else if (mediaDeviceNameCandidates.length > 0) {
+        // First try to see if the vendor and product id is mentioned in label (newer versions of chrome):
+        var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+        var explicitIdx = mediaDeviceNameCandidates.findIndex(function (c) {
+          return c.indexOf(explicitStr) >= 0;
+        });
+
+        if (explicitIdx >= 0) {
+          console.log("!!OBS.OBS!! resolved EXPLICIT INDEX '" + explicitIdx + "'");
+          return explicitIdx;
+        } // Otherwise fallback on guessing names
+
+
         var similarities = mediaDeviceNameCandidates.map(function (candidate) {
           if (candidate.includes("(" + sdkDeviceName + ")")) {
             return 1.0;
@@ -1192,6 +1204,10 @@
     }
 
     if (deviceInfo && deviceInfo.deviceName) {
+      console.log("OBS deviceInfo.name = '" + deviceInfo.deviceName + "'");
+      mediaDevices.forEach(function (m) {
+        console.log("OBS mediaDevice.label = '" + m.label + "'");
+      });
       var groupId = undefined;
       var audioInputId = undefined;
       var audioOutputId = undefined;
@@ -1243,6 +1259,8 @@
       if (audioOutputId) {
         deviceInfo.browserAudioOutputId = audioOutputId;
       }
+
+      console.log("FOUND MATCH '" + deviceInfo.browserLabel + "'");
     }
   }
   /**
