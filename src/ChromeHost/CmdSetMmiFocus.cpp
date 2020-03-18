@@ -54,10 +54,19 @@ void CmdSetMmiFocus::Execute(const Request& request)
     return;
   }
 
+  RemoteMmiInput action = (RemoteMmiInput)255;
+  RemoteMmiPriority priority = MMI_PRIORITY_HIGH;
+
+  // Only limited focus for LEDs allowed:
+  if (type==RemoteMmiType::MMI_TYPE_BUSYLIGHT) {
+    action = RemoteMmiInput::MMI_ACTION_NONE;
+    priority = RemoteMmiPriority::MMI_PRIORITY_NONE;
+  }
+
   Jabra_ReturnCode retv;
   bool captured = false;
   if (capture) { // Take focus with no filtering and high priority:
-    retv = Jabra_GetRemoteMmiFocus(deviceId, type, (RemoteMmiInput)255, MMI_PRIORITY_HIGH);
+    retv = Jabra_GetRemoteMmiFocus(deviceId, type, action, priority);
     if (retv == Return_Ok) {
       captured = true;
     } else {
