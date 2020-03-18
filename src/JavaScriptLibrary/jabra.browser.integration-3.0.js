@@ -1172,7 +1172,6 @@
         });
 
         if (explicitIdx >= 0) {
-          console.log("!!OBS.OBS!! resolved EXPLICIT INDEX '" + explicitIdx + "'");
           return explicitIdx;
         } // Otherwise fallback on guessing names
 
@@ -1204,10 +1203,6 @@
     }
 
     if (deviceInfo && deviceInfo.deviceName) {
-      console.log("OBS deviceInfo.name = '" + deviceInfo.deviceName + "'");
-      mediaDevices.forEach(function (m) {
-        console.log("OBS mediaDevice.label = '" + m.label + "'");
-      });
       var groupId = undefined;
       var audioInputId = undefined;
       var audioOutputId = undefined;
@@ -1259,8 +1254,6 @@
       if (audioOutputId) {
         deviceInfo.browserAudioOutputId = audioOutputId;
       }
-
-      console.log("FOUND MATCH '" + deviceInfo.browserLabel + "'");
     }
   }
   /**
