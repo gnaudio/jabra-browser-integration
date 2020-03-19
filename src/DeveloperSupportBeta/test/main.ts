@@ -3,6 +3,7 @@ import { MethodEntry, ClassEntry, ParameterEntry, DeviceInfo, Analytics } from '
 import * as jabra from '@gnaudio/jabra-browser-integration';
 import * as toastr from "toastr";
 import * as _apiMeta from '@gnaudio/jabra-browser-integration/dist/api-meta.json';
+import { nameof } from './util';
 import { initSDKBtn, unInitSDKBtn, devicesBtn, checkInstallBtn, deviceSelector, methodSelector, 
          setupUserMediaPlaybackBtn, showInternalsAndDeprecatedMethodsChk, stressInvokeApiBtn, invokeApiBtn, 
          txtParam1, txtParam2, txtParam3, txtParam4, txtParam5,
@@ -13,6 +14,7 @@ import { initSDKBtn, unInitSDKBtn, devicesBtn, checkInstallBtn, deviceSelector, 
          txStatus, txPeakStatus, rxStatus, rxPeakStatus, txSpeechStatus, rxSpeechStatus, devLogStatus, 
          boomArmStatus, player, apiReferenceBtn, installCheckResult, clientlibVersionTxt, 
          browserAndOsVersionTxt, otherVersionTxt, addDevice, removeDevice, setupApiClasses, setupApiMethods, setupDevices, removeDevices, apiClassSelector, methodSignature } from './guihelper';
+
 
 // Setup meta references.
 const apiMeta: ClassEntry[] = (_apiMeta as any).default; // workaround for browserify json import problem.
@@ -172,8 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   deviceSelector.onchange = (() => {
-    currentDeviceAnalyticsSingleton?.stop();
-    currentDeviceAnalyticsSingleton = null;
     const deviceId = Number.parseInt(deviceSelector.value);
     commandEffect("setActiveDeviceId", [ deviceId.toString() ], jabra.setActiveDeviceId(deviceId)).then( () => {});
   });
@@ -534,6 +534,14 @@ document.addEventListener('DOMContentLoaded', function () {
           addResponseMessage(value);
         } else if (apiFuncName === "getDevices") {
           setupDevices(value);
+          addResponseMessage(value);
+        } else if (apiFuncName === "setActiveDeviceId" || apiFuncName === "_setActiveDeviceId") {
+          currentDeviceAnalyticsSingleton?.stop();
+          currentDeviceAnalyticsSingleton = null;
+
+          // TODO: If successful, update selected index to reflect new value.
+          // deviceSelector.selectedIndex = 
+
           addResponseMessage(value);
         } else { // Default handling of general API call:
           // Just print output if there is any:
