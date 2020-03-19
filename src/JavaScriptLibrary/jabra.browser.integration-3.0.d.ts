@@ -10,7 +10,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
     /**
         * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
         */
-    export const apiVersion = "3.0.0-beta.4";
+    export const apiVersion = "3.0.0-beta.7";
     /**
         * Contains information about installed components.
         */

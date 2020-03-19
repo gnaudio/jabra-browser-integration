@@ -1,6 +1,6 @@
 {
   "name": "@gnaudio/jabra-browser-integration",
-  "version": "3.0.0-beta.4",
+  "version": "3.0.0-beta.7",
   "description": "Control Jabra Devices from within a browser app using JavaScript",
   "main": "jabra.browser.integration-3.0.cjs.js",
   "main:umd": "jabra.browser.integration-3.0.js",
@@ -11,7 +11,8 @@
   "files": [
     "README.md",
     "jabra.browser.integration*.js",
-    "jabra.browser.integration*.d.ts"
+    "jabra.browser.integration*.d.ts",
+    "api-meta.json"
   ],
   "keywords": [
     "jabra",
@@ -30,6 +31,7 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build --out build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
+    "prepare": "npm run build && npm run generatemeta",
     "test": "tsdx test",
     "dts-bundle": "dts-bundle --name @gnaudio/jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
     "cp": "npm run cp:esm && npm run cp:umd && npm run cp:cjs",

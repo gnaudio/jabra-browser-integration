@@ -2,7 +2,7 @@
 import { MethodEntry, ClassEntry, ParameterEntry, DeviceInfo, Analytics } from '@gnaudio/jabra-browser-integration';
 import * as jabra from '@gnaudio/jabra-browser-integration';
 import * as toastr from "toastr";
-import * as _apiMeta from '@gnaudio/jabra-browser-integration/dist/api-meta.json';
+import * as _apiMeta from '@gnaudio/jabra-browser-integration/api-meta.json';
 import { nameof } from './util';
 import { initSDKBtn, unInitSDKBtn, devicesBtn, checkInstallBtn, deviceSelector, methodSelector, 
          setupUserMediaPlaybackBtn, showInternalsAndDeprecatedMethodsChk, stressInvokeApiBtn, invokeApiBtn, 
