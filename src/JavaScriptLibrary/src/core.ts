@@ -525,7 +525,7 @@ export enum RemoteMmiType {
   MMI_TYPE_LISTEN_IN = 17,
   MMI_TYPE_DOT3 = 18,
   MMI_TYPE_DOT4 = 19,
-  MMI_TYPE_ALL = 255
+  MMI_TYPE_BUSYLIGHT = 128
 }
 
 /**
