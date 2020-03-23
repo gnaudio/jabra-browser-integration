@@ -847,6 +847,9 @@ export function init(): Promise<void> {
       }
 
       // Check that different beta versions are not mixed.
+      // For example: This means that a beta-7 api is not
+      // considered compatible with a beta-6 chromehost
+      // or extension.
       if (
         !browserSdkVersions
           .map(v => {
