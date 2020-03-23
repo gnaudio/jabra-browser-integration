@@ -4,7 +4,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 # 1. JAVASCRIPT API
 
-3.0.1. Changed the following in the Javascript API
+3.0.0-beta.7 Changed the following in the Javascript API
 
 - Added analytics module
 - Added npm module support.
@@ -59,6 +59,10 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 0.5 Original version with call control support.
 
 # 3. CHROMEHOST:
+2.1.0-beta7
+* Fixed various bugs, incl. chrome device matching, button takeover on mac, ignoring repeated button presses etc. 
+* Updated to new C-SDK.
+
 2.0.2 Added permission for 3CX extensions to use chromehost executable.
 
 2.0 Added the following:
