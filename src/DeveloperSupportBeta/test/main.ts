@@ -24,9 +24,6 @@ const jabraApiMeta: ClassEntry = apiMeta.find((c) => c.name.toLowerCase() === "j
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
-  setupApiClasses(apiMeta);
-  updateApiMethods();
-
   const stressWaitInterval = 1000;
   const maxQueueSize = 1000;
 
@@ -59,26 +56,32 @@ document.addEventListener('DOMContentLoaded', function () {
  
   let currentDeviceAnalyticsSingleton: Analytics | null = null;
 
-  // Help text for command followed by help for parameters:
-  const commandTxtHelp: any = {
-    getDevices: ["", "includeBrowserMediaDeviceInfo?: boolean"],
-    getActiveDevice: ["", "includeBrowserMediaDeviceInfo?: boolean"],
-    setActiveDeviceId: ["", "id: integer"],
-    _setActiveDeviceId: ["", "id: integer"],
-    setMmiFocus: ["Used to customize (capture) button behavior", "type: RemoteMmiType (integer)", "capture: boolean"],
-    setRemoteMmiLightAction: ["Requires button to be captured using prior call to setMmiFocus", "type: RemoteMmiType (integer)", "color: RGB number (ex. #ffffff)", "effect: RemoteMmiSequence (integer)"],
-    setBusyLight: ["", "busy: boolean"],
-    trySetDeviceOutput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"], 
-    isDeviceSelectedForInput: ["Requires prior call to getUserDeviceMediaExt - parameters setup internally"],
-    getUserDeviceMediaExt: ["Cause browser to access the microphone and devlog events to start (if supported)", "constraints?: MediaStreamConstraints (JSON)"],
+    // The user args for a method. Normally this is the same as declared in the meta
+  // but in some cases the test app will fillout (some of) the values.
+  const expectedUserArgs: { [name: string]: (method: MethodEntry) => ParameterEntry[] } = {
+    trySetDeviceOutput: (method: MethodEntry) => [ ],
+    isDeviceSelectedForInput: (method: MethodEntry) => [ ],
+    addEventListener: (method: MethodEntry) => [ method.parameters[0] ],
+    removeEventListener: (method: MethodEntry) => [ method.parameters[0] ],
+    __default__: (method: MethodEntry) => method.parameters
+  };
 
-    init: ["Initialize API (must be called prior to anything else) - remember to call addEventListener also if called directly or GUI won't be updated with most events/errors!!"],
-    shutdown: ["De-Initialize API (incl. unsubscribe everything) - may optionally be called when finished using API."],
-    addEventListener: ["Must be called for events/errors to be shown in this app. 2nd eventListener argument setup internally. Call with /.*/ argument to pass all events/errors)", 
-                      "nameSpec: string | RegExp | Array<string | RegExp>"],
-    removeEventListener: ["2nd eventListener argument setup internally. Call with /.*/ argument to remove all events)", 
-                          "nameSpec: string | RegExp | Array<string | RegExp>"],
-    __default__: [""]
+  // Resolves arguments for different API methods. All methods that require
+  // complex values or have default values should be explicitly handled here:
+  // Nb. must match expectedUserArgs.
+  const commandArgs: { [name: string]: (method: MethodEntry) => any[] } = {
+    trySetDeviceOutput: (method: MethodEntry) => [ variables.audioElement, variables.deviceInfo ],
+    isDeviceSelectedForInput: (method: MethodEntry) => [ variables.mediaStream, variables.deviceInfo ],
+    getUserDeviceMediaExt: (method: MethodEntry) => [ convertParam(txtParam1.value || "{}") ],
+    getDevices: (method: MethodEntry) => [ convertParam(txtParam1.value || "false") ],
+    addEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
+    removeEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
+    getActiveDevice: (method: MethodEntry) => [  convertParam(txtParam1.value || "false") ],
+    __default__: (method: MethodEntry) => [ convertParam(txtParam1.value, method.parameters.length>0 ? method.parameters[0] : undefined),
+                                            convertParam(txtParam2.value, method.parameters.length>1 ? method.parameters[1] : undefined),
+                                            convertParam(txtParam3.value, method.parameters.length>2 ? method.parameters[2] : undefined),
+                                            convertParam(txtParam4.value, method.parameters.length>3 ? method.parameters[3] : undefined),
+                                            convertParam(txtParam5.value, method.parameters.length>4 ? method.parameters[4] : undefined) ],
   };
 
   // Convert value to argument.
@@ -116,24 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return value;
     }
   }
-
-  // Resolves arguments for different API methods. All methods that require
-  // complex values or have default values should be explicitly handled here:
-  
-  const commandArgs: { [name: string]: (method: MethodEntry) => any[] } = {
-    trySetDeviceOutput: (method: MethodEntry) => [ variables.audioElement, variables.deviceInfo ],
-    isDeviceSelectedForInput: (method: MethodEntry) => [ variables.mediaStream, variables.deviceInfo ],
-    getUserDeviceMediaExt: (method: MethodEntry) => [ convertParam(txtParam1.value || "{}") ],
-    getDevices: (method: MethodEntry) => [ convertParam(txtParam1.value || "false") ],
-    addEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
-    removeEventListener: (method: MethodEntry) => [ convertParam(txtParam1.value), eventListener ],
-    getActiveDevice: (method: MethodEntry) => [  convertParam(txtParam1.value || "false") ],
-    __default__: (method: MethodEntry) => [ convertParam(txtParam1.value, method.parameters.length>0 ? method.parameters[0] : undefined),
-                                            convertParam(txtParam2.value, method.parameters.length>1 ? method.parameters[1] : undefined),
-                                            convertParam(txtParam3.value, method.parameters.length>2 ? method.parameters[2] : undefined),
-                                            convertParam(txtParam4.value, method.parameters.length>3 ? method.parameters[3] : undefined),
-                                            convertParam(txtParam5.value, method.parameters.length>4 ? method.parameters[4] : undefined) ],
-  };
 
   function getCurrentApiClassObject(): object {
     const clazzName = apiClassSelector.value.toLowerCase();
@@ -339,28 +324,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (meta) {
+      let userArgsResolver = expectedUserArgs[meta.name];
+      if (!userArgsResolver) {
+        userArgsResolver = expectedUserArgs["__default__"];
+      }
+      const userArgs = userArgsResolver(meta);
+
+      // Show always the full signature regardless of what user parms to fillout.
+      // TODO: Consider comparing with userargs and crossing out those that are supplied
+      // automatically by user app.
       methodSignature.innerText = meta.name + "( " + meta.parameters.map(p => p.name + (p.optional ? "?": "") + ": " + p.tsType).join(", ") + "): " + meta.tsType;
       methodHelp.innerText = meta.documentation;
 
-      if (meta.parameters.length>=1) {
-        param1Hint.innerText = getTypeHint(meta.parameters[0]);
-        (txtParam1 as any).style = getInputStyle(meta.parameters[0].optional);
+      // Highlight the user input fields for better UX experience:
+      if (userArgs.length>=1) {
+        param1Hint.innerText = getTypeHint(userArgs[0]);
+        (txtParam1 as any).style = getInputStyle(userArgs[0].optional);
       }
-      if (meta.parameters.length>=2) {
-        param2Hint.innerText =  getTypeHint(meta.parameters[1]);
-        (txtParam2 as any).style = getInputStyle(meta.parameters[1].optional);
+      if (userArgs.length>=2) {
+        param2Hint.innerText =  getTypeHint(userArgs[1]);
+        (txtParam2 as any).style = getInputStyle(userArgs[1].optional);
       }
-      if (meta.parameters.length>=3) {
-        param3Hint.innerText =  getTypeHint(meta.parameters[2]);
-        (txtParam3 as any).style =  getInputStyle(meta.parameters[2].optional);
+      if (userArgs.length>=3) {
+        param3Hint.innerText =  getTypeHint(userArgs[2]);
+        (txtParam3 as any).style =  getInputStyle(userArgs[2].optional);
       }
-      if (meta.parameters.length>=4) {
-        param4Hint.innerText =  getTypeHint(meta.parameters[3]);
-        (txtParam4 as any).style =  getInputStyle(meta.parameters[3].optional);
+      if (userArgs.length>=4) {
+        param4Hint.innerText =  getTypeHint(userArgs[3]);
+        (txtParam4 as any).style =  getInputStyle(userArgs[3].optional);
       }
-      if (meta.parameters.length>=5) {
-        param5Hint.innerText =  getTypeHint(meta.parameters[4]);
-        (txtParam5 as any).style =  getInputStyle(meta.parameters[4].optional);
+      if (userArgs.length>=5) {
+        param5Hint.innerText =  getTypeHint(userArgs[4]);
+        (txtParam5 as any).style =  getInputStyle(userArgs[4].optional);
       }
     }
   }
@@ -787,4 +782,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-}, false);
+  setupApiClasses(apiMeta);
+  updateApiMethods();
+}, false); // addEventListener
