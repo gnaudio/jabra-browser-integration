@@ -741,11 +741,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function getOS() {
-    if (window.navigator.userAgent.indexOf("Windows")) {
+    if (window.navigator.userAgent.indexOf("Windows")>=0) {
       return "Windows"
-    } else if (window.navigator.userAgent.indexOf("Mac")) {
+    } else if (window.navigator.userAgent.indexOf("Mac")>=0) {
       return "MacOS"
-    } else if (window.navigator.userAgent.indexOf("Linux")) {
+    } else if (window.navigator.userAgent.indexOf("Linux")>=0) {
       return "Linux";
     } else {
       return "?"
