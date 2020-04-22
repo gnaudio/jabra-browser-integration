@@ -27,3 +27,6 @@ DEFINE_CODE(CannotClear_DeviceConnected, "Unable to clear, device is not connect
 DEFINE_CODE(Device_Rebooted, "The device rebooted")
 DEFINE_CODE(Upload_AlreadyInProgress, "Upload is already in progress")
 DEFINE_CODE(Download_AlreadyInProgress, "Download is already in progress")
+DEFINE_CODE(Sdk_TooOldForFwUpdate, "The Jabra SDK is too old to update the selected firmware")
+DEFINE_CODE(No_OtaUpdateSupport, "Firmware update through OTA is not supported for this device")
+DEFINE_CODE(Non_Jabra_Device_Detection_disabled, "Non Jabra device detection is disabled")

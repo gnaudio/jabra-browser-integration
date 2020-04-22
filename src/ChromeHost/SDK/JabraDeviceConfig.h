@@ -9,7 +9,7 @@
  *  G    G  N   N N
  *  GGGGGG  N    NN
  *
- *  Copyright (c) 2017, GN-Audio
+ *  Copyright (c) 2018, GN-Audio
  * -------------------------------------------------------------------- */
 
 /**
@@ -32,14 +32,14 @@
 /*                     EXPORTED TYPES and DEFINITIONS                       */
 /****************************************************************************/
 
-/* This enum represents each setting data type */
-typedef enum  _DataType{
+/** @brief This enum represents each setting data type */
+typedef enum _DataType {
   settingByte = 0,
   settingString
 } DataType;
 
-/* This enum represents each setting control type */
-typedef enum  _ControlType{
+/** @brief This enum represents each setting control type. */
+typedef enum _ControlType {
   cntrlRadio = 0,
   cntrlToggle,
   cntrlComboBox,
@@ -50,47 +50,47 @@ typedef enum  _ControlType{
   cntrlUnknown
 } ControlType;
 
-/* This structure represents Validation Rule */
-typedef struct _ValidationRule{
-  int  minLength;
-  int  maxLength;
-  char *regExp;
-  char *errorMessage;
+/** @brief This structure represents validation rules. */
+typedef struct _ValidationRule {
+  int minLength;
+  int maxLength;
+  char* regExp;
+  char* errorMessage;
 } ValidationRule;
 
-typedef struct _DependencySetting{
-  char *GUID;
+typedef struct _DependencySetting {
+  char* GUID;
   bool enableFlag;
-}DependencySetting;
+} DependencySetting;
 
-/* This structure contains setting values in key value pair */
-typedef struct _ListKeyValue{
+/** @brief This structure contains setting values in key value pair. */
+typedef struct _ListKeyValue {
   unsigned short key;
-  void *value;
+  void* value;
 
   int dependentcount;
   DependencySetting* dependents;
-}ListKeyValue;
+} ListKeyValue;
 
-/* This structure represents each setting info */
-typedef struct _SettingInfo{
+/** @brief This structure represents each setting info. */
+typedef struct _SettingInfo {
   /* Setting GUID */
-  char *guid;
+  char* guid;
 
   /* Setting Name */
-  char *name;
+  char* name;
 
   /* Setting Help Text */
-  char *helpText;
+  char* helpText;
 
   /* Current Device value for this setting */
-  void *currValue;
+  void* currValue;
 
   /* Number of values for this setting */
   int listSize;
 
   /* Structure for all key-value pairs for this setting */
-  ListKeyValue *listKeyValue;
+  ListKeyValue* listKeyValue;
 
   /* If validation rule is supported or not */
   bool isValidationSupport;
@@ -117,313 +117,359 @@ typedef struct _SettingInfo{
   DataType settingDataType;
 
   /* This represents group name of the setting */
-  char *groupName;
+  char* groupName;
 
   /* This represents group help text of the setting */
-  char *groupHelpText;
+  char* groupHelpText;
 
   /* Whether dependency setting is present or not */
   bool isDepedentsetting;
 
   /* Default dependent value when setting is disabled */
-  void *dependentDefaultValue;
+  void* dependentDefaultValue;
 
   /* PC setting or not */
-  bool isPCsetting;
+  /** @deprecated */
+  bool isPCsetting; 
 
   /* Child device setting or not */
   bool isChildDeviceSetting;
 
 } SettingInfo;
 
-/* This structure represents all settings available for the device */
-typedef struct _DeviceSettings{
+/** @brief This structure represents all settings available for the device. */
+typedef struct _DeviceSettings {
   /* number of settings for the device */
   unsigned int settingCount;
   /* Setting information of all settings of the device */
-  SettingInfo *settingInfo;
+  SettingInfo* settingInfo;
   /* manifest file download status */
   Jabra_ErrorStatus errStatus;
 } DeviceSettings;
 
-/* This structure represents the product registration info*/
-typedef struct _PrdctRegDetails{
-  char *userName;
-  char *userPassword;
-  char *firstName;
-  char *lastName;
-  char *email;
+/** @brief This structure represents the product registration info. */
+typedef struct _PrdctRegDetails {
+  char* userName;
+  char* userPassword;
+  char* firstName;
+  char* lastName;
+  char* email;
   bool mktPermission;
 } PrdctRegDetails;
 
-/* This structure represents the failed settings info */
-typedef struct _FailedSettings{
+/** @brief This structure represents the failed settings info. */
+/** @see Jabra_GetFailedSettingNames. */
+/** @see Jabra_FreeFailedSettings. */
+typedef struct _FailedSettings {
   unsigned int count;
-  char ** settingNames;
-}FailedSettings;
+  char** settingNames;
+} FailedSettings;
 
-/* This enum represents the settings load mode for the API */
-typedef enum  _SettingsLoadMode{
-    expressMode = 0,
-    retrieveMode
+/** @brief This enum represents the settings load mode for the API. */
+/** @deprecated */
+typedef enum _SettingsLoadMode {
+  expressMode = 0,
+  retrieveMode
 } SettingsLoadMode;
 
-typedef enum _SettingFailType{
-    guid = 0,
-    value
+typedef enum _SettingFailType {
+  guid = 0,
+  value
 } SettingFailType;
 
-typedef enum _ValueType{
-    success = 0,
-    guidfail,
-    valuefail
+typedef enum _ValueType {
+  success = 0,
+  guidfail,
+  valuefail
 } ValueType;
 
-typedef struct _InvalidInfo{
-    char* guid;
-    char* settingName;
-    char* failMessage;
+typedef struct _InvalidInfo {
+  char* guid;
+  char* settingName;
+  char* failMessage;
 } InvalidInfo;
 
-/* This structure represents the list of Invalid settings from the file/cloud*/
-typedef struct _InvalidList{
-    unsigned int invalidCount;
-    char* fileDeviceName;
-    InvalidInfo *invalidinfo;
-    Jabra_ErrorStatus errStatus;
+/** @brief This structure represents the list of Invalid settings from the file/cloud. */
+typedef struct _InvalidList {
+  unsigned int invalidCount;
+  char* fileDeviceName;
+  InvalidInfo* invalidinfo;
+  Jabra_ErrorStatus errStatus;
 } InvalidList;
 
-/* This structure represents the product registration info*/
-typedef struct _ConfigInfo{
-    char *configName;
-    char *configId;
+/** @brief This structure represents the product registration info. */
+typedef struct _ConfigInfo {
+  char* configName;
+  char* configId;
 } ConfigInfo;
 
-/* This structure represents the list of configurations available from the cloud*/
-typedef struct _ConfigList{
-    /* no of setting for the device */
-    unsigned int configCount;
-    /*Config Info*/
-    ConfigInfo *configinfo;
-    /* config file list download status */
-    Jabra_ErrorStatus errStatus;
+/** @brief This structure represents the list of configurations available from the cloud. */
+typedef struct _ConfigList {
+  /* no of setting for the device */
+  unsigned int configCount;
+  /*Config Info*/
+  ConfigInfo* configinfo;
+  /* config file list download status */
+  Jabra_ErrorStatus errStatus;
 } ConfigList;
 
 /**
- * Metadata for an asset. Read as name->Value pairs, actual values may vary - see developer documentation
+ * @brief Metadata for an asset. Read as name->Value pairs, actual values may vary - see developer documentation
  */
-typedef struct _CAssetMetadata
-{
-    char* name;
-    char* value;
+typedef struct _CAssetMetadata {
+  char* name;
+  char* value;
 } CAssetMetadata;
 
 /**
- * An asset element (assets may be composed of 1 or or more of these)
+ * @brief An asset element (assets may be composed of 1 or or more of these)
  */
-typedef struct _CAssetElement
-{
-    char* url;
-    char* mime;
-}CAssetElement;
+typedef struct _CAssetElement {
+  char* url;
+  char* mime;
+} CAssetElement;
 
 /**
- * A named asset, requestable by Jabra_GetNamedAsset()
+ * @brief A named asset, requestable by #Jabra_GetNamedAsset.
  */
-typedef struct _CNamedAsset
-{
-    CAssetMetadata* metadata;
-    unsigned metadata_count; // number of items in metadata
-    CAssetElement* elements;
-    unsigned element_count; // number of items in elements
+typedef struct _CNamedAsset {
+  CAssetMetadata* metadata;
+  unsigned metadata_count; // number of items in metadata
+  CAssetElement* elements;
+  unsigned element_count; // number of items in elements
 } CNamedAsset;
 
 
-/****************************************************************************/
-/*                          EXPORTED DYNAMIC CONFIG - APIs                           */
-/****************************************************************************/
-/** Note The proposed design is to have the memory allocated at the SDK level as
- *  the user may not aware of how much memory needs to be allocated. Settings vary up on connected devices.
- *  So it is good SDK to decide how much memory to allocate for settings.
+/**
+ * Callback. Used with Jabra_AddSettingsChangeListener.
+ * @param deviceID the affected device
+ * @param settings the affected settings. Must be freed by Jabra_FreeDeviceSettings
+ */
+typedef void (*SettingsListener)(unsigned short deviceID, DeviceSettings* settings );
 
- *  E.g.  openSSL library
+
+/****************************************************************************/
+/*                   EXPORTED DYNAMIC CONFIG - APIs                         */
+/****************************************************************************/
+
+/**
+ * @brief The proposed design is to have the memory allocated at the SDK level
+ * as the user may not aware of how much memory needs to be allocated. Settings
+ * vary up on connected devices. So it is good SDK to decide how much memory
+ * to allocate for settings.
  */
 
 /**
- * Gets the unique setting identified by a GUID of a device.
- * @param[in] deviceID device ID of the device to read/get the setting from.
- * @param[in] guid the unique setting identifier, the string must be zero
+ * @brief Gets the unique setting identified by a GUID of a device.
+ * @param[in] deviceID Device ID of the device to read/get the setting from.
+ * @param[in] guid The unique setting identifier, the string must be zero
  * terminated.
- * @return pointer to the structure containing the requested setting. In case
+ * @return Pointer to the structure containing the requested setting. In case
  * the device is not found or could not be accessed a NULL pointer is returned.
- * @note As Memory is allocated through the SDK it needs to be freed by calling
- * the Jabra_FreeDeviceSettings API.
+ * @note As memory is allocated through the SDK it needs to be freed by calling
+ * #Jabra_FreeDeviceSettings.
  */
 LIBRARY_API DeviceSettings* Jabra_GetSetting(unsigned short deviceID, const char* guid);
 
-/** Gets the complete settings details (all groups and its settings) for a device.
- *  @param[in] : deviceID: Id for specific device.
- *  @return    : pointer to the structure containing all settings for the deviceID. In case device is not found/ could not be access, NULL pointer is returned.
- *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeDeviceSettings API.
+/**
+ * @brief Gets the complete settings details (all groups and its settings) for
+ * a device.
+ * @param[in] deviceID ID for specific device.
+ * @return Pointer to the structure containing all settings for the deviceID.
+ * In case device is not found/ could not be access, NULL pointer is returned.
+ * @note As memory is allocated through SDK, need to be freed by calling
+ * #Jabra_FreeDeviceSettings.
  */
 LIBRARY_API DeviceSettings* Jabra_GetSettings(unsigned short deviceID);
 
-/** Sets all the settings( including all groups and its settings) for a device.
- *  @param[in] : deviceID : id for a specific device.
- *  @param[in] : setting : Dynamic settings for the device.
- *  @return    : Return_Ok if setting is successful.
-				 Device_Unknown if deviceID is wrong.
-         Return_ParameterFail if setting parameter is wrong.
-         Device_Rebooted if the device rebooted after applying settings that required rebooting.
-         Device_WriteFail if it fails to write to the device.
+/**
+ * @brief Sets all the settings( including all groups and its settings) for a
+ * device.
+ * @param[in] deviceID ID for a specific device.
+ * @param[in] setting Dynamic settings for the device.
+ * @return Return_Ok if setting is successful.
+ * @return Device_Unknown if the deviceID specified is not known.
+ * @return Return_ParameterFail if setting parameter is wrong.
+ * @return Device_Rebooted if the device rebooted after applying settings that
+ * required rebooting.
+ * @return Device_WriteFail if it fails to write to the device.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SetSettings(unsigned short deviceID, DeviceSettings* setting);
 
-/** Restore factory settings to device.
- *  Note that if used on a device connected via dongle (or directly via BT),
- *  the pairing list in the device will be cleared,
- *  and the connection to the device will be lost.
- *  @param[in] : deviceID: id for a specific device.
- *  @return    : Return_Ok if successful.
-				 Device_Unknown if deviceID is wrong.
-				 No_FactorySupported if device does not support factory reset.
-				 Device_WriteFail if it fails to write to the device.
-				 ProtectedSetting_Write if a setting is write protected
+/**
+ * @brief Restore factory settings to device. Note that if used on a device
+ * connected via dongle (or directly via BT), the pairing list in the device
+ * will be cleared, and the connection to the device will be lost.
+ * @param[in] deviceID ID for a specific device.
+ * @return Return_Ok if successful.
+ * @return Device_Unknown if the deviceID specified is not known.
+ * @return No_FactorySupported if device does not support factory reset.
+ * @return Device_WriteFail if it fails to write to the device.
+ * @return ProtectedSetting_Write if a setting is write protected.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_FactoryReset(unsigned short deviceID);
 
-/** Free DeviceSettings structure
- *  @param[in] : setting: DeviceSettings structure pointer, which needs to be freed.
- *  @return    : void.
+/**
+ * @brief Free #DeviceSettings structure.
+ * @param[in] setting #DeviceSettings structure pointer, which needs to be freed.
  */
 LIBRARY_API void Jabra_FreeDeviceSettings(DeviceSettings* setting);
 
-/** Free char pointer
- *  @param[in] : strPtr: char pointer, which needs to be freed.
- *  @return    : void.
+/**
+ * Free char pointer.
+ * @param[in] strPtr Char pointer, which needs to be freed.
  */
 LIBRARY_API void Jabra_FreeString(char* strPtr);
 
-/* Will be removed completely.
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
  * @return Not_Supported
- *  @deprecated This API is going to be deleted - currently it does nothing
-* */
+ */
 LIBRARY_API Jabra_ReturnCode Jabra_SaveSettingsToFile(unsigned short deviceID, const char* filePath);
 
-/** Loads the device settings from local file.
- *  @param[in] : deviceID : id for a specific device
- *  @param[in] : filePath : path to local settings file
- *  @param[in] : mode : mode to be used for updating the settings
- *  @return    : valid pointer but with error status OtherError.
- *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeDeviceSettings API.
- *  @deprecated This API is going to be deleted - currently it does nothing
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief Loads the device settings from local file.
+ * @param[in] deviceID ID for a specific device.
+ * @param[in] filePath Path to local settings file.
+ * @param[in] mode Mode to be used for updating the settings.
+ * @return Valid pointer but with error status OtherError.
+ * @note As memory is allocated through SDK, need to be freed by calling
+ * #Jabra_FreeDeviceSettings.
  */
 LIBRARY_API DeviceSettings* Jabra_LoadSettingsFromFile(unsigned short deviceID, const char* filePath, SettingsLoadMode mode);
 
-/** Saves the device settings to cloud.
- *  @param[in] : deviceID : id for a specific device
- *  @param[in] : filePath : path to local settings file
- *  @return    : Not_Supported
- *  @deprecated This API is going to be deleted - currently it does nothing
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief Saves the device settings to cloud.
+ * @param[in] deviceID ID for a specific device.
+ * @param[in] authorization Authorisation string for which the configs are needed.
+ * @param[in] configName Name of configuration.
+ * @return Not_Supported.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_SaveSettingsToCloud(unsigned short deviceID, const char* authorization, const char* configName);
 
-/** This method gets the list of configs for given authorisations.
- *  @param[in] : authorisation string for which the configs are needed
- *  @return    : valid pointer but with error status OtherError.
- *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeConfigList API.
- *  @deprecated This API is going to be deleted - currently it does nothing
-*/
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief This method gets the list of configs for given authorisations.
+ * @param[in] authorization Authorization string for which the configs are needed.
+ * @return Valid pointer but with error status OtherError.
+ * @note As memory is allocated through SDK, need to be freed by calling #Jabra_FreeConfigList.
+ */
 LIBRARY_API ConfigList* Jabra_GetCloudListOfConfigs(const char* authorization);
 
-/** This method free the config list info.
- *  @param[in] : pConfigList pointer to config list to be cleared
- *  @return    : No return parameters(Void function)
+/**
+ * @brief This method free the config list info.
+ * @param[in] pConfigList Pointer to config list to be cleared.
  */
 LIBRARY_API void Jabra_FreeConfigList(ConfigList* pConfigList);
 
-/** This method free the invalid setting list info.
- *  @param[in] : pInvalidList pointer to invalid list to be cleared
- *  @return    : No return parameters(Void function)
- *  @deprecated This API is going to be deleted
+/**
+ * @deprecated This API is going to be deleted.
+ * @brief This method free the invalid setting list info.
+ * @param[in] pInvalidList Pointer to invalid list to be cleared.
  */
 LIBRARY_API void Jabra_FreeInvalidList(InvalidList* pInvalidList);
 
-/** Loads the device settings from local cloud.
- *  @param[in] : deviceID : id for a specific device
- *  @param[in] : authorization : authorization id
- *  @param[in] : configID : id of the config file that needs to be loaded
- *  @param[in] : mode : mode to be used for updating the settings
- *  @return    : valid pointer but with error status OtherError.
- *  Note       : As Memory is allocated through SDK, need to be freed by calling Jabra_FreeDeviceSettings API.
- *  @deprecated This API is going to be deleted - currently it does nothing
- */
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief Loads the device settings from local cloud.
+ * @param[in] deviceID ID for a specific device
+ * @param[in] authorization Authorization id
+ * @param[in] configID ID of the config file that needs to be loaded
+ * @param[in] mode Mode to be used for updating the settings
+ * @return Valid pointer but with error status OtherError.
+ * @note As memory is allocated through SDK, need to be freed by calling #Jabra_FreeDeviceSettings.
+  */
 LIBRARY_API DeviceSettings* Jabra_LoadSettingsFromCloud(unsigned short deviceID, const char* authorization, const char* configID, SettingsLoadMode mode);
 
-/** Updates the settings data of a cloud file already present in cloud.
- *  @param[in] : deviceID : id of device from which settings needs to be updated
- *  @param[in] : authorization : authorization id
- *  @param[in] : configID : id of the config file that needs to be updated
- *  @param[in] : configName : Name of the config file to be used for update
- *  @return    : Not_Supported
- *  @deprecated This API is going to be deleted - currently it does nothing
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief Updates the settings data of a cloud file already present in cloud.
+ * @param[in] deviceID ID of device from which settings needs to be updated.
+ * @param[in] authorization Authorization id.
+ * @param[in] configID ID of the config file that needs to be updated.
+ * @param[in] configName Name of the config file to be used for update.
+ * @return Not_Supported this function is deprecated.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_UpdateSettingsOfCloud(unsigned short deviceID, const char* authorization, const char* configID, const char* configName);
 
-/** Deletes the settings file already present in cloud.
- *  @param[in] : authorization : authorization id
- *  @param[in] : configID : id of the config file that needs to be updated
- *  @return    : Not_Supported
- *  @deprecated This API is going to be deleted - currently it does nothing
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * @brief Deletes the settings file already present in cloud.
+ * @param[in] authorization Authorization id.
+ * @param[in] configID ID of the config file that needs to be updated.
+ * @return Not_Supported this function is deprecated.
  */
 LIBRARY_API Jabra_ReturnCode Jabra_DeleteSettingsOfCloud(const char* authorization, const char* configID);
 
 /**
- Returns error description for the error code
- *  @param[in] : deviceID: Id for specific device
- *  @return    : pointer to FailedSettings if one or more settings are failed while writing to device,
-				 Null Pointer if all settings are written successfully.
- *  Note: This API should be called if Jabra_SetSettings does not return Return_Ok.
-	As Memory is allocated through SDK, needs to be freed by calling Jabra_FreeFailedSettings API.
+ * @brief Returns error description for the error code.
+ * @param[in] deviceID ID for specific device.
+ * @return Pointer to #FailedSettings if one or more settings are failed while
+ * writing to device, NULL pointer if all settings are written successfully.
+ * @note This API should be called if #Jabra_SetSettings does not return
+ * Return_Ok.
+ * @note As memory is allocated through SDK, needs to be freed by calling
+ * #Jabra_FreeFailedSettings.
  */
 LIBRARY_API FailedSettings* Jabra_GetFailedSettingNames(unsigned short deviceID);
 
-/** Free FailedSettings structure
- *  @param[in] : FailedSettings structure pointer, which needs to be freed.
- *  @return    : void.
+/**
+ * @brief Free #FailedSettings structure.
+ * @param[in] setting #FailedSettings structure pointer, which needs to be
+ * freed.
  */
 LIBRARY_API void Jabra_FreeFailedSettings(FailedSettings* setting);
 
-/** Checks if supports factory reset.
- *  @param[in] : deviceID: id for a specific device.
- *  @return    : true if device supports factory reset.
-				 false if device does not support factory reset.
+/**
+ * @brief Checks if supports factory reset.
+ * @param[in] deviceID ID for a specific device.
+ * @return True if device supports factory reset, false if device does not
+ * support factory reset.
  */
 LIBRARY_API bool Jabra_IsFactoryResetSupported(unsigned short deviceID);
 
-/** Get list of invalid settings
- *  @param[in] : deviceID
- *  @return    : InvalidList, with errorstatus OtherError
-
- *  @deprecated This API is going to be deleted - currently it does nothing
+/**
+ * @deprecated This API is going to be deleted - currently it does nothing.
+ * Get list of invalid settings.
+ * @param[in] deviceID ID for a specific device.
+ * @return InvalidList, with errorstatus OtherError.
  */
-
 LIBRARY_API InvalidList* Jabra_GetInvalidSettings(unsigned short deviceID);
 
-
 /**
- * Request a named asset for the specified device
- * @param deviceID - the device
- * @param name - the name of the requested asset - see developer doc for a catalogue of possibly available assets. Note that availability may vary across devices!
- * @param asset - address of a pointer to the returned asset. Caller must free the allocated asset by calling Jabra_FreeAsset
- * @return Return_Ok if a valid asset was available (is then available through (*asset)->...)
+ * @brief Request a named asset for the specified device.
+ * @param[in] deviceID ID for a specific device.
+ * @param[in] name The name of the requested asset, see developer doc for a
+ * catalogue of possibly available assets. Note that availability may vary
+ * across devices.
+ * @param[in,out] asset Address of a pointer to the returned asset. Caller must
+ * free the allocated asset by calling #Jabra_FreeAsset.
+ * @return Return_Ok if a valid asset was available (is then available through
+ * (*asset)->...).
  */
 LIBRARY_API Jabra_ReturnCode Jabra_GetNamedAsset(unsigned short deviceID, const char* name, CNamedAsset** asset);
 
 /**
- * Release an asset previously obtained with Jabra_GetNamedAsset()
- * @param asset - the asset to release.
+ * @brief Release an asset previously obtained with #Jabra_GetNamedAsset.
+ * @param[in] asset The asset to release.
  */
 LIBRARY_API void Jabra_FreeAsset(CNamedAsset* asset);
+
+/**
+ * @brief Add a listener for changes to the device settings. The listener will
+ * be called when a setting is changed in the device, regardless of who
+ * changed it (this instance, another instance, or the user through MMI).
+ * @param deviceID ID for a specific device.
+ * @param listener The function to receive callbacks. Set to null to cancel
+ * listening.
+ * @param settings The settings which the client is interested in. Remains
+ * owned by the caller. Set to null to cancel listening.
+ * @return Return_Ok if successful.
+ * @return Not_Supported if feature is not supported.
+ * @return Device_Unknown if device not known.
+ */
+LIBRARY_API Jabra_ReturnCode Jabra_SetSettingsChangeListener(unsigned short deviceID, SettingsListener listener, const DeviceSettings* settings);
 
 #endif /* JABRADEVICECONFIG_H */
