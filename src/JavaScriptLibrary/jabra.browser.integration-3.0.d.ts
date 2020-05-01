@@ -299,7 +299,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
             MMI_TYPE_LISTEN_IN = 17,
             MMI_TYPE_DOT3 = 18,
             MMI_TYPE_DOT4 = 19,
-            MMI_TYPE_ALL = 255
+            MMI_TYPE_BUSYLIGHT = 128
     }
     /**
         * A MMI effect specification for light on, off or blinking in different tempo.
@@ -343,6 +343,11 @@ declare module '@gnaudio/jabra-browser-integration/core' {
         * stay in use thoughout an application - mostly of interest for testing.
         */
     export function shutdown(): Promise<void>;
+    /**
+        * Internal helper that returns an array of valid event keys that correspond to the event specificator
+        * and are known to exist in our event listener map.
+        */
+    export function _getEvents(nameSpec: string | RegExp | Array<string | RegExp>): ReadonlyArray<string>;
     /**
         * Hook up listener call back to specified event(s) as specified by initial name specification argument nameSpec.
         * When the nameSpec argument is a string, this correspond to a single named event. When the argument is a regular

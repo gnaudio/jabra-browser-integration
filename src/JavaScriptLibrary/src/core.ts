@@ -961,15 +961,16 @@ export function shutdown(): Promise<void> {
 /**
  * Internal helper that returns an array of valid event keys that correspond to the event specificator
  * and are known to exist in our event listener map.
+ * Nb. For internal use only - may be changed at any time.
  */
-function getEvents(
+export function _getEvents(
   nameSpec: string | RegExp | Array<string | RegExp>
 ): ReadonlyArray<string> {
   if (Array.isArray(nameSpec)) {
-    // @ts-ignore: Disable wrong "argument not assignable" error in ts 3.4
+    const allStrings = ([] as ReadonlyArray<string>).concat.apply([], nameSpec.map(a => _getEvents(a)));
+    const allUniqueStrings = Array.from(new Set<string>(allStrings).values());
     return [
-      // @ts-ignore
-      ...new Set<string>([].concat.apply([], nameSpec.map(a => getEvents(a))))
+      ...allUniqueStrings
     ];
   } else if (nameSpec instanceof RegExp) {
     return Array.from<string>(eventListeners.keys()).filter(key =>
@@ -1021,7 +1022,8 @@ export function addEventListener(
   nameSpec: any,
   callback: (event: any) => void
 ): void {
-  getEvents(nameSpec).map(name => {
+  const events = _getEvents(nameSpec);
+  events.map(name => {
     let callbacks = eventListeners.get(name as EventName);
     if (!callbacks!.find(c => c === callback)) {
       callbacks!.push(callback);
@@ -1057,7 +1059,7 @@ export function removeEventListener(
   nameSpec: any,
   callback: (event: any) => void
 ): void {
-  getEvents(nameSpec).map(name => {
+  _getEvents(nameSpec).map(name => {
     let callbacks = eventListeners.get(name as EventName);
     let findIndex = callbacks!.findIndex(c => c === callback);
     if (findIndex >= 0) {

@@ -284,7 +284,7 @@
     RemoteMmiType[RemoteMmiType["MMI_TYPE_LISTEN_IN"] = 17] = "MMI_TYPE_LISTEN_IN";
     RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT3"] = 18] = "MMI_TYPE_DOT3";
     RemoteMmiType[RemoteMmiType["MMI_TYPE_DOT4"] = 19] = "MMI_TYPE_DOT4";
-    RemoteMmiType[RemoteMmiType["MMI_TYPE_ALL"] = 255] = "MMI_TYPE_ALL";
+    RemoteMmiType[RemoteMmiType["MMI_TYPE_BUSYLIGHT"] = 128] = "MMI_TYPE_BUSYLIGHT";
   })(exports.RemoteMmiType || (exports.RemoteMmiType = {}));
 
   (function (RemoteMmiSequence) {
@@ -554,6 +554,9 @@
         }) || !installInfo.version_nativesdk) {
           return false;
         } // Check that different beta versions are not mixed.
+        // For example: This means that a beta-7 api is not
+        // considered compatible with a beta-6 chromehost
+        // or extension.
 
 
         if (!browserSdkVersions.map(function (v) {
@@ -662,12 +665,13 @@
    * and are known to exist in our event listener map.
    */
 
-  function getEvents(nameSpec) {
+  function _getEvents(nameSpec) {
     if (Array.isArray(nameSpec)) {
-      // @ts-ignore: Disable wrong "argument not assignable" error in ts 3.4
-      return [].concat(new Set([].concat.apply([], nameSpec.map(function (a) {
-        return getEvents(a);
-      }))));
+      var allStrings = [].concat.apply([], nameSpec.map(function (a) {
+        return _getEvents(a);
+      }));
+      var allUniqueStrings = Array.from(new Set(allStrings).values());
+      return [].concat(allUniqueStrings);
     } else if (nameSpec instanceof RegExp) {
       return Array.from(eventListeners.keys()).filter(function (key) {
         return nameSpec.test(key);
@@ -683,9 +687,10 @@
 
     return [];
   }
-
   function addEventListener(nameSpec, callback) {
-    getEvents(nameSpec).map(function (name) {
+    var events = _getEvents(nameSpec);
+
+    events.map(function (name) {
       var callbacks = eventListeners.get(name);
 
       if (!callbacks.find(function (c) {
@@ -696,7 +701,7 @@
     });
   }
   function removeEventListener(nameSpec, callback) {
-    getEvents(nameSpec).map(function (name) {
+    _getEvents(nameSpec).map(function (name) {
       var callbacks = eventListeners.get(name);
       var findIndex = callbacks.findIndex(function (c) {
         return c === callback;
@@ -2173,6 +2178,7 @@
 
   exports.Analytics = Analytics;
   exports.CommandError = CommandError;
+  exports._getEvents = _getEvents;
   exports._setActiveDeviceId = _setActiveDeviceId;
   exports.addEventListener = addEventListener;
   exports.apiVersion = apiVersion;
