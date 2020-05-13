@@ -374,24 +374,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
+  // Stop stress testing. Leave button with status if failure until repeated stop.
+  function stopStressInvokeApi(success: boolean) {
+    if (stressInterval) {
+        clearInterval(stressInterval);
+        stressInterval = undefined;
+    }
+    if (success) {
+        stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
+    }
+  }
+
   // Invoke API repeatedly:
-  stressInvokeApiBtn.onclick = () => {
-      // Stop stress testing. Leave button with status if failure until repeated stop.
-      function stopStressInvokeApi(success: boolean) {
-        if (stressInterval) {
-            clearInterval(stressInterval);
-            stressInterval = undefined;
-        }
-        if (success) {
-            stressInvokeApiBtn.value = "Invoke repeatedly (stress test)";
-        }
-      }
-      
+  stressInvokeApiBtn.onclick = () => {      
       let sucess = true;
-      let stopped = false;
       if (stressInvokeApiBtn.value.toLowerCase().includes("stop")) {
         stopStressInvokeApi(sucess);
-        stopped = true;
       } else {
         const funcMeta = getCurrentMethodMeta();
         const currentApiObject = getCurrentApiClassObject(); 
@@ -406,17 +404,23 @@ document.addEventListener('DOMContentLoaded', function () {
           if (sucess && stressInterval && funcMeta) {
             try {
               invokeSelectedApi(currentApiObject, funcMeta).then( () => {
-                stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " success count # " + stressInvokeCount + ")";
-                ++stressInvokeCount!;
+                if (stressInterval) {
+                  stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " success count # " + stressInvokeCount + ")";
+                  ++stressInvokeCount!;
+                }
               }).catch( () => {
-                stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed at count # " + stressInvokeCount + ")";
                 sucess = false;
-                stopStressInvokeApi(sucess);
+                if (stressInterval) {
+                  stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed at count # " + stressInvokeCount + ")";
+                  stopStressInvokeApi(sucess);
+                }
               });
             } catch (err) {
-              stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed with exception at count # " + stressInvokeCount + ")";
               sucess = false;
-              stopStressInvokeApi(sucess);
+              if (stressInterval) {
+                stressInvokeApiBtn.value = "Stop stress test (" + funcMeta!.name + " failed with exception at count # " + stressInvokeCount + ")";
+                stopStressInvokeApi(sucess);
+              }
             }
           }
         }, stressWaitInterval);
@@ -480,6 +484,8 @@ document.addEventListener('DOMContentLoaded', function () {
           currentDeviceAnalyticsSingleton = null;
           toastr.info("Jabra library initialized successfully");
         } else if (apiFuncName === "shutdown") {
+          stopStressInvokeApi(true);
+          
           initSDKBtn.disabled = false;
           unInitSDKBtn.disabled = true;
           checkInstallBtn.disabled = true;
