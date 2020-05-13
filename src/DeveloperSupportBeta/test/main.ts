@@ -483,17 +483,17 @@ document.addEventListener('DOMContentLoaded', function () {
           currentDeviceAnalyticsSingleton?.stop();
           currentDeviceAnalyticsSingleton = null;
           toastr.info("Jabra library initialized successfully");
-        } else if (apiFuncName === "shutdown") {
-          stopStressInvokeApi(true);
-          
+        } else if (apiFuncName === "shutdown") {          
           initSDKBtn.disabled = false;
           unInitSDKBtn.disabled = true;
           checkInstallBtn.disabled = true;
           devicesBtn.disabled = true;
-          invokeApiBtn.disabled = true;
-          stressInvokeApiBtn.disabled = true;
           setupUserMediaPlaybackBtn.disabled = true;
   
+          // Allow post shutdown invocations for testing purposes:
+          // stressInvokeApiBtn.disabled = true;
+          // invokeApiBtn.disabled = true;
+
           while (deviceSelector.options.length > 0) {                
             deviceSelector.remove(0);
           }
