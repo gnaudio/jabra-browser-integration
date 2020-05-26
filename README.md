@@ -123,7 +123,6 @@ For many editors and IDE's, the above typescript definition file can be used to 
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
 * [Library api test](https://gnaudio.github.io/jabra-browser-integration/release/test/) - advanced test page that allows detailed testing of individual API calls)
 * [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - demo page showing auto selection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 * [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and [Amazon Connect](https://aws.amazon.com/connect) integration
 
 ## Sequence diagrams
