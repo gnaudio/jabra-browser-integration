@@ -8,7 +8,7 @@ rm -v ./ROOT/Library/Google/Chrome/NativeMessagingHosts/jabrachromehost ./ROOT/L
 cp -a ../ChromeHost/bin/jabrachromehost ./ROOT/Library/Google/Chrome/NativeMessagingHosts
 cp -a ../ChromeHost/SDKmacOS/libjabra.dylib ./ROOT/Library/Google/Chrome/NativeMessagingHosts
 # Sign the application. Provide a valid signing certificate.
-codesign --sign "Developer ID Application: GN Audio AS" ./ROOT/Library/Google/Chrome/NativeMessagingHosts/jabrachromehost
+codesign --force --options runtime --sign "Developer ID Application: GN Audio AS" ./ROOT/Library/Google/Chrome/NativeMessagingHosts/jabrachromehost
 pkgbuild --root "ROOT" --scripts ./scripts --identifier com.jabra.chromehost --version 2.0.2 JabraChromeHost2.0.2.unsigned.pkg
 # Sign the package and create dmg file. Provide a valid signing certificate.
 productsign --sign "Developer ID Installer: GN Audio AS" JabraChromeHost2.0.2.unsigned.pkg JabraChromeHost2.0.2.pkg
