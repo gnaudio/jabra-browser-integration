@@ -30,7 +30,7 @@ while getopts ":u:p:f:b:" opt; do
 done
 
 set -e # Fail if any command fails
-#set -x # List the commands being run
+# set -x # List the commands being run
 
 # Check arguments
 if [ -z "${password}" ] || [ -z "${username}" ] || [ -z "${source_file}" ] || [ -z "${primary_bundle_id}" ]; then

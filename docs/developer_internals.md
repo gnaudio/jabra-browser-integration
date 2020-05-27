@@ -45,6 +45,11 @@ and in Version attribute in the Product file.
 
 + Mac:
 For MacOS the installer is build using a shell script. The version number must be updated in the script.
+Also, the installer must be notarized using the notarize.sh script
+
+```
+./notarize.sh -u <APPLE ID> -p <APPLE APP SPECIFIC PASSWORD> -f <PATH TO DMG> -b com.jabra.chromehost
+```
 
 ## Internal message format between API, Extension and Chromehost
 
