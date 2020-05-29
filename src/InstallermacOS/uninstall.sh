@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Attempting to uninstall a previosy jabrachromehost pkg install. Not officially supported. Use at your own risk!"
+echo "Attempting to uninstall a previous jabrachromehost pkg install. Not officially supported. Use at your own risk!"
 
 if (( $EUID != 0 )); then
     echo "Failure. This script needs to be run with sudo rights"
