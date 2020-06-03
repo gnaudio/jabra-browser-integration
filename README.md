@@ -68,11 +68,13 @@ The library internally checks for dependencies – and will report this to the a
 
 ## Native Chromehost downloads
 
-| Operating systems            | Chrome host native download                                                                                                   | Description                        |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.2.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.msi) | Chromehost 2.0 |
+| Operating systems             | Chrome host native download             | Description                             |
+| ----------------------------- | --------------------------------------- | --------------------------------------- |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.msi) | Chromehost 2.0 |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.2.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.msi) | Chromehost 2.0 (3CX only) |
 | Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix to allow beta testing |
-| macOS (El Capitan or newer)   | [JabraChromeHost2.0.2.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.dmg) | Chromehost 2.0 |
+| macOS (El Capitan or newer)   | [JabraChromeHost2.0.0.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.dmg) | Chromehost 2.0 |
+| macOS (El Capitan or newer)   | [JabraChromeHost2.0.2.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.dmg) | Chromehost 2.0 (3CX only) |
 | macOS (El Capitan or newer)   | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
 
 ## CI builds
@@ -131,12 +133,10 @@ For many editors and IDE's, the above typescript definition file can be used to 
 ```
 
 ## Development tools/demos
-
-- [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
-- [Library api test](https://gnaudio.github.io/jabra-browser-integration/release/test/) - advanced test page that allows detailed testing of individual API calls)
-- [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - demo page showing auto selection of jabra device with simple audio playback example
-- [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/release/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
-- [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and [Amazon Connect](https://aws.amazon.com/connect) integration
+* [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
+* [Library api test](https://gnaudio.github.io/jabra-browser-integration/release/test/) - advanced test page that allows detailed testing of individual API calls)
+* [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/release/playback/) - demo page showing auto selection of jabra device with simple audio playback example
+* [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/release/amazonconnectclient/) - demo showing Jabra and [Amazon Connect](https://aws.amazon.com/connect) integration
 
 ## Sequence diagrams
 
