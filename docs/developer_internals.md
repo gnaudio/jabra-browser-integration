@@ -44,12 +44,18 @@ For Windows the installer build using Visual Studio with the [Wix Toolset](https
 and in Version attribute in the Product file.
 
 + Mac:
-For MacOS the installer is build using a shell script. The version number must be updated in the script.
-Also, the installer must be notarized using the notarize.sh script
+For MacOS the installer is build 
+in 4 steps:
+    1. run buildinstaller.sh (done by CI)
+    2. run notarize.sh -u <username> -p <password> -f JabraChromeHostxxxx.pkg -b com.jabra.chromehost
+    3. run builddiskimage.sh
+    4. run notarize.sh -u <username> -p <password> -f JabraChromeHostxxxx.dmg -b com.jabra.chromehost
 
-```
-./notarize.sh -u <APPLE ID> -p <APPLE APP SPECIFIC PASSWORD> -f <PATH TO DMG> -b com.jabra.chromehost
-```
+### Uninstalling chromehost installers
+
+For windows, chromehost can be uninstalled using add/remove programs. 
+
+For MacOS, the [uninstall.sh](../src/InstallermacOS/uninstall.sh) can be used from a shell (sudo required).
 
 ## Internal message format between API, Extension and Chromehost
 
