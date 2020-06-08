@@ -29,8 +29,9 @@
     "url": "https://developer.jabra.com/site/global/support/index.gsp"
   },
   "scripts": {
-    "start": "tsdx watch",
+    "start": "node file-watcher.js",
     "build": "tsdx build --out build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
+    "build:debug": "tsdx build --name jabra --format cjs && ncp dist/jabra.cjs.development.js jabra.browser.integration-3.0.cjs.js",
     "prepare": "npm run build && npm run generatemeta",
     "test": "tsdx test",
     "dts-bundle": "dts-bundle --name @gnaudio/jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
