@@ -346,6 +346,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
     /**
         * Internal helper that returns an array of valid event keys that correspond to the event specificator
         * and are known to exist in our event listener map.
+        * Nb. For internal use only - may be changed at any time.
         */
     export function _getEvents(nameSpec: string | RegExp | Array<string | RegExp>): ReadonlyArray<string>;
     /**

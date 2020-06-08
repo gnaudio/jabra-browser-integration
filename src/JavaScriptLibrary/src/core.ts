@@ -1508,87 +1508,37 @@ export function getUserDeviceMediaExt(
  */
 function fillInMatchingMediaInfo(
   deviceInfo: DeviceInfo,
+  deviceInfos: readonly DeviceInfo[],
   mediaDevices: MediaDeviceInfo[]
 ): void {
-  function findBestMatchIndex(
-    sdkDeviceName: string,
-    mediaDeviceNameCandidates: string[]
-  ): number {  
-    // Edit distance helper adapted from
-    // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
-    function editDistance(s1: string, s2: string) {
-      s1 = s1.toLowerCase();
-      s2 = s2.toLowerCase();
-
-      var costs = new Array();
-      for (var i = 0; i <= s1.length; i++) {
-        var lastValue = i;
-        for (var j = 0; j <= s2.length; j++) {
-          if (i == 0) costs[j] = j;
-          else {
-            if (j > 0) {
-              var newValue = costs[j - 1];
-              if (s1.charAt(i - 1) != s2.charAt(j - 1))
-                newValue =
-                  Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-              costs[j - 1] = lastValue;
-              lastValue = newValue;
-            }
-          }
-        }
-        if (i > 0) costs[s2.length] = lastValue;
-      }
-      return costs[s2.length];
-    }
-
-    // Levenshtein distance helper adapted from
-    // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
-    function levenshteinDistance(s1: string, s2: string): number {
-      let longer = s1;
-      let shorter = s2;
-      if (s1.length < s2.length) {
-        longer = s2;
-        shorter = s1;
-      }
-      let longerLength = longer.length;
-      if (longerLength === 0) {
-        return 1.0;
-      }
-      return (longerLength - editDistance(longer, shorter)) / longerLength;
-    }
-
-    if (mediaDeviceNameCandidates.length == 1) {
-      return 0;
-    } else if (mediaDeviceNameCandidates.length > 0) {
+  function findMatchFromProductId(deviceInfo: DeviceInfo,  mediaDeviceNameCandidates: string[]) {
+    const explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+    return mediaDeviceNameCandidates.findIndex((c) => c.indexOf(explicitStr) >= 0);
+  }
+  
+  function findBestMatchIndex( mediaDeviceNameCandidates: string[]): number {  
+    if (mediaDeviceNameCandidates.length > 0) {
       // First try to see if the vendor and product id is mentioned in label (newer versions of chrome):
-      const explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
-      const explicitIdx = mediaDeviceNameCandidates.findIndex((c) => c.indexOf(explicitStr) >= 0);
-      if (explicitIdx>=0) {
+      let explicitIdx = findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates);
+
+      if (explicitIdx >= 0) {
         return explicitIdx;
-      }
+      } 
+      
+      // If device is not present in Chrome's device list, it could be a dongle-connected 
+      // device, we then need to find the dongle's deviceInfo instead. 
+      const dongleDeviceInfo = deviceInfos.find((d) => d.deviceID === deviceInfo.connectedDeviceID);
+      
+      if (dongleDeviceInfo) {
+        explicitIdx = findMatchFromProductId(dongleDeviceInfo, mediaDeviceNameCandidates);
 
-      // Otherwise fallback on guessing names
-      let similarities = mediaDeviceNameCandidates.map(candidate => {
-        if (candidate.includes("(" + sdkDeviceName + ")")) {
-          return 1.0;
-        } else {
-          // Remove Standard/Default prefix from label in Chrome when comparing
-          let prefixEnd = candidate.indexOf(" - ");
-          let cleanedCandidate =
-            prefixEnd >= 0 ? candidate.substring(prefixEnd + 3) : candidate;
-
-          return levenshteinDistance(sdkDeviceName, cleanedCandidate);
+        if (explicitIdx >= 0) {
+          return explicitIdx;
         }
-      });
-      let bestMatchIndex = similarities.reduce(
-        (prevIndexMax, value, i, a) =>
-          value > a[prevIndexMax] ? i : prevIndexMax,
-        0
-      );
-      return bestMatchIndex;
-    } else {
-      return -1;
-    }
+      }
+    } 
+
+    return -1;  
   }
 
   // Find matching pair input or output device.
@@ -1612,10 +1562,9 @@ function fillInMatchingMediaInfo(
         device.label.toLowerCase().includes("jabra") &&
         (device.kind === "audioinput" || device.kind === "audiooutput")
     );
-    let someJabraDeviceIndex = findBestMatchIndex(
-      deviceInfo.deviceName,
-      jabraMediaDevices.map(md => md.label)
-    );
+    
+    let someJabraDeviceIndex = findBestMatchIndex(jabraMediaDevices.map(md => md.label));
+
     if (someJabraDeviceIndex >= 0) {
       let foundDevice = jabraMediaDevices[someJabraDeviceIndex];
       groupId = foundDevice.groupId;
@@ -1703,7 +1652,7 @@ function _doGetSDKDevices_And_BrowserDevice(): Promise<
     navigator.mediaDevices.enumerateDevices()
   ]).then(([deviceInfos, mediaDevices]) => {
     deviceInfos.forEach(deviceInfo => {
-      fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+      fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices);
     });
 
     return deviceInfos;
@@ -1748,9 +1697,10 @@ function _doGetActiveSDKDevice_And_BrowserDevice(): Promise<DeviceInfo> {
   // enumerateDevices requires user to have provided permission using getUserMedia for labels to be filled out.
   return Promise.all([
     _doGetActiveSDKDevice(),
+    _doGetSDKDevices(),
     navigator.mediaDevices.enumerateDevices()
-  ]).then(([deviceInfo, mediaDevices]) => {
-    fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+  ]).then(([deviceInfo, deviceInfos,  mediaDevices]) => {
+    fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices);
     return deviceInfo;
   });
 }
