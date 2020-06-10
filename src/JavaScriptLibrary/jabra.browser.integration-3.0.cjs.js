@@ -1136,7 +1136,7 @@ function getUserDeviceMediaExt(constraints) {
  * Internal helper for add media information properties to existing SDK device information.
  */
 
-function fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices) {
+function fillInMatchingMediaInfo(deviceInfo, dongleDeviceInfos, mediaDevices) {
   function findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates) {
     var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
     return mediaDeviceNameCandidates.findIndex(function (c) {
@@ -1155,7 +1155,7 @@ function fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices) {
       // device, we then need to find the dongle's deviceInfo instead. 
 
 
-      var dongleDeviceInfo = deviceInfos.find(function (d) {
+      var dongleDeviceInfo = dongleDeviceInfos.find(function (d) {
         return d.deviceID === deviceInfo.connectedDeviceID;
       });
 

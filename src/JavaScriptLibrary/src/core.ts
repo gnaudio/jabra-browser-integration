@@ -1508,7 +1508,7 @@ export function getUserDeviceMediaExt(
  */
 function fillInMatchingMediaInfo(
   deviceInfo: DeviceInfo,
-  deviceInfos: readonly DeviceInfo[],
+  dongleDeviceInfos: readonly DeviceInfo[],
   mediaDevices: MediaDeviceInfo[]
 ): void {
   function findMatchFromProductId(deviceInfo: DeviceInfo,  mediaDeviceNameCandidates: string[]) {
@@ -1520,14 +1520,14 @@ function fillInMatchingMediaInfo(
     if (mediaDeviceNameCandidates.length > 0) {
       // First try to see if the vendor and product id is mentioned in label (newer versions of chrome):
       let explicitIdx = findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates);
-
+      
       if (explicitIdx >= 0) {
         return explicitIdx;
       } 
       
       // If device is not present in Chrome's device list, it could be a dongle-connected 
       // device, we then need to find the dongle's deviceInfo instead. 
-      const dongleDeviceInfo = deviceInfos.find((d) => d.deviceID === deviceInfo.connectedDeviceID);
+      const dongleDeviceInfo = dongleDeviceInfos.find((d) => d.deviceID === deviceInfo.connectedDeviceID);
       
       if (dongleDeviceInfo) {
         explicitIdx = findMatchFromProductId(dongleDeviceInfo, mediaDeviceNameCandidates);
