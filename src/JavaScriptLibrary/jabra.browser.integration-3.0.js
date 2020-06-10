@@ -1140,7 +1140,7 @@
    * Internal helper for add media information properties to existing SDK device information.
    */
 
-  function fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices) {
+  function fillInMatchingMediaInfo(deviceInfo, potentialDongleDeviceInfos, mediaDevices) {
     function findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates) {
       var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
       return mediaDeviceNameCandidates.findIndex(function (c) {
@@ -1155,11 +1155,11 @@
 
         if (explicitIdx >= 0) {
           return explicitIdx;
-        } // If device is not present in Chrome's device list, it could be a dongle-connected 
-        // device, we then need to find the dongle's deviceInfo instead. 
+        } // If device is not present in Chrome's device list, it could be a dongle-connected device, 
+        // we then need to find the dongle's deviceInfo instead by iterating the full list of deviceInfos
 
 
-        var dongleDeviceInfo = deviceInfos.find(function (d) {
+        var dongleDeviceInfo = potentialDongleDeviceInfos.find(function (d) {
           return d.deviceID === deviceInfo.connectedDeviceID;
         });
 
