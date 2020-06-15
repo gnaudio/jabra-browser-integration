@@ -29,7 +29,7 @@ SOFTWARE.
 #include "stdafx.h"
 
 // Version of this chromehost library
-const std::string VERSION = "2.1.0.beta.7";
+const std::string VERSION = "2.1.0.beta.8";
 
 // Helper to get version of underlaying native platform sdk.
 inline const std::string getNativeSDKVersion() {
