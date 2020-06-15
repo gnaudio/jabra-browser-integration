@@ -69,11 +69,11 @@ The library internally checks for dependencies – and will report this to the a
 
 ### latest macOS CI build on master
 
-[![macOS CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS?branchName=master)](https://gnaudio.visualstudio.com/jabra-browser-integration/_build/latest?definitionId=138&branchName=master)
+[![MacOS CI build](https://dev.azure.com/gnaudio/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS?branchName=master)](https://dev.azure.com/gnaudio/jabra-browser-integration/_build?definitionId=138&branchName=master)
 
 ### Latest Windows CI build on master
 
-[![Windows CI build](https://gnaudio.visualstudio.com/jabra-browser-integration/_apis/build/status/jabra-browser-integration-Windows?branchName=master)](https://gnaudio.visualstudio.com/jabra-browser-integration/_build/latest?definitionId=139&branchName=master)
+[![Windows CI build](https://dev.azure.com/gnaudio/jabra-browser-integration/_apis/build/status/jabra-browser-integration-Windows?branchName=master)](https://dev.azure.com/gnaudio/jabra-browser-integration/_build?definitionId=139&branchName=master)
 
 
 ## Getting started with using the API in your web applications
