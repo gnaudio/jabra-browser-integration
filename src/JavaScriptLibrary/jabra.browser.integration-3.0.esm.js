@@ -1708,6 +1708,9 @@ var AnalyticsEventList = /*#__PURE__*/function () {
 }();
 
 /**
+ * WARNING: THIS FEATURE IS PRE-RELEASE. APIS ARE SUBJECT TO CHANGE WITHOUT
+ * WARNING IN FUTURE RELEASES. ONLY USE FOR EVALUATION PURPOSES.
+ *
  * The Analytics will collect AnalyticsEvents and allow you to query data such
  * as speech status, speech time, and much more. To use the class, initialize an
  * instance of the class and use the start method to start collecting. The class
@@ -1763,6 +1766,7 @@ var Analytics = /*#__PURE__*/function (_EventEmitter) {
         _this.emit(event.type, event);
       }
     });
+    console.log('Warning');
     return _this;
   }
   /**

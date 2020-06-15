@@ -255,6 +255,10 @@ jabra.addEventListener("unmute", (event) => {
 });
 ```
 
+## Analytics API (Preview)
+
+The SDK contains a preview of the upcoming Analytics API that will analyze DevLog events and turn them into human readable statistics. The API is a pre-release and is subject to change without warning, so only use for evaluation purposes.
+
 ## Version information.
 
 For information about individual releases see [changelog](CHANGELOG.md). For information about upcoming changes see also our [beta information page](BETA.md).
