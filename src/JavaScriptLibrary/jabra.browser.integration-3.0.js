@@ -26,7 +26,7 @@
     return _setPrototypeOf(o, p);
   }
 
-  function isNativeReflectConstruct() {
+  function _isNativeReflectConstruct() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -40,7 +40,7 @@
   }
 
   function _construct(Parent, args, Class) {
-    if (isNativeReflectConstruct()) {
+    if (_isNativeReflectConstruct()) {
       _construct = Reflect.construct;
     } else {
       _construct = function _construct(Parent, args, Class) {
@@ -94,6 +94,43 @@
     return _wrapNativeSuper(Class);
   }
 
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _createForOfIteratorHelperLoose(o) {
+    var i = 0;
+
+    if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
+      if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) return function () {
+        if (i >= o.length) return {
+          done: true
+        };
+        return {
+          done: false,
+          value: o[i++]
+        };
+      };
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+
+    i = o[Symbol.iterator]();
+    return i.next.bind(i);
+  }
+
   /*
   Jabra Browser Integration
   https://github.com/gnaudio/jabra-browser-integration
@@ -129,9 +166,7 @@
    * Is the current version a beta ?
    */
 
-  var isBeta =
-  /*#__PURE__*/
-  apiVersion.includes("beta");
+  var isBeta = /*#__PURE__*/apiVersion.includes("beta");
   /**
    * Id of proper (production) release of browser plugin.
    */
@@ -210,9 +245,7 @@
    */
 
 
-  var CommandError =
-  /*#__PURE__*/
-  function (_Error) {
+  var CommandError = /*#__PURE__*/function (_Error) {
     _inheritsLoose(CommandError, _Error);
 
     function CommandError(command, errmessage, data) {
@@ -227,17 +260,13 @@
     }
 
     return CommandError;
-  }(
-  /*#__PURE__*/
-  _wrapNativeSuper(Error));
+  }( /*#__PURE__*/_wrapNativeSuper(Error));
   /**
    * Internal mapping from all known events to array of registered callbacks. All possible events are setup
    * initially. Callbacks values are configured at runtime.
    */
 
-  var eventListeners =
-  /*#__PURE__*/
-  new Map();
+  var eventListeners = /*#__PURE__*/new Map();
   eventNamesList.forEach(function (event) {
     return eventListeners.set(event, []);
   });
@@ -315,11 +344,7 @@
    * An internal logger helper.
    */
 
-  var logger =
-  /*#__PURE__*/
-  new (
-  /*#__PURE__*/
-  function () {
+  var logger = /*#__PURE__*/new ( /*#__PURE__*/function () {
     function _class() {}
 
     var _proto = _class.prototype;
@@ -355,17 +380,13 @@
    * differentiate between different instances of this api in different browser tabs.
    */
 
-  var apiClientId =
-  /*#__PURE__*/
-  Math.random().toString(36).substr(2, 9);
+  var apiClientId = /*#__PURE__*/Math.random().toString(36).substr(2, 9);
   /**
    * A mapping from unique request ids for commands and the promise information needed
    * to resolve/reject them by an incomming event.
    */
 
-  var sendRequestResultMap =
-  /*#__PURE__*/
-  new Map();
+  var sendRequestResultMap = /*#__PURE__*/new Map();
   /**
    * A counter used to generate unique request ID's used to match commands and returning events.
    */
@@ -663,6 +684,7 @@
   /**
    * Internal helper that returns an array of valid event keys that correspond to the event specificator
    * and are known to exist in our event listener map.
+   * Nb. For internal use only - may be changed at any time.
    */
 
   function _getEvents(nameSpec) {
@@ -1118,86 +1140,39 @@
    * Internal helper for add media information properties to existing SDK device information.
    */
 
-  function fillInMatchingMediaInfo(deviceInfo, mediaDevices) {
-    function findBestMatchIndex(sdkDeviceName, mediaDeviceNameCandidates) {
-      // Edit distance helper adapted from
-      // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
-      function editDistance(s1, s2) {
-        s1 = s1.toLowerCase();
-        s2 = s2.toLowerCase();
-        var costs = new Array();
+  function fillInMatchingMediaInfo(deviceInfo, potentialDongleDeviceInfos, mediaDevices) {
+    function findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates) {
+      var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+      return mediaDeviceNameCandidates.findIndex(function (c) {
+        return c.indexOf(explicitStr) >= 0;
+      });
+    }
 
-        for (var i = 0; i <= s1.length; i++) {
-          var lastValue = i;
-
-          for (var j = 0; j <= s2.length; j++) {
-            if (i == 0) costs[j] = j;else {
-              if (j > 0) {
-                var newValue = costs[j - 1];
-                if (s1.charAt(i - 1) != s2.charAt(j - 1)) newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                costs[j - 1] = lastValue;
-                lastValue = newValue;
-              }
-            }
-          }
-
-          if (i > 0) costs[s2.length] = lastValue;
-        }
-
-        return costs[s2.length];
-      } // Levenshtein distance helper adapted from
-      // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
-
-
-      function levenshteinDistance(s1, s2) {
-        var longer = s1;
-        var shorter = s2;
-
-        if (s1.length < s2.length) {
-          longer = s2;
-          shorter = s1;
-        }
-
-        var longerLength = longer.length;
-
-        if (longerLength === 0) {
-          return 1.0;
-        }
-
-        return (longerLength - editDistance(longer, shorter)) / longerLength;
-      }
-
-      if (mediaDeviceNameCandidates.length == 1) {
-        return 0;
-      } else if (mediaDeviceNameCandidates.length > 0) {
+    function findBestMatchIndex(mediaDeviceNameCandidates) {
+      if (mediaDeviceNameCandidates.length > 0) {
         // First try to see if the vendor and product id is mentioned in label (newer versions of chrome):
-        var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
-        var explicitIdx = mediaDeviceNameCandidates.findIndex(function (c) {
-          return c.indexOf(explicitStr) >= 0;
-        });
+        var explicitIdx = findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates);
 
         if (explicitIdx >= 0) {
           return explicitIdx;
-        } // Otherwise fallback on guessing names
+        } // If device is not present in Chrome's device list, it could be a dongle-connected device, 
+        // we then need to find the dongle's deviceInfo instead by iterating the full list of deviceInfos
 
 
-        var similarities = mediaDeviceNameCandidates.map(function (candidate) {
-          if (candidate.includes("(" + sdkDeviceName + ")")) {
-            return 1.0;
-          } else {
-            // Remove Standard/Default prefix from label in Chrome when comparing
-            var prefixEnd = candidate.indexOf(" - ");
-            var cleanedCandidate = prefixEnd >= 0 ? candidate.substring(prefixEnd + 3) : candidate;
-            return levenshteinDistance(sdkDeviceName, cleanedCandidate);
-          }
+        var dongleDeviceInfo = potentialDongleDeviceInfos.find(function (d) {
+          return d.deviceID === deviceInfo.connectedDeviceID;
         });
-        var bestMatchIndex = similarities.reduce(function (prevIndexMax, value, i, a) {
-          return value > a[prevIndexMax] ? i : prevIndexMax;
-        }, 0);
-        return bestMatchIndex;
-      } else {
-        return -1;
+
+        if (dongleDeviceInfo) {
+          explicitIdx = findMatchFromProductId(dongleDeviceInfo, mediaDeviceNameCandidates);
+
+          if (explicitIdx >= 0) {
+            return explicitIdx;
+          }
+        }
       }
+
+      return -1;
     } // Find matching pair input or output device.
 
 
@@ -1216,7 +1191,7 @@
       var jabraMediaDevices = mediaDevices.filter(function (device) {
         return device.label && device.label.toLowerCase().includes("jabra") && (device.kind === "audioinput" || device.kind === "audiooutput");
       });
-      var someJabraDeviceIndex = findBestMatchIndex(deviceInfo.deviceName, jabraMediaDevices.map(function (md) {
+      var someJabraDeviceIndex = findBestMatchIndex(jabraMediaDevices.map(function (md) {
         return md.label;
       }));
 
@@ -1298,7 +1273,7 @@
       var deviceInfos = _ref[0],
           mediaDevices = _ref[1];
       deviceInfos.forEach(function (deviceInfo) {
-        fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+        fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices);
       });
       return deviceInfos;
     });
@@ -1337,10 +1312,11 @@
     } // enumerateDevices requires user to have provided permission using getUserMedia for labels to be filled out.
 
 
-    return Promise.all([_doGetActiveSDKDevice(), navigator.mediaDevices.enumerateDevices()]).then(function (_ref2) {
+    return Promise.all([_doGetActiveSDKDevice(), _doGetSDKDevices(), navigator.mediaDevices.enumerateDevices()]).then(function (_ref2) {
       var deviceInfo = _ref2[0],
-          mediaDevices = _ref2[1];
-      fillInMatchingMediaInfo(deviceInfo, mediaDevices);
+          deviceInfos = _ref2[1],
+          mediaDevices = _ref2[2];
+      fillInMatchingMediaInfo(deviceInfo, deviceInfos, mediaDevices);
       return deviceInfo;
     });
   }
@@ -1395,9 +1371,7 @@
     }
   }
 
-  var EventEmitter =
-  /*#__PURE__*/
-  function () {
+  var EventEmitter = /*#__PURE__*/function () {
     function EventEmitter() {
       /**
        * A map of event listeners
@@ -1592,9 +1566,7 @@
    * @export
    * @class AnalyticsEventList
    */
-  var AnalyticsEventList =
-  /*#__PURE__*/
-  function () {
+  var AnalyticsEventList = /*#__PURE__*/function () {
     function AnalyticsEventList() {
       // An array of events sorted by the time it was emitted.
       this.events = [];
@@ -1707,6 +1679,9 @@
   }();
 
   /**
+   * WARNING: THIS FEATURE IS PRE-RELEASE. APIS ARE SUBJECT TO CHANGE WITHOUT
+   * WARNING IN FUTURE RELEASES. ONLY USE FOR EVALUATION PURPOSES.
+   *
    * The Analytics will collect AnalyticsEvents and allow you to query data such
    * as speech status, speech time, and much more. To use the class, initialize an
    * instance of the class and use the start method to start collecting. The class
@@ -1720,9 +1695,7 @@
    * @extends {EventEmitter}
    */
 
-  var Analytics =
-  /*#__PURE__*/
-  function (_EventEmitter) {
+  var Analytics = /*#__PURE__*/function (_EventEmitter) {
     _inheritsLoose(Analytics, _EventEmitter);
 
     /**
@@ -1764,6 +1737,7 @@
           _this.emit(event.type, event);
         }
       });
+      console.log('Warning');
       return _this;
     }
     /**
@@ -1886,19 +1860,8 @@
         events.push(new AnalyticsEvent("txspeech", false, endTime), new AnalyticsEvent("rxspeech", false, endTime));
       }
 
-      for (var _iterator = events, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-        var _ref;
-
-        if (_isArray) {
-          if (_i >= _iterator.length) break;
-          _ref = _iterator[_i++];
-        } else {
-          _i = _iterator.next();
-          if (_i.done) break;
-          _ref = _i.value;
-        }
-
-        var event = _ref;
+      for (var _iterator = _createForOfIteratorHelperLoose(events), _step; !(_step = _iterator()).done;) {
+        var event = _step.value;
         var isTXEvent = event.type === "txspeech";
         var isRXEvent = event.type === "rxspeech"; // if tx starts talking, and isn't already talking, mark start event
 

@@ -6,7 +6,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 3.0.0-beta.7 Changed the following in the Javascript API
 
-- Added analytics module
+- Added analytics module (preview)
 - Added npm module support.
 - Optional string types removed in TS declarations. Clients should now use the correct types instead of strings.
 - Added meta-data for APIs.

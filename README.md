@@ -131,6 +131,9 @@ For many editors and IDE's, the above typescript definition file can be used to 
 ```javascript
 /// <reference path="<your-path-to-a-local-copy-here>/jabra.browser.integration-3.0.d.ts" />
 ```
+### Dongle devices
+
+Some Jabra headsets connect via Bluetooth to a USB-connected dongle. In the `getDevices` list, dongle and headset will appear separately, and the SDK will automatically sort out sending commands to the headset if called on the connected dongle and vice versa. _However_, the `devlog` event needs to be subscribed to the headset only. 
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
@@ -251,6 +254,10 @@ jabra.addEventListener("unmute", (event) => {
  // Handle unmute event.
 });
 ```
+
+## Analytics API (Preview)
+
+The SDK contains a preview of the upcoming Analytics API that will analyze DevLog events and turn them into human readable statistics. The API is a pre-release and is subject to change without warning, so only use for evaluation purposes.
 
 ## Version information.
 

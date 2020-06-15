@@ -346,6 +346,7 @@ declare module '@gnaudio/jabra-browser-integration/core' {
     /**
         * Internal helper that returns an array of valid event keys that correspond to the event specificator
         * and are known to exist in our event listener map.
+        * Nb. For internal use only - may be changed at any time.
         */
     export function _getEvents(nameSpec: string | RegExp | Array<string | RegExp>): ReadonlyArray<string>;
     /**
@@ -564,6 +565,9 @@ declare module '@gnaudio/jabra-browser-integration/Analytics/Analytics' {
             silenceTimePct: number;
     };
     /**
+        * WARNING: THIS FEATURE IS PRE-RELEASE. APIS ARE SUBJECT TO CHANGE WITHOUT
+        * WARNING IN FUTURE RELEASES. ONLY USE FOR EVALUATION PURPOSES.
+        *
         * The Analytics will collect AnalyticsEvents and allow you to query data such
         * as speech status, speech time, and much more. To use the class, initialize an
         * instance of the class and use the start method to start collecting. The class
