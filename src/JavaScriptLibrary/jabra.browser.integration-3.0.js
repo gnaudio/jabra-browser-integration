@@ -111,24 +111,29 @@
     return arr2;
   }
 
-  function _createForOfIteratorHelperLoose(o) {
-    var i = 0;
+  function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+    var it;
 
     if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-      if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) return function () {
-        if (i >= o.length) return {
-          done: true
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        return function () {
+          if (i >= o.length) return {
+            done: true
+          };
+          return {
+            done: false,
+            value: o[i++]
+          };
         };
-        return {
-          done: false,
-          value: o[i++]
-        };
-      };
+      }
+
       throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
     }
 
-    i = o[Symbol.iterator]();
-    return i.next.bind(i);
+    it = o[Symbol.iterator]();
+    return it.next.bind(it);
   }
 
   /*
@@ -1679,7 +1684,7 @@
   }();
 
   /**
-   * WARNING: THIS FEATURE IS PRE-RELEASE. APIS ARE SUBJECT TO CHANGE WITHOUT
+   * WARNING: THE ANALYTICS APIS ARE PRE-RELEASE, AND SUBJECT TO CHANGE WITHOUT
    * WARNING IN FUTURE RELEASES. ONLY USE FOR EVALUATION PURPOSES.
    *
    * The Analytics will collect AnalyticsEvents and allow you to query data such
@@ -1737,7 +1742,7 @@
           _this.emit(event.type, event);
         }
       });
-      console.log('Warning');
+      console.warn('WARNING: The Analytics APIs are pre-release and subject to change without warning in future releases. Only use for evaluation purposes.');
       return _this;
     }
     /**
@@ -2165,6 +2170,8 @@
   exports.shutdown = shutdown;
   exports.trySetDeviceOutput = trySetDeviceOutput;
   exports.unmute = unmute;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=jabra.umd.development.js.map

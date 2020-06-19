@@ -2,8 +2,7 @@
   "name": "@gnaudio/jabra-browser-integration",
   "version": "3.0.0-beta.7",
   "description": "Control Jabra Devices from within a browser app using JavaScript",
-  "main": "jabra.browser.integration-3.0.cjs.js",
-  "main:umd": "jabra.browser.integration-3.0.js",
+  "main": "jabra.browser.integration-3.0.js",
   "module": "jabra.browser.integration-3.0.esm.js",
   "types": "jabra.browser.integration-3.0.d.ts",
   "author": "GN Audio",
@@ -30,11 +29,11 @@
   },
   "scripts": {
     "start": "node file-watcher.js",
-    "build": "tsdx build --out build --name jabra --format cjs,esm,umd && npm run dts-bundle && npm run cp",
+    "build": "tsdx build --out build --name jabra --format cjs,esm,umd && npm run dts-bundle-generator && npm run cp",
     "build:debug": "tsdx build --name jabra --format cjs && ncp dist/jabra.cjs.development.js jabra.browser.integration-3.0.cjs.js",
     "prepare": "npm run build && npm run generatemeta",
     "test": "tsdx test",
-    "dts-bundle": "dts-bundle --name @gnaudio/jabra-browser-integration --main dist/index.d.ts --out ../jabra.browser.integration-3.0.d.ts",
+    "dts-bundle-generator": "dts-bundle-generator --out-file=jabra.browser.integration-3.0.d.ts --umd-module-name=jabra dist/index.d.ts",
     "cp": "npm run cp:esm && npm run cp:umd && npm run cp:cjs",
     "cp:esm": "ncp dist/jabra.esm.js jabra.browser.integration-3.0.esm.js",
     "cp:umd": "ncp dist/jabra.umd.development.js jabra.browser.integration-3.0.js",
@@ -44,11 +43,11 @@
   },
   "devDependencies": {
     "@types/jest": "24.0.23",
-    "dts-bundle": "0.7.3",
+    "dts-bundle-generator": "^4.3.0",
     "ncp": "2.0.0",
-    "tsdx": "0.11.0",
+    "ts-node": "8.5.2",
+    "tsdx": "0.13.2",
     "tslib": "1.10.0",
-    "typescript": "3.6.3",
-    "ts-node": "8.5.2"
+    "typescript": "3.6.3"
   }
 }
