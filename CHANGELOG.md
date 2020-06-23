@@ -63,7 +63,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 # 3. CHROMEHOST:
 2.1.0-beta.8 Changed the following
-- Updated to C-SDK 1.8.7.11
+- Updated to C-SDK 1.8.7.12
 - Added Mac uninstaller script.
 - Removed Mac downgrade check/error.
 - Mac installer is now notarized (backported to v2.0.0, v2.0.2, beta7) 

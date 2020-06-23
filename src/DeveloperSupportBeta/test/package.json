@@ -9,7 +9,7 @@
   "author": "jabra",
   "license": "MIT",
   "dependencies": {
-    "@gnaudio/jabra-browser-integration": "3.0.0-beta.7"
+    "@gnaudio/jabra-browser-integration": "3.0.0-beta.8"
   },
   "bugs": {
     "url": "https://developer.jabra.com/"

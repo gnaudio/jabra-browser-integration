@@ -157,7 +157,7 @@ SOFTWARE.
 /**
  * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
  */
-var apiVersion = "3.0.0-beta.7";
+var apiVersion = "3.0.0-beta.8";
 /**
  * Is the current version a beta ?
  */
