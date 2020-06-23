@@ -2563,4 +2563,63 @@ LIBRARY_API Jabra_ReturnCode Jabra_SetLinkConnectionStatusListener(unsigned shor
   */
 LIBRARY_API Jabra_ReturnCode Jabra_RebootDevice(unsigned short deviceID);
 
+/** Dect information about density and error counts */
+
+/** It is possible to calculate a “percentage density” like this:
+ *   (100 * MaximumReferenceRSSI * NumberMeasuredSlots) / SumMeasuredRSSI. If this percentage number is high,
+ *    and there is a large number of errors, then the problem is most likely too high density.
+ */
+
+typedef struct _DectInfoDensity {
+  uint16_t SumMeasuredRSSI;		    /* This is the sum of RSSI measured for all slots. */
+  uint8_t  MaximumReferenceRSSI;	/* This is the maximum RSSI expected to be measured from 1 slot. */
+  uint8_t  NumberMeasuredSlots;	  /* Number of slots measured in current communication mode. */
+  uint16_t DataAgeSeconds;		    /* Time since measurement was taken. */
+} Jabra_DectInfoDensity;
+
+/** The most interesting counter is the handoversCount, which states how many times the connection has
+ *  moved to a different slot position. Moving doesn’t necessarily give any effect on the audio, but there is a risk that it is hearable.
+ *  When you reach a level of 5 or above in multiple consecutive readings it will definitely be noticeable.
+ *  The other counters describe what is the reason the a handover has occurred, there may be multiple errors resulting in a single handover.
+ */
+typedef struct _DectInfoErrorCount {
+  uint16_t syncErrors;		/* Number of errors in SYNC field.*/
+  uint16_t aErrors;			   /* Number of errors in A field.*/
+  uint16_t xErrors;			   /* Number of errors in X field.*/
+  uint16_t zErrors;			   /* Number of errors in Z field.*/
+  uint16_t hubSyncErrors;	 /* Number of errors in HUB Sync field.*/
+  uint16_t hubAErrors;		 /* Number of errors in HUB A field.*/
+  uint16_t handoversCount; /* Handover count.*/
+} Jabra_DectErrorCount;
+
+typedef enum _DectInfoType {
+  DectDensity = 0x00,
+  DectErrorCount = 0x01,
+} Jabra_DectInfoType;
+
+typedef struct _DectInfo {
+  Jabra_DectInfoType DectType;
+  union {
+    Jabra_DectInfoDensity DectDensity;
+    Jabra_DectErrorCount  DectErrorCount;
+  };
+  unsigned int RawDataLen;
+  uint8_t RawData[57];
+} Jabra_DectInfo;
+
+/**
+ * @brief Registration for dect density and error count events.
+ * @param[in] DectInfoFunc Callback method, called when
+ * a dect device sends a dect density or dect error count event.
+ * The Jabra_DectInfo structure must be freed with Jabra_freeDectInfoStr
+ */
+LIBRARY_API void Jabra_RegisterDectInfoHandler(void(*DectInfoFunc)(unsigned short deviceID, Jabra_DectInfo *dectInfo));
+
+/**
+ * Frees the #Jabra_DectInfo
+ * @param[in] dectInfo #Jabra_DectInfo structure to be freed.
+ */
+LIBRARY_API void Jabra_FreeDectInfoStr(Jabra_DectInfo *dectInfo);
+
+
 #endif /* COMMON_H */

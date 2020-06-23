@@ -37,6 +37,8 @@ cmake --build . --target ALL_BUILD --config Release
 cmake ..
 cmake --build . --config Release
 ```
+_Note_: gcc and g++ for Linux should be version 7 or newer. 
+
 ### Building chromehost installers
 
 + Windows: 

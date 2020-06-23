@@ -27,7 +27,7 @@ add_executable(jabrachromehost ${sources})
 
 if(UNIX AND NOT APPLE)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.so.1.8.7.11;.so.1;.so.2;.so.1.7.3.4")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.so.1.8.7.12;.so.1;.so.2;.so.1.7.3.4")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
 endif()
 
