@@ -21,8 +21,8 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta8](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.1.0-beta8.msi) | Chromehost 2.1.0-beta8 Beta |
-| macOS (10.x)                  | [JabraChromeHost2.1.0-beta8](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.1.0-beta8.dmg) | Chromehost 2.1.0-beta8 Beta |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta8](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta8.msi) | Chromehost 2.1.0-beta8 Beta |
+| macOS (10.x)                  | [JabraChromeHost2.1.0-beta8](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta8.dmg) | Chromehost 2.1.0-beta8 Beta |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta7](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.1.0-beta7.msi) | Chromehost 2.1.0-beta7 Beta |
 | macOS (10.x)                  | [JabraChromeHost2.1.0-beta7](https://github.com/gnaudio/jabra-browser-integration/raw/master/downloads/JabraChromeHost2.1.0-beta7.dmg) | Chromehost 2.1.0-beta7 Beta |
 
