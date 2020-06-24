@@ -172,9 +172,11 @@ Logging for all native components (chromehost and platform sdk library) are writ
 
 The API v3.0 is backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version can be consumed directly as previous versions by including the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.js) or by using the new npm package [@gnaudio/jabra-browser-integration](https://www.npmjs.com/package/@gnaudio/jabra-browser-integration) in combination with a browser bundler.
 
-### Analytics
+### Analytics API (Preview)
 
-This new version also includes an `Analytics` module (for supported headsets), the following is a simple use example:
+This new version also includes a preview of the upcoming `Analytics` module (for supported headsets). It will analyze DevLog events and turn them into human readable statistics. The API is a pre-release and is subject to change without warning, so only use for evaluation purposes.
+
+The following is a simple use example:
 
 ```typescript
 // Start by importing the module if using our npm module.
@@ -254,10 +256,6 @@ jabra.addEventListener("unmute", (event) => {
  // Handle unmute event.
 });
 ```
-
-## Analytics API (Preview)
-
-The SDK contains a preview of the upcoming Analytics API that will analyze DevLog events and turn them into human readable statistics. The API is a pre-release and is subject to change without warning, so only use for evaluation purposes.
 
 ## Version information.
 
