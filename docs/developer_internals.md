@@ -2,6 +2,46 @@
 
 This document contains various implementation details of interest to developers and advanced integrators of the browser sdk. Normal users of the Jabra client API should not need this information.
 
+## Setup for local development
+
+The Browser Integration is an interplay between a JavaScript-library, a Chrome Extension and a native ChromeHost installed on your PC. Each of the entities can be developed separately, but often tasks involve testing functitonality across units. To get a seamless development experience, follow the guidelines below. The Jabra team primarily develops on Windows so guidelines tend to skew towards this platform, but should for the most part be applicable on Mac and Linux as well.  
+
+### JavaScript Library
+
+The JavaScript Library can be tested with the test app in `src\DeveloperSupportBeta\test`. The test app will by default install from the remote npm-target, but can be tweaked to use the local build by updating package.json to `"@gnaudio/jabra-browser-integration": "file:../../JavaScriptLibrary"`. Then run `npm i` and `npm run build`.
+
+To start test server, go to `src/` and run `./serve.bat`.
+
+Optionally navigate to `src\JavaScriptLibrary` and run `nmp start`. This will start a file-watcher that will trigger automatic rebuilds of the JavaScript library _and_ the test-app whenever a file is changed.  
+
+### ChromeHost
+
+The ChromeHost executable is built with [CMake](https://cmake.org/). See description under [Building ChromeHost](#-building-chromehost) about how to build from shell. The project can also be setup to build with VS Code using the [CMake Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools). The configuration should match the one described in [Building ChromeHost](#-building-chromehost).
+
+Assuming that the ChromeHost is already installed with the [official installer](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.msi), we can tweak it to open the CMake build instead: Find the installation folder - most likely `C:\Program Files (x86)\JabraChromeHost` and open `com.jabra.nm.json`, change `path` to the location of your CMake build, e.g. `C:/jabra-browser-integration/src/ChromeHost/bin/Debug/jabrachromehost.exe`. The Chrome Extension will now open the CMake'd executable instead. Terminate the jabrachromehost.exe process before rebuilding. 
+
+When `jabrachromehost.exe` runs, the VS Code debugger can be _attached_ to the process. Add this standard configuration to your `launch.json`, and find `jabrachromehost.exe` in the process picker when starting the debugger.
+
+
+```json
+{
+    "name": "(Windows) Attach",
+    "type": "cppvsdbg",
+    "request": "attach",
+    "processId": "${command:pickProcess}"
+}
+```
+
+You should now be able to set breakpoints etc. from VS Code while invoking APIs from the [test app](https://gnaudio.github.io/jabra-browser-integration/release/test/). 
+
+### Chrome Extension
+
+It's rarely necessary to change the Chrome Extension, but if you need to, install it from your local library like this: 
+
+Open Chrome and find the options menu in the upper right corner (kebab icon) > More tools > Extensions. Turn on "Developer mode" (upper right corner). Press "Load unpacked" and select the ChromeWebExtension-folder, e.g. `C:\jabra-browser-integration\src\ChromeWebExtension`. 
+
+Turn off any other "Jabra Browser Integration Extension" that might be installed. You may have to add the Chrome Extension ID (visible in the Extension overview) to `allowed_origins` in `C:\Program Files (x86)\JabraChromeHost\com.jabra.nm.json`.  
+
 ## Chromehost executable
 
 The native chromehost executable integrates the Jabra C sdk with browser
@@ -28,7 +68,7 @@ mkdir build
 
 + Windows:
 ```
-cmake .. -G "Visual Studio 15 2017" -A Win32
+cmake .. -G "Visual Studio 15 2017" -A win32
 cmake --build . --target ALL_BUILD --config Release
 ```
 
@@ -207,3 +247,4 @@ physically adding/removing a device (i.e. without a command being issued). Note 
     "requestId":""
 }
 ```
+
