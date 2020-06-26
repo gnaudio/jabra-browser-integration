@@ -4,6 +4,17 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 # 1. JAVASCRIPT API
 
+3.0.0-beta.8 Changed the following
+- Various bugfixes.
+
+3.0.0-beta.7 Changed the following in the Javascript API
+
+- Added analytics module (preview)
+- Added npm module support.
+- Optional string types removed in TS declarations. Clients should now use the correct types instead of strings.
+- Added meta-data for APIs.
+- Improved API test application to support multiple objects, documentation, alignment with similar node.js test application.
+
 2.0.1. Fixed the following in the Javascript API
 * Installation check bug fix - would falsely report that installation was corrupt in some cases.
 * Workaround for typescript 3.4 problem.
