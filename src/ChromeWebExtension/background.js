@@ -29,7 +29,7 @@ SOFTWARE.
   // Declare all known extension IDs.
   const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
   const betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
-  const developmentExtensionIds = ["klapphmlodmhfolphohgkmimlkpcindc"]
+  const developmentExtensionIds = ["klapphmlodmhfolphohgkmimlkpcindc", "pdllnhakddjgdeneapddiignmafookpp"]
   
   var manifestData = chrome.runtime.getManifest();
 

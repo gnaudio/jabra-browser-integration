@@ -1077,16 +1077,24 @@ export function ring(): void {
 
 /**
  * Change state to in-a-call.
+ * 
+ * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer. 
+ * 
+ * @param continueRinger True to continue ringer on offhook
  */
-export function offHook(): void {
-  sendCmd("offhook");
+export function offHook(continueRinger?: boolean): void {
+  sendCmd("offhook", { continueRinger: continueRinger ? booleanOrString(continueRinger): false });
 }
 
 /**
- * Change state to idle (not-in-a-call).
+ * Change state to idle (not-in-a-call).  
+ * 
+ * By default the onHook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer 
+ * 
+ * @param continueRinger True to continue ringer on onhook
  */
-export function onHook(): void {
-  sendCmd("onhook");
+export function onHook(continueRinger?: boolean): void {
+  sendCmd("onhook", { continueRinger: continueRinger ? booleanOrString(continueRinger): false });
 }
 
 /**
@@ -1300,7 +1308,7 @@ function sendCmd(
     };
 
     logger.trace("Sending command to content script: " + JSON.stringify(msg));
-
+    
     window.postMessage(msg, "*");
   } else {
     throw new Error("Browser integration not initialized");

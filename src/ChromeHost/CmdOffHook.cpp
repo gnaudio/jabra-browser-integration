@@ -45,6 +45,8 @@ bool CmdOffHook::CanExecute(const Request& request)
 
 void CmdOffHook::Execute(const Request& request)
 {
+  bool continueRinger = defaultValue(request.args, "continueRinger", false);
+
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
@@ -52,16 +54,17 @@ void CmdOffHook::Execute(const Request& request)
     return;
   }
 
-  // Jabra_GetLock(deviceId);
+  bool ringerStatus = m_headsetIntegrationService->GetRingerStatus(deviceId);
 
   // Stop ringer
-  if (m_headsetIntegrationService->GetRingerStatus(deviceId))
+  if (!continueRinger && ringerStatus)
   {
     Jabra_SetRinger(deviceId, false);
     m_headsetIntegrationService->SetRingerStatus(deviceId, false);
   }
 
   Jabra_ReturnCode ret = Jabra_SetOffHook(deviceId, true);
+
   if (ret != Return_Ok)
   {
     m_headsetIntegrationService->Error(request, "Unable to offhook", { 

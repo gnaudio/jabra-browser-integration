@@ -772,17 +772,29 @@ function ring() {
 }
 /**
  * Change state to in-a-call.
+ *
+ * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer.
+ *
+ * @param continueRinger True to continue ringer on offhook
  */
 
-function offHook() {
-  sendCmd("offhook");
+function offHook(continueRinger) {
+  sendCmd("offhook", {
+    continueRinger: continueRinger ? booleanOrString(continueRinger) : false
+  });
 }
 /**
  * Change state to idle (not-in-a-call).
+ *
+ * By default the onHook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer
+ *
+ * @param continueRinger True to continue ringer on onhook
  */
 
-function onHook() {
-  sendCmd("onhook");
+function onHook(continueRinger) {
+  sendCmd("onhook", {
+    continueRinger: continueRinger ? booleanOrString(continueRinger) : false
+  });
 }
 /**
  * Mutes the microphone (if supported).
