@@ -33,6 +33,7 @@ SOFTWARE.
 #include "CmdOffHook.h"
 #include "CmdOnHook.h"
 #include "CmdRing.h"
+#include "CmdUnRing.h"
 #include "CmdMute.h"
 #include "CmdUnmute.h"
 #include "CmdHold.h"
@@ -67,6 +68,7 @@ HeadsetIntegrationService::HeadsetIntegrationService()
     new CmdOffHook(this),
     new CmdOnHook(this),
     new CmdRing(this),
+    new CmdUnRing(this),
     new CmdMute(this),
     new CmdUnmute(this),
     new CmdHold(this),

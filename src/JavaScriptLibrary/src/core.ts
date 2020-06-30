@@ -1076,6 +1076,13 @@ export function ring(): void {
 }
 
 /**
+ * Deactivate ringer (if supported) on the Jabra Device
+ */
+export function unring(): void {
+  sendCmd("unring");
+}
+
+/**
  * Change state to in-a-call.
  * 
  * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer. 

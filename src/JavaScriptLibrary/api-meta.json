@@ -72,6 +72,13 @@
                 "documentation": "Activate ringer (if supported) on the Jabra Device"
             },
             {
+                "name": "unring",
+                "parameters": [],
+                "tsType": "void",
+                "jsType": "void",
+                "documentation": "Deactivate ringer (if supported) on the Jabra Device"
+            },
+            {
                 "name": "offHook",
                 "parameters": [
                     {

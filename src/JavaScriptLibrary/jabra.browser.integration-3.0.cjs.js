@@ -738,6 +738,13 @@ function ring() {
   sendCmd("ring");
 }
 /**
+ * Deactivate ringer (if supported) on the Jabra Device
+ */
+
+function unring() {
+  sendCmd("unring");
+}
+/**
  * Change state to in-a-call.
  *
  * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer.
@@ -2173,4 +2180,5 @@ exports.setRemoteMmiLightAction = setRemoteMmiLightAction;
 exports.shutdown = shutdown;
 exports.trySetDeviceOutput = trySetDeviceOutput;
 exports.unmute = unmute;
+exports.unring = unring;
 //# sourceMappingURL=jabra.cjs.development.js.map
