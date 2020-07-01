@@ -27,53 +27,44 @@ SOFTWARE.
 
 #include <climits>
 #include "stdafx.h"
-#include "CmdOffHook.h"
+#include "CmdUnRing.h"
 
-CmdOffHook::CmdOffHook(HeadsetIntegrationService* headsetIntegrationService)
+CmdUnRing::CmdUnRing(HeadsetIntegrationService* headsetIntegrationService)
 {
   m_headsetIntegrationService = headsetIntegrationService;
 }
 
-CmdOffHook::~CmdOffHook()
+CmdUnRing::~CmdUnRing()
 {
 }
 
-bool CmdOffHook::CanExecute(const Request& request)
+bool CmdUnRing::CanExecute(const Request& request)
 {
-  return (request.message == "offhook");
+  return (request.message == "unring");
 }
 
-void CmdOffHook::Execute(const Request& request)
+void CmdUnRing::Execute(const Request& request)
 {
-  bool continueRinger = defaultValue(request.args, "continueRinger", false);
-
   const unsigned short deviceId = m_headsetIntegrationService->GetCurrentDeviceId();
   if (deviceId == USHRT_MAX)
   {
-	  m_headsetIntegrationService->Error(request, "No device", {});
+  	m_headsetIntegrationService->Error(request, "No device", {});
+    
     return;
   }
-
-  bool ringerStatus = m_headsetIntegrationService->GetRingerStatus(deviceId);
-
-  // Stop ringer
-  if (!continueRinger && ringerStatus)
-  {
-    Jabra_SetRinger(deviceId, false);
-    m_headsetIntegrationService->SetRingerStatus(deviceId, false);
-  }
-
-  Jabra_ReturnCode ret = Jabra_SetOffHook(deviceId, true);
+  
+  Jabra_ReturnCode ret = Jabra_SetRinger(deviceId, false);
 
   if (ret != Return_Ok)
   {
-    m_headsetIntegrationService->Error(request, "Unable to offhook", { 
+    m_headsetIntegrationService->Error(request, "Unable to set ringer", { 
       std::make_pair(JSON_KEY_JABRA_RETURN_ERRORCODE, std::to_string(ret)),
       std::make_pair(JSON_KEY_DEVICEID, std::to_string(deviceId)),
-	  std::make_pair(JSON_KEY_ACTIVEDEVICE, true)
+	    std::make_pair(JSON_KEY_ACTIVEDEVICE, true)
     });
+
     return;
   }
 
-  m_headsetIntegrationService->SetHookStatus(deviceId, true);
+  m_headsetIntegrationService->SetRingerStatus(deviceId, false);
 }

@@ -367,13 +367,25 @@ export declare function removeEventListener(nameSpec: EventName | RegExp | Array
  */
 export declare function ring(): void;
 /**
- * Change state to in-a-call.
+ * Deactivate ringer (if supported) on the Jabra Device
  */
-export declare function offHook(): void;
+export declare function unring(): void;
+/**
+ * Change state to in-a-call.
+ *
+ * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer.
+ *
+ * @param continueRinger True to continue ringer on offhook
+ */
+export declare function offHook(continueRinger?: boolean): void;
 /**
  * Change state to idle (not-in-a-call).
+ *
+ * By default the onHook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer
+ *
+ * @param continueRinger True to continue ringer on onhook
  */
-export declare function onHook(): void;
+export declare function onHook(continueRinger?: boolean): void;
 /**
  * Mutes the microphone (if supported).
  */

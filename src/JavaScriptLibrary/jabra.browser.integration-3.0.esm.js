@@ -771,18 +771,37 @@ function ring() {
   sendCmd("ring");
 }
 /**
- * Change state to in-a-call.
+ * Deactivate ringer (if supported) on the Jabra Device
  */
 
-function offHook() {
-  sendCmd("offhook");
+function unring() {
+  sendCmd("unring");
+}
+/**
+ * Change state to in-a-call.
+ *
+ * By default the offhook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer.
+ *
+ * @param continueRinger True to continue ringer on offhook
+ */
+
+function offHook(continueRinger) {
+  sendCmd("offhook", {
+    continueRinger: continueRinger ? booleanOrString(continueRinger) : false
+  });
 }
 /**
  * Change state to idle (not-in-a-call).
+ *
+ * By default the onHook command will also stop the ringer. Set first argument to true to ignore this behaviour and continue ringer
+ *
+ * @param continueRinger True to continue ringer on onhook
  */
 
-function onHook() {
-  sendCmd("onhook");
+function onHook(continueRinger) {
+  sendCmd("onhook", {
+    continueRinger: continueRinger ? booleanOrString(continueRinger) : false
+  });
 }
 /**
  * Mutes the microphone (if supported).
@@ -2168,5 +2187,5 @@ var Analytics = /*#__PURE__*/function (_EventEmitter) {
   return Analytics;
 }(EventEmitter);
 
-export { Analytics, CommandError, DeviceFeature, ErrorCodes, ErrorReturnCodes, RemoteMmiActionInput, RemoteMmiSequence, RemoteMmiType, _getEvents, _setActiveDeviceId, addEventListener, apiVersion, getActiveDevice, getDevices, getInstallInfo, getUserDeviceMediaExt, hold, init, isDeviceSelectedForInput, logLevel, mute, offHook, onHook, removeEventListener, resume, ring, setActiveDeviceId, setBusyLight, setMmiFocus, setRemoteMmiLightAction, shutdown, trySetDeviceOutput, unmute };
+export { Analytics, CommandError, DeviceFeature, ErrorCodes, ErrorReturnCodes, RemoteMmiActionInput, RemoteMmiSequence, RemoteMmiType, _getEvents, _setActiveDeviceId, addEventListener, apiVersion, getActiveDevice, getDevices, getInstallInfo, getUserDeviceMediaExt, hold, init, isDeviceSelectedForInput, logLevel, mute, offHook, onHook, removeEventListener, resume, ring, setActiveDeviceId, setBusyLight, setMmiFocus, setRemoteMmiLightAction, shutdown, trySetDeviceOutput, unmute, unring };
 //# sourceMappingURL=jabra.esm.js.map

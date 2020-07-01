@@ -14,7 +14,7 @@ Prerequisites:
 
 let runs = false;
 
-fs.watch('./src/', { recursive: true }, (event, filename) => {
+function startBuild () {
     if (runs) {
         return;
     }
@@ -45,4 +45,8 @@ fs.watch('./src/', { recursive: true }, (event, filename) => {
             console.timeEnd("Build time");
         });  
     });  
-});
+};
+
+startBuild();
+
+fs.watch('./src/', { recursive: true }, startBuild);
