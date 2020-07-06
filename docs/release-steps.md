@@ -2,7 +2,7 @@
 
 To release the BrowserSDK, follow these steps carefully.
 
-### 1. Update version number in ChromeHost/Meta.h
+### 1. Update version number in ChromeHost/Meta.h and push to Github to trigger build
 
 ### 2. Build installers for MacOS and Windows 
 
