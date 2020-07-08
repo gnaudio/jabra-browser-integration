@@ -2,7 +2,7 @@
 
 To release the BrowserSDK, follow these steps carefully.
 
-### 1. Update version number in ChromeHost/Meta.h
+### 1. Update version number in ChromeHost/Meta.h and push to origin to trigger build
 
 ### 2. Build installers for MacOS and Windows 
 
@@ -33,7 +33,9 @@ Delete existing ChromeHost and verify that the new installers work. On Mac you m
 
 ### 6. Update version number in `src/JavaScriptLibrary/src/core.ts` 
 
-### 7. Run `npm run build` in `src/JavaScriptLibrary` 
+### 7a. Run `npm run build` in `src/JavaScriptLibrary` 
+
+### 7b. Run `npm audit`
 
 ### 8. Publish to npm `npm publish` 
 
