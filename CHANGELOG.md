@@ -4,6 +4,10 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 # 1. JAVASCRIPT API
 
+3.0.0-beta.9 Changed the following
+- new unring command
+- pass optional boolean (true) to onhook and offhook commands to continue ringer (default behaviour is to stop the ringer)
+
 3.0.0-beta.8 Changed the following
 - Various bugfixes.
 
