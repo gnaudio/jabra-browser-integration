@@ -12,7 +12,7 @@ This software project from Jabra helps developers to make solutions, where basic
 With current internal implementation of this software package, the following is supported:
 
 ### Jabra devices
-All professional Jabra headsets and Jabra speakerphones are supported. I.e. the [Jabra Evolve series](https://www.jabra.com/business/office-headsets/jabra-evolve), the Jabra Pro series, the Jabra Biz series, and the [Jabra Speak series](https://www.jabra.com/business/speakerphones/jabra-speak-series).
+All professional Jabra headsets and Jabra speakerphones are supported. I.e. the [Jabra Evolve series](https://www.jabra.com/business/office-headsets/jabra-evolve), the Jabra Pro series, the Jabra Biz series, the [Jabra Speak series](https://www.jabra.com/business/speakerphones/jabra-speak-series), and the [Jabra Engage series](https://www.jabra.com/business/office-headsets/jabra-engage).
 
 ### Operating system support
 The following desktop operating systems are supported:
