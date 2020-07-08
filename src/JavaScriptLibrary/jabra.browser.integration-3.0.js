@@ -111,24 +111,29 @@
     return arr2;
   }
 
-  function _createForOfIteratorHelperLoose(o) {
-    var i = 0;
+  function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+    var it;
 
     if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-      if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) return function () {
-        if (i >= o.length) return {
-          done: true
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        return function () {
+          if (i >= o.length) return {
+            done: true
+          };
+          return {
+            done: false,
+            value: o[i++]
+          };
         };
-        return {
-          done: false,
-          value: o[i++]
-        };
-      };
+      }
+
       throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
     }
 
-    i = o[Symbol.iterator]();
-    return i.next.bind(i);
+    it = o[Symbol.iterator]();
+    return it.next.bind(it);
   }
 
   /*
@@ -161,7 +166,7 @@
   /**
    * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
    */
-  var apiVersion = "3.0.0-beta.8";
+  var apiVersion = "3.0.0-beta.9";
   /**
    * Is the current version a beta ?
    */
@@ -2185,6 +2190,8 @@
   exports.trySetDeviceOutput = trySetDeviceOutput;
   exports.unmute = unmute;
   exports.unring = unring;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=jabra.umd.development.js.map
