@@ -98,6 +98,9 @@ void setDeviceInfo(nlohmann::json& dest, const DeviceInfo& src, const DynamicDev
 
   // Add dynamic data if any?
   if (dynSrc.supported) {
+    // connectedDeviceID depends on usbDevicePath from Jabra_DeviceInfo.
+    // For dongle-connected headsets, usbDevicePath returns empty string on Mac, so use with care. 
+    // More info: https://jabra1.atlassian.net/browse/SDK-5118
     if (dynSrc.connectedDeviceID.supported) {
       dest["connectedDeviceID"] = dynSrc.connectedDeviceID.value;
     }

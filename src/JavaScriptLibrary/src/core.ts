@@ -1363,7 +1363,8 @@ function sendCmdWithResult<T>(
 
 /**
  * Configure an audio html element on a webpage to use jabra audio device as speaker output. Returns a promise with boolean success status.
- * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls.
+ * The deviceInfo argument must come from getDeviceInfo or getUserDeviceMediaExt calls. 
+ * Note: for headsets connected via USB-dongle, call the method on the dongle 
  */
 export function trySetDeviceOutput(
   audioElement: HTMLMediaElement,
