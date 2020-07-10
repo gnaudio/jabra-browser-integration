@@ -36,5 +36,4 @@ may need to change their code when updating. Increases in minor version indicate
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/beta/development/) - test page to try out basic call control in the library
 * [Library api test](https://gnaudio.github.io/jabra-browser-integration/beta/test/) - advanced test page that allows detailed testing of individual API calls)
 * [Playback demo with auto selection](https://gnaudio.github.io/jabra-browser-integration/beta/playback/) - demo page showing auto selection of jabra device with simple audio playback example
-* [WebRTC softphone demo](https://gnaudio.github.io/jabra-browser-integration/beta/webrtc/) - demo that supports mute/unmute/end-call from a Jabra device + jabra device auto selection
 * [Amazon Connect client demo](https://gnaudio.github.io/jabra-browser-integration/beta/amazonconnectclient/) - demo showing Jabra and Amazon Connect integration
