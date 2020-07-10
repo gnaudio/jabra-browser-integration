@@ -178,10 +178,10 @@
 
   var prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
   /**
-   * Id of beta release of browser plugin.
+   * Id of beta release of browser plugin (no chrome extension changes in current beta, hence set to prod id)
    */
 
-  var betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
+  var betaExtensionId = prodExtensionId;
   /**
    * Names of command response events.
    */

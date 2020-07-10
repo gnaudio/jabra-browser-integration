@@ -41,9 +41,9 @@ const isBeta = apiVersion.includes("beta");
 const prodExtensionId = "okpeabepajdgiepelmhkfhkjlhhmofma";
 
 /**
- * Id of beta release of browser plugin.
+ * Id of beta release of browser plugin (no chrome extension changes in current beta, hence set to prod id)
  */
-const betaExtensionId = "igcbbdnhomedfadljgcmcfpdcoonihfe";
+const betaExtensionId = prodExtensionId;
 
 /**
  * Contains information about installed components.
