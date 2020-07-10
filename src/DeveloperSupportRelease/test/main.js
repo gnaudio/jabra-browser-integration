@@ -1,4 +1,4 @@
-﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts" />
+﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts" />
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Put any methods that are not available for testing here
-    let untestable = ["Analytics", "CommandError"];
+    let untestable = [];
 
     // Internals below are filtered out by default (in addition 
     // to methods starting with underscore):
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Open Api reference with syntax highlightning in new window.
   apiReference.onclick = () => {
-   fetch('../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts')
+   fetch('../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts')
     .then(response => response.text())
     .then(text => {
       let header = "<!DOCTYPE html><title>Jabra Typescript Api</title><link rel=\"stylesheet\" href=\"default.css\">" +
