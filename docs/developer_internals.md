@@ -135,7 +135,7 @@ The same generic format is used (with variation) for both requests, responses an
 The actual values used to fillout "requestId" and "apiClientId" in requests are not important but they should be unique across different requests and clients retrospectively. Clients use the values for pairing request messages with response messages. Clients should set these values to some unique values in requests and clients should ignore responses with non-empty(!) values that are different from what is expected.
 
 ### Development notes
-The best way to learn the exact messages send/returned is to [enable all logging](../Readme.md#Logging) at 'trace' level and observe communication while using the test tool to issue commands and/or perform device actions.
+The best way to learn the exact messages send/returned is to [enable all logging](../README.md#Logging) at 'trace' level and observe communication while using the test tool to issue commands and/or perform device actions.
 
 When interfacing with the Chromehost executable, note that the number of messages and their exact content are likely to change over time. Because of backwards compatability changes to existing messages are most likely to be simple expansions like new fields etc. Integrating code should thus be written in a way so it ignores extra information like unknown fields.
 

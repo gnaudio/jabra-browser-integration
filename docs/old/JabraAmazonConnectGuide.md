@@ -8,7 +8,7 @@ Prerequisites:
 * an Amazon Connect instance (created in the AWS console)
 
 ### Layered architecture
-![Banner](/docs/AmazonLayers.png)
+![Banner](AmazonLayers.png)
 
 ### Initialization (API v1.2)
 Both the Amazon Connect Streams and the Jabra Browser integration libraries must be initialized:
