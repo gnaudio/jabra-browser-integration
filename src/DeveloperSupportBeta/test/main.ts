@@ -769,9 +769,9 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(text => {
       let header = "<!DOCTYPE html><title>Jabra Typescript Api</title><link rel=\"stylesheet\" href=\"default.css\">" +
                    "<script src=\"highlight.pack.js\"></script><script>hljs.initHighlightingOnLoad();</script>";
-
-      let html = header + "<pre><code class=\"typescript\">" + text + "</code></pre>";
-
+      let escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      let html = header + "<pre><code class=\"typescript\">" + escapedText + "</code></pre>";
+   
       if (apiReferenceWindow) {
         let oldWindow = apiReferenceWindow;
         apiReferenceWindow = undefined; 
