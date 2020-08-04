@@ -1167,9 +1167,9 @@
 
   function fillInMatchingMediaInfo(deviceInfo, potentialDongleDeviceInfos, mediaDevices) {
     function findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates) {
-      var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+      var hexId = deviceInfo.productID.toString(16).padStart(4, "0");
       return mediaDeviceNameCandidates.findIndex(function (c) {
-        return c.indexOf(explicitStr) >= 0;
+        return c.indexOf("(0b0e:" + hexId) >= 0;
       });
     }
 

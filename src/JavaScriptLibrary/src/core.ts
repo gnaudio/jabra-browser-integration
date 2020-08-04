@@ -1528,8 +1528,8 @@ function fillInMatchingMediaInfo(
   mediaDevices: MediaDeviceInfo[]
 ): void {
   function findMatchFromProductId(deviceInfo: DeviceInfo,  mediaDeviceNameCandidates: string[]) {
-    const explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
-    return mediaDeviceNameCandidates.findIndex((c) => c.indexOf(explicitStr) >= 0);
+    let hexId: string = deviceInfo.productID.toString(16).padStart(4,"0");
+    return mediaDeviceNameCandidates.findIndex((c) => c.indexOf(`(0b0e:${hexId}`) >= 0);
   }
   
   function findBestMatchIndex( mediaDeviceNameCandidates: string[]): number {  
