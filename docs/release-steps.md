@@ -14,7 +14,7 @@ For Windows the installer is build using Visual Studio with the [Wix Toolset](ht
 
 **Mac:**
 
-The MacOS pipeline builds but doesn't notarizes. Follow these 4 steps to get a complete installer:
+The MacOS pipeline builds but doesn't notarizes. Follow these 4 steps on a Mac to get a complete installer:
 
 1. run buildinstaller.sh (done by CI)
 2. run notarize.sh -u \<username\> -p \<app-specific-password\> -f JabraChromeHostxxxx.pkg -b com.jabra.chromehost
@@ -22,6 +22,8 @@ The MacOS pipeline builds but doesn't notarizes. Follow these 4 steps to get a c
 4. run notarize.sh -u \<username\> -p \<app-specific-password\> -f JabraChromeHostxxxx.dmg -b com.jabra.chromehost
 
 *The app-specific-password can be obtained from appleid.apple.com*
+
+*The dmg-file is build by builddiskimage.sh so don't look for it in the Azure drop*
 
 ### 3. Test installers for Windows and Mac
 

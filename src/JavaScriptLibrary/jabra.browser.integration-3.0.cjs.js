@@ -164,7 +164,7 @@ SOFTWARE.
 /**
  * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
  */
-var apiVersion = "3.0.0-beta.9";
+var apiVersion = "3.0.0-beta.10";
 /**
  * Is the current version a beta ?
  */
@@ -1165,9 +1165,9 @@ function getUserDeviceMediaExt(constraints) {
 
 function fillInMatchingMediaInfo(deviceInfo, potentialDongleDeviceInfos, mediaDevices) {
   function findMatchFromProductId(deviceInfo, mediaDeviceNameCandidates) {
-    var explicitStr = "(0b0e:" + deviceInfo.productID.toString(16) + ")";
+    var hexId = deviceInfo.productID.toString(16).padStart(4, "0");
     return mediaDeviceNameCandidates.findIndex(function (c) {
-      return c.indexOf(explicitStr) >= 0;
+      return c.indexOf("(0b0e:" + hexId) >= 0;
     });
   }
 

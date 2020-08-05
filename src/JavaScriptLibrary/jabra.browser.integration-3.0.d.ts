@@ -3,7 +3,7 @@
 /**
  * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
  */
-export declare const apiVersion = "3.0.0-beta.9";
+export declare const apiVersion = "3.0.0-beta.10";
 /**
  * Contains information about installed components.
  */
