@@ -21,10 +21,10 @@ may need to change their code when updating. Increases in minor version indicate
 # Native Chromehost BETA downloads
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta11](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta11.msi) | Chromehost 2.1.0-beta9 Beta |
-| macOS (10.x)                  | [JabraChromeHost2.1.0-beta11](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta11.dmg) | Chromehost 2.1.0-beta9 Beta |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta9](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta9.msi) | Chromehost 2.1.0-beta8 Beta |
-| macOS (10.x)                  | [JabraChromeHost2.1.0-beta9](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta9.dmg) | Chromehost 2.1.0-beta8 Beta |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta11](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta11.msi) | Chromehost 2.1.0-beta11 Beta |
+| macOS (10.x)                  | [JabraChromeHost2.1.0-beta11](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta11.dmg) | Chromehost 2.1.0-beta11 Beta |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0-beta9](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta9.msi) | Chromehost 2.1.0-beta9 Beta |
+| macOS (10.x)                  | [JabraChromeHost2.1.0-beta9](https://github.com/gnaudio/gnaudio.github.io/raw/master/jabra-browser-integration/download/JabraChromeHost2.1.0-beta9.dmg) | Chromehost 2.1.0-beta9 Beta |
 
 # WebExtension BETA
 [![Banner](/docs/ChromeWebStoreBadge.png)](https://chrome.google.com/webstore/detail/jabra-browser-integration/igcbbdnhomedfadljgcmcfpdcoonihfe)
