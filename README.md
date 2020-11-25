@@ -10,12 +10,12 @@ This software project from Jabra helps developers to make solutions, where basic
 - be a lightweight solution
 - support the platforms: Windows and macOS
 
-# Bug reports
+## Bug reports
 If you find any bug or have any suggestion then fill in the form at [Jabra developer support site](https://developer.jabra.com) with below details:
 
 1. Bug description with steps to reproduce the issue.
-2. Console log after enabling debug mode for this module, see [Debugging and Logging](nodesdk/README.md#debugging-and-logging) section for more.
-3. File logs, see [Debugging and Logging](nodesdk/README.md#debugging-and-logging) section for more.
+2. Console log after enabling debug mode for this module, see [Logging](#logging) section for more.
+3. File logs, see [Logging](#logging) section for more.
 
 ## System requirements
 
