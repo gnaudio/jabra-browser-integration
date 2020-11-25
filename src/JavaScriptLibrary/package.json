@@ -1,6 +1,6 @@
 {
   "name": "@gnaudio/jabra-browser-integration",
-  "version": "3.0.0-beta.11",
+  "version": "3.0.0",
   "description": "Control Jabra Devices from within a browser app using JavaScript",
   "main": "jabra.browser.integration-3.0.js",
   "module": "jabra.browser.integration-3.0.esm.js",
@@ -46,7 +46,7 @@
     "dts-bundle-generator": "4.3.0",
     "ncp": "2.0.0",
     "ts-node": "8.5.2",
-    "tsdx": "0.13.2",
+    "tsdx": "^0.14.1",
     "tslib": "1.10.0",
     "typescript": "3.6.3"
   }

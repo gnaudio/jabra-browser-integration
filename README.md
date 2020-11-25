@@ -10,6 +10,13 @@ This software project from Jabra helps developers to make solutions, where basic
 - be a lightweight solution
 - support the platforms: Windows and macOS
 
+# Bug reports
+If you find any bug or have any suggestion then fill in the form at [Jabra developer support site](https://developer.jabra.com) with below details:
+
+1. Bug description with steps to reproduce the issue.
+2. Console log after enabling debug mode for this module, see [Debugging and Logging](nodesdk/README.md#debugging-and-logging) section for more.
+3. File logs, see [Debugging and Logging](nodesdk/README.md#debugging-and-logging) section for more.
+
 ## System requirements
 
 With current internal implementation of this software package, the following is supported:
@@ -70,12 +77,10 @@ The library internally checks for dependencies – and will report this to the a
 
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.msi) | Chromehost 2.0 |
-| Windows (Windows 7 or newer)  | [JabraChromeHost2.0.2.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.msi) | Chromehost 2.0 (3CX only) |
-| Windows (Windows 7 or newer)  | [JabraChromeHost0.51.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.51.msi) | Security fix to allow beta testing |
-| macOS (El Capitan or newer)   | [JabraChromeHost2.0.0.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.0.dmg) | Chromehost 2.0 |
-| macOS (El Capitan or newer)   | [JabraChromeHost2.0.2.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.0.2.dmg) | Chromehost 2.0 (3CX only) |
-| macOS (El Capitan or newer)   | [JabraChromeHost0.5.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost0.5.dmg) | Old Mac release |
+| Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.0.msi) | Chromehost 2.1.0 |
+| macOS (El Capitan or newer)   | [JabraChromeHost2.1.0.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.0.dmg) | Chromehost 2.1.0 |
+
+The Chromehost can also be downloaded from [Jabra developer zone](https://developer.jabra.com) 
 
 ## CI builds
 
@@ -259,4 +264,4 @@ jabra.addEventListener("unmute", (event) => {
 
 ## Version information.
 
-For information about individual releases see [changelog](CHANGELOG.md). For information about upcoming changes see also our [beta information page](BETA.md).
+For information about individual releases see [changelog](CHANGELOG.md).
