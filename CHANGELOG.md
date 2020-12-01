@@ -7,7 +7,6 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 3.0.0
 
 - fixes error in finding compatible Jabra devices for getUserDeviceMediaExt 
-- no changes (error when releasing)
 - new unring command
 - pass optional boolean (true) to onhook and offhook commands to continue ringer (default behaviour is to stop the ringer)
 - Various bugfixes.
