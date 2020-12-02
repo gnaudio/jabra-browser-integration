@@ -164,15 +164,6 @@ These sequence diagrams shows typical use of the browser sdk:
 
 Documentation about [mass deployment](docs/Deployment.md)
 
-## Logging
-
-The extension, chromehost and api has logging support that can be used to diagnose errors.
-
-Logging for javascript components can be seen in the browser developer console for the application and for the background page of the extension (a link is provided under chrome
-extensions when developer mode is selected). The log level (how much is being logged) can be controlled by right-clicking on the extension and selecting options followed by a restart of the browser.
-
-Logging for all native components (chromehost and platform sdk library) are written to text files. Destination is specified by environment variable LIBJABRA_RESOURCE_PATH or by default to %APPDATA%\JabraSDK on Windows and ~/Library/Application Support/JabraSDK on Mac OS. Log level is specified by the environment variable LIBJABRA_TRACE_LEVEL with possible values "fatal", "error", "warning", "info", "debug".
-
 ## Upgrading API from 2.0 to 3.0
 
 The API v3.0 is backward compatible with v2.0, and works with the current version of the Chrome Host and Chrome Extension. The new version can be consumed directly as previous versions by including the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.js) or by using the new npm package [@gnaudio/jabra-browser-integration](https://www.npmjs.com/package/@gnaudio/jabra-browser-integration) in combination with a browser bundler.
