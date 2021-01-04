@@ -1,4 +1,4 @@
-﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-3.0.d.ts" />
+﻿/// <reference path="../../JavaScriptLibrary/jabra.browser.integration-2.0.d.ts" />
 
 // DOM loaded
 document.addEventListener('DOMContentLoaded', function () {
@@ -41,33 +41,24 @@ document.addEventListener('DOMContentLoaded', function () {
     toastr.info(msg);
   }
 
-  // Helper to update device list returning promise that resolves when finished.
-  function setupDevices() {
-    while (deviceSelector.options.length > 0) {
-      deviceSelector.remove(0);
-    }
-
-    return jabra.getDevices().then((devices) => {
-      devices.forEach(device => {
-        var opt = document.createElement('option');
-        opt.value = device.deviceID;
-        opt.innerHTML = device.deviceName;
-        deviceSelector.appendChild(opt);
+  // Use the Jabra library - to be sure of the installation we also check it and report errors
+  // This installation check is optional but is there to reduce support issues.
+  jabra.init().then(() => jabra.getInstallInfo()).then( (installInfo) => { 
+    if (installInfo.installationOk) {
+      toastr.info("Jabra library initialized successfully");
+      // Setup device list and enable/disable buttons according if min 1 jabra device is there.
+      return setupDevices().then( () => {
+        if (deviceSelector.options.length === 0) {
+          noDeviceFound
+        }
+        // Additional setup here.
       });
-
-      changeActiveDeviceBtn.disabled = (devices.length === 0);
-      ringBtn.disabled = (devices.length === 0);
-      offhookBtn.disabled = (devices.length === 0);
-      onhookBtn.disabled = (devices.length === 0);
-      muteBtn.disabled = (devices.length === 0);
-      unmuteBtn.disabled = (devices.length === 0);
-      holdBtn.disabled = (devices.length === 0);
-      resumeBtn.disabled = (devices.length === 0);
-
-      let notificationText = (devices.length === 0) ? "No Jabra device found - Please insert a Jabra Device!" : "";
-      noDeviceFound.innerText = notificationText;
-    });
-  }
+    } else { // Installation not ok:
+      showError("Installation not ok - Your installation is incomplete, out of date or corrupted.");
+    }
+  }).catch((err) => {
+    showError(err);
+  });
 
   jabra.addEventListener("mute", (event) => {
     toastr.info("The device requested to be muted");
@@ -134,6 +125,34 @@ document.addEventListener('DOMContentLoaded', function () {
     setupDevices();
   });
 
+  // Helper to update device list returning promise that resolves when finished.
+  function setupDevices() {
+    while (deviceSelector.options.length > 0) {
+      deviceSelector.remove(0);
+    }
+
+    return jabra.getDevices().then((devices) => {
+      devices.forEach(device => {
+        var opt = document.createElement('option');
+        opt.value = device.deviceID;
+        opt.innerHTML = device.deviceName;
+        deviceSelector.appendChild(opt);
+      });
+
+      changeActiveDeviceBtn.disabled = (devices.length === 0);
+      ringBtn.disabled = (devices.length === 0);
+      offhookBtn.disabled = (devices.length === 0);
+      onhookBtn.disabled = (devices.length === 0);
+      muteBtn.disabled = (devices.length === 0);
+      unmuteBtn.disabled = (devices.length === 0);
+      holdBtn.disabled = (devices.length === 0);
+      resumeBtn.disabled = (devices.length === 0);
+
+      let notificationText = (devices.length === 0) ? "No Jabra device found - Please insert a Jabra Device!" : "";
+      noDeviceFound.innerText = notificationText;
+    });
+  }
+
   // Change active device when user asks:
   changeActiveDeviceBtn.onclick = () => {
     let id = deviceSelector.value;
@@ -145,22 +164,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-  // Use the Jabra library - to be sure of the installation we also check it and report errors
-  // This installation check is optional but is there to reduce support issues.
-  jabra.init().then(() => jabra.getInstallInfo()).then( (installInfo) => { 
-    if (installInfo.installationOk) {
-      toastr.info("Jabra library initialized successfully");
-      // Setup device list and enable/disable buttons according if min 1 jabra device is there.
-      return setupDevices().then( () => {
-        if (deviceSelector.options.length === 0) {
-          noDeviceFound
-        }
-        // Additional setup here.
-      });
-    } else { // Installation not ok:
-      showError("Installation not ok - Your installation is incomplete, out of date or corrupted.");
-    }
-  }).catch((err) => {
-    showError(err);
-  });
 }, false);

@@ -6,6 +6,9 @@
   <link href="jabra.connect.integration.css" rel="stylesheet" />
 </head>
 <body>
+  <script src="amazon-connect-v1.x.js"></script>
+  <script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
+
   <!-- Demo configuration page starts here: -->
   <table class="overall" id="configurationParent" style="display: none">
     <tr>
@@ -36,14 +39,13 @@
     <tr>
       <td colspan="3">
         <div class="configStep">Step <span class="configStepNumber">&#x2462;</span></div>
-        <p id="configureText">Create an <a href="https://aws.amazon.com/connect/">Amazon Connect</a> instance if you don't have one already. Ask your Amazon Connect administrator to whitelist <b><q id="urlText">this domain</q></b> as an approved origin under Application Integration in your <a href="https://console.aws.amazon.com/connect/">Amazon Connect administrator console</a> <b>OR</b> copy this webpage and related files to a webserver serving a white listed domain for your Amazon Connect instance and re-launch this page (refer to <a href="https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportBeta/amazonconnectclient">Jabra Amazon example source folder in GitHub</a> for the files used for this page).</p>
+        <p id="configureText">Create an <a href="https://aws.amazon.com/connect/">Amazon Connect</a> instance if you don't have one already. Ask your Amazon Connect administrator to whitelist <b><q id="urlText">this domain</q></b> as an approved origin under Application Integration in your <a href="https://console.aws.amazon.com/connect/">Amazon Connect administrator console</a> <b>OR</b> copy this webpage and related files to a webserver serving a white listed domain for your Amazon Connect instance and re-launch this page (refer to <a href="https://github.com/gnaudio/jabra-browser-integration/tree/master/src/DeveloperSupportRelease/amazonconnectclient">Jabra Amazon example source folder in GitHub</a> for the files used for this page).</p>
       </td>
     </tr>
     <tr>
         <td colspan="3">
           <div class="configStep">Step <span class="configStepNumber">&#x2463;</span></div>
-          <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator, any phone number for easy outbound calls using the 4-dot button on the Jabra Engage 50 controller,
-            optionally an Elasticsearch v6.6 host for reporting :</p>
+          <p id="configureText">Please write the <a href="https://docs.aws.amazon.com/connect/latest/userguide/agentconsole-guide.html">Amazon Connect CCP url</a> provided by your administrator and any phone number for easy outbound calls using the 4-dot button on the Jabra Engage 50 controller:</p>
         </td>
       </tr>
     <tr>
@@ -54,26 +56,7 @@
             <br/>
             <br/>
             <label for="quickPhoneNumber">Quick call number:&nbsp;</label>
-            <input id="quickPhoneNumber" class="configInput" name="quickPhoneNumber" placeholder="+4512345678" type="tel" width="16"/>
-            <br/>
-            <br/>
-            <label for="elasticsearchHost">ES host:&nbsp;</label>
-            <input id="elasticsearchHost" class="configInput" name="elasticsearchHost" placeholder="https://your-elasticsearch-host" type="url" width="80"/>
-            <br/>
-            <br/>
-            <label for="softphoneEnable">Use Amazon softphone:&nbsp;
-              <label for="softphoneEnableTrue">
-                <input type="radio" id="softphoneEnableTrue" name="softphoneEnable" value="true" checked="checked">
-                Enable
-              </label>
-              <label for="softphoneEnableFalse">
-                <input type="radio" id="softphoneEnableFalse" name="softphoneEnable" value="false">
-                Disable
-              </label>
-            </label>
-            <p>
-              Enable Amazon softphone if you want to try this demo as standalone and get audio in this browser window/tab. Disable softphone if you would like to run your existing Amazon Connect instance in a different browser window or tab with softphone audio happening there and try out the Jabra features in this window/tab in parallel. 
-            </p>
+            <input id="quickPhoneNumber" class="configInput" name="quickPhoneNumber" type="tel" placeholder="+4512345678" width="16" required/>
             <br/>
             <br/>
             <button id="configureGo" type="submit">&nbsp;&nbsp;RUN&nbsp;&nbsp;</button>
@@ -96,17 +79,13 @@
       </td>
     </tr>
     <tr>      
-      <td style="vertical-align:top">
-        <div style="height:465px;width:320px" id="containerDiv"></div>
-        <div>&nbsp;</div>
-      </td>
+      <td><div style="height:465px;width:320px" id="containerDiv"></div></td>
       <td>
-        <div style="width:318px" id="jabraContainerDiv">
+        <div style="height:465px;width:318px" id="jabraContainerDiv">
           <div class="addOnHeader">
             <img class="addOnHeaderLogo" src="jabra-logo-vector.svg" alt="Jabra GN" height="24" />
-            <span id ="addOnHeaderText" class="addOnHeaderText"></span>
           </div>
-          <div id="addOnBody" class="addOnBody">
+          <div class="addOnBody">
             <!-- Auto selection is hidden until Amazon connect streams support it -->
             <section class="section" style="display: none">
               <h1>Headset selection</h1>
@@ -223,11 +202,7 @@
     </tr>
   </table>
 
-  <script type="text/javascript" src="../../JavaScriptLibrary/jabra.browser.integration-2.0.js"></script>
-  <script type="text/javascript" src="amazon-connect-v1.x.js"></script>
-  <script type="text/javascript" src="queue.js"></script>
-  <script type="text/javascript" src="Chart.min.js"></script>
-  <script type="text/javascript" src="elasticsearch.min.js"></script>
-  <script type="text/javascript" src="jabra.connect.integration.js"></script>
+  <script src="Chart.min.js"></script>
+  <script src="jabra.connect.integration.js"></script>
 </body>
 </html>

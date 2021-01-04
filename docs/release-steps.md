@@ -53,8 +53,8 @@ Delete existing ChromeHost and verify that the new installers work. On Mac you m
 
 ### 14. Go back to jabra-browser-integration repository and update README.md and CHANGELOG.md
 
-Update links to Native Chromehost so that the versions match the files just uploaded to gnaudio.github.io project. Remember to verify that links work.
+### 15. Update links to Native Chromehost so that the versions match the files just uploaded to gnaudio.github.io project. Remember to verify that links work.
 
-### 15. Prod release only: Rename `DeveloperSupportRelease` to `DeveloperSupportLegacy_<version>` and `DeveloperSupportBeta` to `DeveloperSupportRelease`
+### 16. Prod release only: Rename `DeveloperSupportRelease` to `DeveloperSupportLegacy_<version>` and `DeveloperSupportBeta` to `DeveloperSupportRelease`
 
-### 16. Prod release only: in rare cases the Chrome Extension needs to be [updated in the Chrome Web Store](https://developer.chrome.com/webstore/publish). Consult the Jabra certificate manager about getting access   
+### 17. Prod release only: in rare cases the Chrome Extension needs to be [updated in the Chrome Web Store](https://developer.chrome.com/webstore/publish). Consult the Jabra certificate manager about getting access   
