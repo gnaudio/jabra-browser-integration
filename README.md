@@ -82,16 +82,6 @@ The library internally checks for dependencies – and will report this to the a
 
 The Chromehost can also be downloaded from [Jabra developer zone](https://developer.jabra.com) 
 
-## CI builds
-
-### macOS CI build - branch v3.0
-
-[![macOS CI build](https://dev.azure.com/gnaudio/jabra-browser-integration/_apis/build/status/jabra-browser-integration-macOS?branchName=v3.0)](https://dev.azure.com/gnaudio/jabra-browser-integration/_build?definitionId=138&branchName=v3.0)
-
-### Windows CI build - branch v3.0
-
-[![Windows CI build](https://dev.azure.com/gnaudio/jabra-browser-integration/_apis/build/status/jabra-browser-integration-Windows?branchName=v3.0)](https://dev.azure.com/gnaudio/jabra-browser-integration/_build?definitionId=139&branchName=v3.0)
-
 ## Getting started with using the API in your web applications
 
 First, make sure the [jabra library javascript file](https://gnaudio.github.io/jabra-browser-integration/JavaScriptLibrary/jabra.browser.integration-3.0.js) is included in your HTML page (use a local copy - don't link directly).
