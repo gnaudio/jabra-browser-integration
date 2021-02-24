@@ -28,7 +28,7 @@ SOFTWARE.
 /**
  * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
  */
-export const apiVersion = "3.0.0";
+export const apiVersion = "3.0.1";
 
 /**
  * Is the current version a beta ?

@@ -166,7 +166,7 @@
   /**
    * Version of this javascript api (should match version number in file apart from possible alfa/beta designator).
    */
-  var apiVersion = "3.0.0";
+  var apiVersion = "3.0.1";
   /**
    * Is the current version a beta ?
    */
