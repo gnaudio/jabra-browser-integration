@@ -4,6 +4,9 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 
 # 1. JAVASCRIPT API
 
+3.0.1
+- Update Chrome Host for Mac to support Big Sur
+
 3.0.0
 
 - fixes error in finding compatible Jabra devices for getUserDeviceMediaExt 

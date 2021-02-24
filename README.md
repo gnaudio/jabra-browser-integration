@@ -78,7 +78,7 @@ The library internally checks for dependencies – and will report this to the a
 | Operating systems             | Chrome host native download             | Description                             |
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.0.msi) | Chromehost 2.1.0 |
-| macOS (El Capitan or newer)   | [JabraChromeHost2.1.0.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.0.dmg) | Chromehost 2.1.0 |
+| macOS (El Capitan or newer)   | [JabraChromeHost2.1.1.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.1.dmg) | Chromehost 2.1.1 |
 
 The Chromehost can also be downloaded from [Jabra developer zone](https://developer.jabra.com) 
 
