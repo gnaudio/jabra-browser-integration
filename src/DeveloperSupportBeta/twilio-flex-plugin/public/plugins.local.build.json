@@ -1,0 +1,13 @@
+[
+  {
+    "name": "JabraCallControl",
+    "version": "1.0.0-beta.1",
+    "class": "JabraCallControl",
+    "requires": [
+      {
+        "@twilio/flex-ui": "^1"
+      }
+    ],
+    "src": "http://127.0.0.1:8085"
+  }
+]

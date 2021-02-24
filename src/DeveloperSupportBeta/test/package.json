@@ -1,0 +1,26 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "API test web application",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && browserify main.ts -p tsify --debug -o bundle.js",
+    "clean": "rimraf dist"
+  },
+  "author": "jabra",
+  "license": "MIT",
+  "dependencies": {
+    "@gnaudio/jabra-browser-integration": "3.0.1-beta.1"
+  },
+  "bugs": {
+    "url": "https://developer.jabra.com/"
+  },
+  "devDependencies": {
+    "@types/toastr": "2.1.37",
+    "browserify": "16.5.1",
+    "copyfiles": "2.2.0",
+    "rimraf": "3.0.2",
+    "toastr": "2.1.4",
+    "tsify": "4.0.1",
+    "typescript": "3.8.3"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "plugin-jabra",
+  "private": true,
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "bootstrap": "flex-check-start",
+    "prestart": "npm run bootstrap",
+    "postinstall": "npm run bootstrap"
+  },
+  "dependencies": {
+    "@craco/craco": "^5.0.2",
+    "@gnaudio/twilio-flex-call-control-plugin": "^1.0.0-beta.4",
+    "@twilio/flex-ui": "^1.13.0",
+    "craco-config-flex-plugin": "^2",
+    "elasticsearch-browser": "^16.4.0",
+    "flex-plugin": "^2.9.1",
+    "react-iframe": "^1.8.0",
+    "react-scripts": "^3.0.0",
+    "recharts": "^1.7.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
