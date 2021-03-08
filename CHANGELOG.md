@@ -63,15 +63,17 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 0.5 Original version with call control support.
 
 # 3. CHROMEHOST:
-2.1.0-beta.8 Changed the following
+
+2.1.1 (macOS only)
+- Update Chrome Host for macOS to support Big Sur
+
+2.1.0 Changed the following
 - Updated to C-SDK 1.8.7.12
 - Added Mac uninstaller script.
 - Removed Mac downgrade check/error.
 - Mac installer is now notarized (backported to v2.0.0, v2.0.2, beta7) 
-
-2.1.0-beta7
-* Fixed various bugs, incl. chrome device matching, button takeover on mac, ignoring repeated button presses etc. 
-* Updated to new C-SDK.
+- Fixed various bugs, incl. chrome device matching, button takeover on mac, ignoring repeated button presses etc. 
+- Updated to new C-SDK.
 
 2.0.2 Added permission for 3CX extensions to use chromehost executable.
 
