@@ -39,7 +39,7 @@ Delete existing ChromeHost and verify that the new installers work. On Mac you m
 
 ### 7b. Run `npm audit`
 
-### 8. Publish to npm `npm publish` 
+### 8. Publish to npm `npm publish --tag beta` 
 
 ### 9. Update `src/DeveloperSupportBeta/test/package.json` to use the npm-package just published
 
