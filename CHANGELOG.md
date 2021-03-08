@@ -65,7 +65,7 @@ Here are listed changes for (1) Javascript API, (2) Browser extension and (3) na
 # 3. CHROMEHOST:
 
 2.1.1 (macOS only)
-- Update Chrome Host for Mac to support Big Sur
+- Update Chrome Host for macOS to support Big Sur
 
 2.1.0 Changed the following
 - Updated to C-SDK 1.8.7.12
