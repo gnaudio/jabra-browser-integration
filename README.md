@@ -1,3 +1,12 @@
+##FORKED REPO
+https://github.com/gnaudio/jabra-browser-integration
+
+Updated  Linux SDK to version 1.10.1.0 & created linux installer file (64bit only)
+
+Download install script: [install.sh](https://github.com/samex/jabra-browser-integration/raw/master/src/InstallerLinux/install.sh)
+
+-------------------------------
+
 ![Banner](/docs/banner.png)
 
 # Overview
@@ -29,11 +38,12 @@ All professional Jabra headsets and Jabra speakerphones are supported. I.e. the 
 
 The following desktop operating systems are supported:
 
-| Operating system | Version             |
-| ---------------- | ------------------- |
-| Windows 64 bit   | Windows 7 or newer  |
-| Windows 32 bit   | Windows 7 or newer  |
-| macOS            | El Capitan or newer |
+| Operating system | Version              |
+| ---------------- | -------------------  |
+| Windows 64 bit   | Windows 7 or newer   |
+| Windows 32 bit   | Windows 7 or newer   |
+| macOS            | El Capitan or newer  |
+| Linux   64 bit   | Generic              |
 
 ### Browser support
 
@@ -79,8 +89,9 @@ The library internally checks for dependencies – and will report this to the a
 | ----------------------------- | --------------------------------------- | --------------------------------------- |
 | Windows (Windows 7 or newer)  | [JabraChromeHost2.1.0.msi](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.0.msi) | Chromehost 2.1.0 |
 | macOS (El Capitan or newer)   | [JabraChromeHost2.1.1.dmg](https://gnaudio.github.io/jabra-browser-integration/download/JabraChromeHost2.1.1.dmg) | Chromehost 2.1.1 |
+| Linux  (64-bit only)          | [install.sh](https://github.com/samex/jabra-browser-integration/raw/master/src/InstallerLinux/install.sh)  |                                 |
 
-The Chromehost can also be downloaded from [Jabra developer zone](https://developer.jabra.com) 
+The Chromehost can also be downloaded from [Jabra developer zone](https://developer.jabra.com)
 
 ## Getting started with using the API in your web applications
 
@@ -128,7 +139,7 @@ For many editors and IDE's, the above typescript definition file can be used to 
 ```
 ### Dongle devices
 
-Some Jabra headsets connect via Bluetooth to a USB-connected dongle. In the `getDevices` list, dongle and headset will appear separately, and the SDK will automatically sort out sending commands to the headset if called on the connected dongle and vice versa. _However_, the `devlog` event needs to be subscribed to the headset only. 
+Some Jabra headsets connect via Bluetooth to a USB-connected dongle. In the `getDevices` list, dongle and headset will appear separately, and the SDK will automatically sort out sending commands to the headset if called on the connected dongle and vice versa. _However_, the `devlog` event needs to be subscribed to the headset only.
 
 ## Development tools/demos
 * [Call control test](https://gnaudio.github.io/jabra-browser-integration/release/development/) - test page to try out basic call control in the library
