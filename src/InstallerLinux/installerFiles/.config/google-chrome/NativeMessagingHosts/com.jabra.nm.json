@@ -1,0 +1,14 @@
+{
+  "name": "com.jabra.nm",
+  "description": "Jabra Browser Integration Host",
+  "path": "/home/##USER##/.config/google-chrome/NativeMessagingHosts/jabrachromehost",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://okpeabepajdgiepelmhkfhkjlhhmofma/",
+	  "chrome-extension://igcbbdnhomedfadljgcmcfpdcoonihfe/",
+    "chrome-extension://klapphmlodmhfolphohgkmimlkpcindc/",
+    "chrome-extension://baipgmmeifmofkcilhccccoipmjccehn/",
+    "chrome-extension://ojkobjdnlhiolhiagjbdbfnpidhfmgkb/",
+    "chrome-extension://kcijpkomlnpfpjmkbghnnmflfebimpfg/"
+  ]
+}
