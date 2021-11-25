@@ -1,4 +1,4 @@
-![Banner](/docs/banner.png)
+> **DEPRECATION WARNING**: A new JavaScript library - `jabra-js` - has been released to replace `jabra-browser-integration`. We recommend using the new library **unless** you depend on of the following features: RemoteMMI, Busy Light or Analytics. Find [jabra-js here](https://www.npmjs.com/package/@gnaudio/jabra-js). We will continue to support `jabra-browser-integration` until we reach feature parity on `jabra-js`. 
 
 # Overview
 
