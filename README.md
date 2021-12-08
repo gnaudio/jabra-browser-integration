@@ -1,5 +1,4 @@
-##FORKED REPO
-https://github.com/gnaudio/jabra-browser-integration
+Install the old v16 Web-Extension: https://chrome.google.com/webstore/detail/3cx/dijllljhgnommpcoogbfcnadmnleeook
 
 Updated  Linux SDK to version 1.10.1.0 & created linux installer file (64bit only)
 
