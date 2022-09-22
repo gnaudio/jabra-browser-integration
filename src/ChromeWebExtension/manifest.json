@@ -1,13 +1,15 @@
 {
-  "manifest_version": 2,
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "manifest_version": 3,
   "name": "Jabra Browser Integration Extension",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "version": "2.1.0.1",
-  "version_name": "2.1.0",
+  "version": "2.2.0",
+  "version_name": "2.2.0",
   "description": "Jabra Integration Extension",
   "options_ui": {
     "page": "options.html",
@@ -22,9 +24,9 @@
     }
   ],
   "background": {
-    "scripts": [ "background.js" ]
+    "service_worker": "service-worker.js"
   },
-  "browser_action": {},
+  "action": {},
   "permissions": [
     "nativeMessaging"
   ],
