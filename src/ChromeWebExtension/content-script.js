@@ -64,6 +64,7 @@ SOFTWARE.
   // From page script (API client)
   window.addEventListener("message", function (event) {
     if (event.source === window &&
+        event.data &&
         event.data.direction &&
         event.data.direction === "jabra-headset-extension-from-page-script") {
 
