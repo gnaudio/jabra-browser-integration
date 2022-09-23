@@ -231,7 +231,7 @@ var jabra = {
       }
 
       // Warn of degraded UX experience unless we are running https.
-      if (location.protocol !== 'https:') {
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
           console.warn("This function needs to run under https for best UX experience (persisted permissions)");
       }
 
@@ -302,7 +302,7 @@ var jabra = {
       }
 
       // Browser security rules (for at least chrome) requires site to run under https for labels to be read.
-      if (location.protocol !== 'https:') {
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
           return Promise.reject(new Error('Your browser needs https for lookup to work'));
       }
 
